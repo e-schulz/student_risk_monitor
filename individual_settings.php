@@ -17,12 +17,12 @@ $userid = required_param('userid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
-    print_error('no_user', 'block_test_anxiety_teacher', '', $userid);
+    print_error('no_user', 'block_anxiety_teacher', '', $userid);
 }
 
 //Error - the user trying to access this instance is the wrong one
 if (!($USER->id == $userid)) {
-    print_error('wrong_user', 'block_test_anxiety_teacher', '', $userid);
+    print_error('wrong_user', 'block_anxiety_teacher', '', $userid);
 }
 
 
@@ -33,15 +33,15 @@ if (!($USER->id == $userid)) {
 
 ///RENDERING THE HTML
 //Set the page parameters
-$blockname = get_string('pluginname', 'block_test_anxiety_teacher');
-$header = get_string('settings', 'block_test_anxiety_teacher');
+$blockname = get_string('pluginname', 'block_anxiety_teacher');
+$header = get_string('settings', 'block_anxiety_teacher');
 
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($header);
 
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/test_anxiety_teacher/settings.php');
+$PAGE->set_url('/blocks/anxiety_teacher/individual_settings.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 

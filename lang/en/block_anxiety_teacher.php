@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_test_anxiety_teacher', language 'en', branch 'MOODLE_20_STABLE'
+ * Strings for component 'block_anxiety_teacher', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package   block_test_anxiety_help
+ * @package   block_anxiety_help
  * @copyright 2014 onwards Emily schulz  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

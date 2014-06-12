@@ -1,9 +1,9 @@
 <?php
 
-class block_test_anxiety_teacher extends block_base {
+class block_anxiety_teacher extends block_base {
 
 	public function init() {
-		$this->title = get_string('title','block_test_anxiety_teacher');
+		$this->title = get_string('title','block_anxiety_teacher');
 	}
         
         //Where this block is allowed to appear? (Only on the my home page!)
@@ -32,18 +32,18 @@ class block_test_anxiety_teacher extends block_base {
                 $this->content->footer = '';
                         
 		//Create the Overview URL 
-                $overview_str = get_string('overview','block_test_anxiety_teacher');
+                $overview_str = get_string('overview','block_anxiety_teacher');
                 $overview = html_writer::link(
-                    new moodle_url('/blocks/test_anxiety_teacher/overview.php', array('userid' => $USER->id)),
+                    new moodle_url('/blocks/anxiety_teacher/overview.php', array('userid' => $USER->id)),
                     $overview_str
                 );
                 $this->content->text .= $overview;
                 $this->content->text .= "<br>";
 
                 //Settings URL
-                $settings_str = get_string('settings','block_test_anxiety_teacher');
+                $settings_str = get_string('settings','block_anxiety_teacher');
                 $settings = html_writer::link(
-                    new moodle_url('/blocks/test_anxiety_teacher/settings.php', array('userid' => $USER->id)),
+                    new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)),
                     $settings_str
                 );
                 

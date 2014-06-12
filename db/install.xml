@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/test_anxiety_teacher/db" VERSION="20140612" COMMENT="XMLDB file for Moodle blocks/test_anxiety_teacher"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_anxiety_teacher_exam" COMMENT="Stores information about upcoming exams">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="examdate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Date of the exam"/>
+        <FIELD NAME="weighting" TYPE="number" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="The weighting of the exam as a percentage (0 to 100)"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The course this exam belongs to"/>
+        <FIELD NAME="eventid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The calendar event this exam is associated with."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="eventid" TYPE="foreign" FIELDS="eventid" REFTABLE="event" REFFIELDS="id" COMMENT="The event this exam is associated with"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" COMMENT="The course this exam belongs to."/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_anxiety_teacher_anx" COMMENT="An instance of detected anxiety.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="currentgradepercent" TYPE="number" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="Grade in the course at the time anxiety detected. A percentage of total marks attainable up until this point (0 to 100)"/>
+        <FIELD NAME="examid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the exam this anxiety instance is associated with"/>
+        <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student associated with this anxiety instance."/>
+        <FIELD NAME="anxietylevel" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The proposed anxiety level."/>
+        <FIELD NAME="dategenerated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The date this anxiety instance was created"/>
+        <FIELD NAME="activitylevel" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The activity level on the site throughout the course, relative to peers (low, medium, high)"/>
+        <FIELD NAME="status" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The status of this anxiety instance. (unread, read, intervention generated, deleted)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="examid" TYPE="foreign-unique" FIELDS="examid" REFTABLE="exam" REFFIELDS="id" COMMENT="The exam this anxiety instance is associated with"/>
+        <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id" COMMENT="The student associated with this anxiety instance"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_anxiety_teacher_trait" COMMENT="The trait anxiety score for each student.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student this score is associated with."/>
+        <FIELD NAME="anxietyscore" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The score from the trait anxiety questionnaire."/>
+        <FIELD NAME="datesubmitted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Date the questionnaire was completed."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id" COMMENT="The student associated with this anxiety score."/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_anxiety_teacher_log" COMMENT="Log of teacher's actions in regards to anxiety predictions.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The teacher who completed the action."/>
+        <FIELD NAME="anxietyid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The anxiety instance being acted upon"/>
+        <FIELD NAME="teacheraction" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The action taken on the anxiety instance (view, mark as read, generate intervention, delete)"/>
+        <FIELD NAME="dateandtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The date and time the action was taken."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="teacherid" TYPE="foreign" FIELDS="teacherid" REFTABLE="user" REFFIELDS="id" COMMENT="The id of the teacher."/>
+        <KEY NAME="anxietyid" TYPE="foreign" FIELDS="anxietyid" REFTABLE="block_anxiety_teacher_anx" REFFIELDS="id" COMMENT="The id of the anxiety instance"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_anxiety_teacher_config" COMMENT="Settings for this individual block instance.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the teacher this configuration is associated with"/>
+        <FIELD NAME="timebeforeexam" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The length of time before the exam that anxiety should be detected by the module (in hours)"/>
+        <FIELD NAME="dateupdated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The date and time these settings were last updated."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="teacherid" TYPE="foreign" FIELDS="teacherid" REFTABLE="user" REFFIELDS="id" COMMENT="The teacher these settings belong to"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
