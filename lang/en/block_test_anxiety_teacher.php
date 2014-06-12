@@ -28,4 +28,12 @@ $string['title'] = 'Test Anxiety Help';
 $string['simplehtml:addinstance'] = 'Add a new Test Anxiety Help block';
 $string['simplehtml:myaddinstance'] = 'Add a new Test Anxiety Help block to the My Moodle page';		//???
 
+//Overview strings
+$string['overview'] = "Overview";
+$string['no_user'] = "There is no user!";
+$string['wrong_user'] = "Wrong user trying to access";
+
+//Settings strings
+$string['settings'] = "Settings";
+
 ?>

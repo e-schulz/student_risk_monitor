@@ -40,7 +40,7 @@ $capabilities = array(
 	'block/test_anxiety_teacher:view' => array(
 		
 		'captype' => 'read',
-		'contextlevel' => CONTEXT_COURSE,
+		'contextlevel' => CONTEXT_BLOCK,
 		'archetypes' => array(
 			'editingteacher' => CAP_ALLOW,
 			'noneditingteacher' => CAP_ALLOW,
@@ -49,7 +49,7 @@ $capabilities = array(
 			'student' => CAP_PREVENT
 		),
 		
-		'clonepermissionsfrom' => 'moodle/site:manageblocks'
+		//'clonepermissionsfrom' => 'moodle/site:manageblocks'
 	),	
 );
 	
