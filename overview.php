@@ -26,15 +26,12 @@ if (!($USER->id == $userid)) {
 }
 
 
-///GETTING THE INFORMATION FROM THE DATABASE
-//From the DB we will need: all registered courses associated with this teacher, and the associated exam
-
-
-
-///RENDERING THE HTML
-//Set the page parameters
+//PAGE PARAMS
 $blockname = get_string('pluginname', 'block_anxiety_teacher');
 $header = get_string('overview', 'block_anxiety_teacher');
+
+//need block id! get block instance - for now we will do course :-)
+$context = context_user::instance($userid);
 
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($header);
@@ -44,12 +41,14 @@ $PAGE->set_heading($blockname . ': '.$header);
 $PAGE->set_url('/blocks/anxiety_teacher/overview.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
+$PAGE->set_context($context);
 
-//Initialise the table
+
+//RENDERING THE TABS
 $table = new html_table();
 $table->attributes['class'] = 'overviewtable';
 
-//Initialise the tabs - OVERVIEW | SETTINGS
+//OVERVIEW AND SETTINGS
 $tabs = array();
 
 $overviewtab = new html_table_cell();
@@ -66,7 +65,7 @@ $tabs[] = $settingstab;
 
 $table->data[] = new html_table_row($tabs);
 
-//Next row of tabs: COURSES (but only if there is more than one course!)
+//COURSE TABS
 $coursetabs = array();
 
 //Get the context instances where the user is the teacher
@@ -85,7 +84,7 @@ foreach ($roleassigns as $roleassign) {
 
 foreach($teachercourses as $teachercourse) {
 
-    //Get the name of the course.
+    //Get the course.
     $course = $DB->get_record('course', array('id' => $teachercourse->instanceid));
     
     $coursetab = new html_table_cell();
@@ -98,14 +97,33 @@ foreach($teachercourses as $teachercourse) {
 $table->data[] = new html_table_row($coursetabs);
 
 
-//Render the HTML
+
+//NEXT - BODY: TODO
+//Overview
+$body = html_writer::tag('static',
+    get_string('overview', 'block_anxiety_teacher'));
+
+//Courses and data. Data: exam, unread/total anxiety instances, 
+foreach($teachercourses as $teachercourse) {
+    
+    //Get the course id
+    $courseid = $teachercourse->instanceid;
+    
+    //Get the exam and date.
+    
+}
+
+
+
+
+//FINAL RENDERING
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
 
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
-
 //html table goes here.
 echo html_writer::table($table);
-
 echo html_writer::end_tag('div');
+
+
 echo $OUTPUT->footer();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_anxiety_teacher/db" VERSION="20140612" COMMENT="XMLDB file for Moodle blocks/test_anxiety_teacher"
+<XMLDB PATH="blocks/test_anxiety_teacher/db" VERSION="20140613" COMMENT="XMLDB file for Moodle blocks/test_anxiety_teacher"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -35,6 +35,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="examid" TYPE="foreign-unique" FIELDS="examid" REFTABLE="exam" REFFIELDS="id" COMMENT="The exam this anxiety instance is associated with"/>
         <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id" COMMENT="The student associated with this anxiety instance"/>
+        <KEY NAME="student_exam_anxiety" TYPE="unique" FIELDS="studentid, examid, id" COMMENT="Unique key to ensure there is only one anxiety instance created per student per exam"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_anxiety_teacher_trait" COMMENT="The trait anxiety score for each student.">
