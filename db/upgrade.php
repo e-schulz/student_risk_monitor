@@ -66,33 +66,21 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
     //   http://docs.moodle.org/en/Development:XMLDB_Documentation
     // and to play with the XMLDB Editor (in the admin menu) and its
     // PHP generation posibilities.
-   if ($oldversion < 2014140607) {
+    if ($oldversion < 2014180601) {
 
-        // Define table block_anxiety_teacher_exam to be created.
+        // Define field id to be added to block_anxiety_teacher_exam.
         $table = new xmldb_table('block_anxiety_teacher_exam');
+        $field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
 
-        // Adding fields to table block_anxiety_teacher_exam.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('examdate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('weighting', XMLDB_TYPE_NUMBER, '5, 2', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('eventid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        // Adding keys to table block_anxiety_teacher_exam.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('eventid', XMLDB_KEY_FOREIGN, array('eventid'), 'event', array('id'));
-
-        // Adding indexes to table block_anxiety_teacher_exam.
-        $table->add_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
-
-        // Conditionally launch create table for block_anxiety_teacher_exam.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
         }
 
         // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014140607, 'test_anxiety_teacher');
+        upgrade_block_savepoint(true, 2014180601, 'anxiety_teacher');
     }
+
 
  
     return true;

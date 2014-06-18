@@ -35,5 +35,12 @@ $string['wrong_user'] = "Wrong user trying to access";
 
 //Settings strings
 $string['settings'] = "Settings";
+$string['daysbeforeexam'] = "Number of days before the exam to detect at-risk students";
+$string['save'] = "Save changes";
+$string['changessaved'] = "Changes saved.";
+
+
+//Errors
+$string['errorinsertexam'] = "Error trying to add exam to database.";
 
 ?>

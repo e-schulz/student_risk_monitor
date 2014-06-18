@@ -23,7 +23,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014140607;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2014180602;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013111801.03;        // Requires this Moodle version
 $plugin->component = 'block_anxiety_teacher';  // Full name of the plugin (used for diagnostics)
 

@@ -9,11 +9,17 @@
 ///REQUIRES AND ERROR MESSAGES
 
 require_once("../../config.php");
+require_once("locallib.php");
+require_once("individual_settings_form.php");
+
+global $block_anxiety_teacher_config;
+
 //Teacher must be logged in
 require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
+$message = optional_param('message', 0, PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -41,12 +47,37 @@ $PAGE->navbar->add($header);
 
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/anxiety_teacher/individual_settings.php');
+$PAGE->set_url('/blocks/anxiety_teacher/individual_settings.php?userid='.$userid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //Create the form (look at quickmail->email for this!)
-//
+$mform = new individual_settings_form('individual_settings.php?userid='.$USER->id);
+if ($fromform = $mform->get_data()) {
+    
+    $message = get_string('changessaved','block_anxiety_teacher').'<br>';
+    
+    //save the changes to DB.
+    //check if there is already a config saved and replace it
+    if ($existing = $DB->get_record('block_anxiety_teacher_config', array('teacherid' => $USER->id))) {
+        $changes = array('id' => $existing->id,
+                         'timebeforeexam' => $fromform->numberdays*60*60*24,
+                         'dateupdated' => time());
+        $DB->update_record('block_anxiety_teacher_config', $changes);
+    }
+    else {      //this shouldn't really happen
+        $newconfig = new object();
+        $newconfig->teacherid = $USER->id;      
+        $newconfig->timebeforeexam = $fromform->numberdays;
+        $newconfig->dateupdated = time();
+        $DB->insert_record('block_anxiety_teacher_config', $newconfig);
+    }
+    
+    //redirect and show message "Changes saved"
+    redirect(new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id, 'message' => 1)));       
+
+}
+
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
@@ -54,7 +85,14 @@ echo $OUTPUT->heading($blockname);
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 
 //display the settings form
-//$form->display();
-
+//echo block_anxiety_teacher_get_tabs_html($userid, true);
+$currenttoptab = 'settings';
+require('top_tabs.php');
 echo html_writer::end_tag('div');
+if ($message == 1) {
+    echo '<div>Changes saved.</div><br>';
+}
+else {
+    $mform->display();
+}
 echo $OUTPUT->footer();

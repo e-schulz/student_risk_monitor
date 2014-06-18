@@ -9,6 +9,8 @@
 ///REQUIRES AND ERROR MESSAGES
 
 require_once("../../config.php");
+require_once("locallib.php");
+
 //Teacher must be logged in
 require_login();
 
@@ -43,7 +45,7 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_context($context);
 
-
+/*
 //RENDERING THE TABS
 $table = new html_table();
 $table->attributes['class'] = 'overviewtable';
@@ -94,7 +96,7 @@ foreach($teachercourses as $teachercourse) {
     );
     $coursetabs[] = $coursetab;
 }
-$table->data[] = new html_table_row($coursetabs);
+$table->data[] = new html_table_row($coursetabs);*/
 
 
 
@@ -122,7 +124,10 @@ echo $OUTPUT->heading($blockname);
 
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //html table goes here.
-echo html_writer::table($table);
+//echo block_anxiety_teacher_get_tabs_html($userid, false);
+$currenttoptab = 'overview';
+require('top_tabs.php');
+require('course_tabs.php');
 echo html_writer::end_tag('div');
 
 
