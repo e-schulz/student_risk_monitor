@@ -66,10 +66,10 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
     //   http://docs.moodle.org/en/Development:XMLDB_Documentation
     // and to play with the XMLDB Editor (in the admin menu) and its
     // PHP generation posibilities.
-    if ($oldversion < 2014180601) {
+    if ($oldversion < 2014180603) {
 
-        // Define field id to be added to block_anxiety_teacher_exam.
-        $table = new xmldb_table('block_anxiety_teacher_exam');
+        // Define field id to be added to block_anxiety_teacher_trait.
+        $table = new xmldb_table('block_anxiety_teacher_trait');
         $field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
 
         // Conditionally launch add field id.
@@ -78,8 +78,9 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
         }
 
         // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014180601, 'anxiety_teacher');
+        upgrade_block_savepoint(true, 2014180603, 'anxiety_teacher');
     }
+
 
 
  

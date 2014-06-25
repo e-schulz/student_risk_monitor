@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_anxiety_teacher/db" VERSION="20140617" COMMENT="XMLDB file for Moodle blocks/test_anxiety_teacher"
+<XMLDB PATH="blocks/test_anxiety_teacher/db" VERSION="20140618" COMMENT="XMLDB file for Moodle blocks/test_anxiety_teacher"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -45,6 +45,7 @@
         <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student this score is associated with."/>
         <FIELD NAME="anxietyscore" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The score from the trait anxiety questionnaire."/>
         <FIELD NAME="datesubmitted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Date the questionnaire was completed."/>
+        <FIELD NAME="anxietylevel" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

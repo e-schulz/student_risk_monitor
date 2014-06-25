@@ -39,6 +39,15 @@ $string['daysbeforeexam'] = "Number of days before the exam to detect at-risk st
 $string['save'] = "Save changes";
 $string['changessaved'] = "Changes saved.";
 
+//Course strings
+$string['submitintervention'] = " Generate intervention ";
+$string['unread'] = "Unread";
+$string['read'] = "Marked as read";
+$string['intervention'] = "Intervention generated";
+$string['low'] = "Low";
+$string['med'] = "Med";
+$string['high'] = "High";
+
 
 //Errors
 $string['errorinsertexam'] = "Error trying to add exam to database.";
