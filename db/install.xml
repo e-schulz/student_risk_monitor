@@ -16,10 +16,8 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="eventid" TYPE="foreign" FIELDS="eventid" REFTABLE="event" REFFIELDS="id" COMMENT="The event this exam is associated with"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="block_anxiety_teacher_course" REFFIELDS="id" COMMENT="The id of the registered course this exam is associated with."/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" COMMENT="The course this exam belongs to."/>
-      </INDEXES>
     </TABLE>
     <TABLE NAME="block_anxiety_teacher_anx" COMMENT="An instance of detected anxiety.">
       <FIELDS>

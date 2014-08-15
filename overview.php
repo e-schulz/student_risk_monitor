@@ -26,7 +26,8 @@ if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
 if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_anxiety_teacher', '', $userid);
 }
-
+//CRON IS HERE FOR NOW - TO DO - GET RID OF IT
+block_anxiety_teacher_cron();
 
 //PAGE PARAMS
 $blockname = get_string('pluginname', 'block_anxiety_teacher');

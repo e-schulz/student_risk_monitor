@@ -181,6 +181,44 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
         // Test_anxiety_teacher savepoint reached.
         upgrade_block_savepoint(true, 2014260807, 'anxiety_teacher');
     }
+    
+        if ($oldversion < 2014260809) {
+
+        // Define index courseid (not unique) to be dropped form block_anxiety_teacher_exam.
+        $table = new xmldb_table('block_anxiety_teacher_exam');
+        $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
+
+        // Conditionally launch drop index courseid.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Define key courseid (foreign) to be added to block_anxiety_teacher_exam.
+        $table = new xmldb_table('block_anxiety_teacher_exam');
+        $key = new xmldb_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'block_anxiety_teacher_course', array('id'));
+
+        // Launch add key courseid.
+        $dbman->add_key($table, $key);
+        
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260809, 'anxiety_teacher');
+    }
+
+        if ($oldversion < 2014260810) {
+
+        // Define field examname to be dropped from block_anxiety_teacher_exam.
+        $table = new xmldb_table('block_anxiety_teacher_exam');
+        $field = new xmldb_field('examname');
+
+        // Conditionally launch drop field examname.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260810, 'test_anxiety_teacher');
+    }
+
 
     
     return true;

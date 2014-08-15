@@ -44,6 +44,9 @@ $string['changessaved'] = "Changes saved.";
 $string['add_course'] = "Add a course:";
 $string['submit_add'] = "Add";
 $string['edit-prepostambles'] = "The messages shown below are presented before and after the intervention module. Edit and save to change the messages.";
+$string['preamble_textbox'] = "Message at the start of the module";
+$string['postamble_textbox'] = "Message at the end of the module";
+$string['save'] = "Save";
 
 //Course strings
 $string['submitintervention'] = " Generate intervention ";

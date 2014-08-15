@@ -17,10 +17,10 @@ $anxid = optional_param('anxid', -1, PARAM_INT);
 //maybe a check to ensure this teacher is actually in this course?
 
 //DB STUFF - Need all anxiety instances with this course, the exam upcoming...
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('block_anxiety_teacher_course', array('id' => $courseid), '*', MUST_EXIST);
 
 //Teacher must be logged in
-require_login($course);
+require_login();
 
 //$examcreated = block_anxiety_teacher_create_exam($courseid, $USER->id);
 //if anx id, generate intervention
@@ -47,17 +47,17 @@ $context = context_user::instance($USER->id);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($header);
 
+$PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
 $PAGE->set_url('/blocks/anxiety_teacher/course_page.php?courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
-$PAGE->set_context($context);
+$body = '';
 
 //get the exam(s)
 if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => $courseid))) {
     
-    $body = '';
     foreach($exams as $exam) {
    
         $event = $DB->get_record('event', array('id' => $exam->eventid));
@@ -77,38 +77,28 @@ if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => 
             $headers[] = $studentlastnamehead;
             
             $activityhead = new html_table_cell();
-            $activityhead->text = '<b>Activity level</b>';
+            $activityhead->text = '<b>Potential anxiety level</b>';
             $headers[] = $activityhead;
                     
             $traithead = new html_table_cell();
-            $traithead->text = '<b>Typical anxiety level</b>';
+            $traithead->text = '<b>Status</b>';
             $headers[] = $traithead;
                     
             $currentgradehead = new html_table_cell();
-            $currentgradehead->text = '<b>Current grade</b>';
+            $currentgradehead->text = '<b>Action</b>';
             $headers[] = $currentgradehead;
-                    
-            $anxietyhead = new html_table_cell();
-            $anxietyhead->text = '<b>Proposed anxiety level</b>';
-            $headers[] = $anxietyhead;
- 
-            $statushead = new html_table_cell();
-            $statushead->text = '<b>Status</b>';
-            $headers[] = $statushead;
-            
-            $actionhead = new html_table_cell();
-            $actionhead->text = '<b>Action</b>';
-            $headers[] = $actionhead;
             
             $studentstable->data[] = new html_table_row($headers);
             
-            //header.
+            $intervention_generated_rows = array();
+            $intervention_not_generated_rows = array();
+            
             foreach($anxious_students as $anxious_student) {
                
+                $intervention_generated = false;
                 
                 //get the user
                 $student = $DB->get_record('user', array('id' => $anxious_student->studentid));
-                $trait_anxiety = $DB->get_record('block_anxiety_teacher_trait', array('studentid' => $anxious_student->studentid));
                         
                 $studentrow = array();
 
@@ -120,27 +110,11 @@ if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => 
                 $studentlastname->text = $student->lastname;
                 $studentrow[] = $studentlastname;
                 
-                $activity = new html_table_cell();
-                $activity->text = $anxious_student->activitylevel;
-                $studentrow[] = $activity;
-
-                $trait = new html_table_cell();
-                if ($trait_anxiety) {
-                    $trait->text = $trait_anxiety->anxietylevel;
-                }
-                else {
-                    $trait->text = 'N/A';                    
-                }
-                $studentrow[] = $trait;
-
-                $currentgrade = new html_table_cell();
-                $currentgrade->text = $anxious_student->currentgradepercent.' %';
-                $studentrow[] = $currentgrade;
-                
                 $anxiety = new html_table_cell();
                 $anxiety->text = get_string($anxious_student->anxietylevel, 'block_anxiety_teacher');
                 $studentrow[] = $anxiety;
-                
+
+                //For status we want to create a statement summing: action by teacher, when the action was done, action by student, when the action was done.
                 $status = new html_table_cell();
                 $status->text = get_string($anxious_student->status, 'block_anxiety_teacher');
                 $studentrow[] = $status;
@@ -148,16 +122,32 @@ if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => 
                 $action = new html_table_cell();
                 if($anxious_student->status == 'intervention') {
                     $action->text = '<button disabled="true">'.get_string('submitintervention','block_anxiety_teacher').'</button>';
+                    $intervention_generated = true;
                 }
                 else {
                     $action->text = $OUTPUT->single_button(new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $courseid, 'anxid' => $anxious_student->id)), get_string('submitintervention','block_anxiety_teacher'));
                 }
                 $studentrow[] = $action;
                 
+                if($intervention_generated) {
+                    $intervention_generated_rows[] = new html_table_row($studentrow);
+                }
+                else {
+                    $intervention_not_generated_rows[] = new html_table_row($studentrow);
+                }
                 
-                $studentstable->data[] = new html_table_row($studentrow);               
+                //$studentstable->data[] = new html_table_row($studentrow);               
 
             }
+            
+            //add the non-generated-intervention students at the top
+            foreach($intervention_not_generated_rows as $intervention_not_generated_row) {
+                $studentstable->data[] = $intervention_not_generated_row;
+            }
+            
+            foreach($intervention_generated_rows as $intervention_generated_row) {
+                $studentstable->data[] = $intervention_generated_row;
+            }           
             
             $body .= html_writer::table($studentstable);
         }

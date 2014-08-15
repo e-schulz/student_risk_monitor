@@ -19,22 +19,28 @@ $block_anxiety_teacher_block = $DB->get_record('block_anxiety_teacher_block', ar
  * @return object
  */
 
+//This is to be implemented in cron later on
+function block_anxiety_teacher_cron() {
+    
+    //Check the registered courses
+    $registered_courses = block_anxiety_teacher_get_registered_courses();
+    foreach($registered_courses as $registered_course) {
+        block_anxiety_teacher_create_exam($registered_course->id);
+    }
+    
+}
+
 ///Create an exam instance for the course if there is an exam within a week
 //returns true if new exam instance created, else false
-function block_anxiety_teacher_create_exam($courseid, $teacherid) {
+function block_anxiety_teacher_create_exam($courseid) {
     
     global $DB;
     
-    $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+    $block_course = $DB->get_record('block_anxiety_teacher_course', array('id' => $courseid), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $block_course->courseid), '*', MUST_EXIST);
     
-    //If there is a setting to choose the time before exam use that, otherwise week
-    if ($timebeforeexam = $DB->get_record('block_anxiety_teacher_config', array('teacherid' => $teacherid), 'timebeforeexam')) {
-        $enddate = time() + $timebeforeexam;
-    }
-    else 
-    {
-        $enddate = time() + (7 * 24 * 60 * 60);
-    }
+    $enddate = time() + (7 * 24 * 60 * 60);
+    
     //Get the upcoming events for this course
     $events = calendar_get_events(time(), $enddate, false, false, $course->id);
     
@@ -55,9 +61,8 @@ function block_anxiety_teacher_create_exam($courseid, $teacherid) {
                 $exam = new object();
                 $exam->examdate = $event->timestart;
                 $exam->weighting = 75;//????TO DO!
-                $exam->courseid = $courseid;
+                $exam->courseid = $block_course->id;
                 $exam->eventid = $event->id;
-                $exam->examname = $name;
 
                 //add to DB
                 if (!$DB->insert_record('block_anxiety_teacher_exam', $exam)) {
@@ -196,4 +201,10 @@ function block_anxiety_teacher_get_tabs_html($userid, $settings, $courseid = nul
     return html_writer::table($table);
 }
     
-   
+function populate_with_test_data($examid) {
+    
+    //Get all user IDs
+    //
+    //Create the anx data using random for grade percent, anxiety level can be the same
+    
+}

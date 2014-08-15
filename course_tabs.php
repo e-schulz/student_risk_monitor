@@ -48,11 +48,11 @@ require_once('locallib.php');
                             new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
                             $course->shortname);
         }*/
-    $courses = block_anxiety_teacher_get_courses($USER->id);
+    $courses = block_anxiety_teacher_get_registered_courses();
     foreach($courses as $course) {
         $row[] = new tabobject('course'.$course->id,
                             new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
-                            $course->shortname);        
+                            $course->fullname);        
     }
     
     echo '<div class="coursedisplay">';

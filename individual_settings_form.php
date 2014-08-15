@@ -64,14 +64,14 @@ class individual_settings_form_edit_preamble extends moodleform {
         $mform =& $this->_form;
         
         //Delete courses
-        if(!empty($this->_customdata['courses'])) {
-            $courses = $this->_customdata['courses'];
-            $options_delete = array();
-            foreach ($courses as $course) {
-                $options_delete[$course->courseid] = $course->fullname;
-            }
-            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_anxiety_teacher'), $options_delete);
-            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_anxiety_teacher'));           
+        if(!empty($this->_customdata['preamble'])) {
+            $preamble = $this->_customdata['preamble'];
+            //$mform->addElement('editor', 'preamble', get_string('preamble_textbox', 'block_anxiety_teacher'));
+            //$mform->setType('fieldname', PARAM_RAW);
+            
+            $mform->addElement('textarea', 'preamble', get_string('preamble_textbox', 'block_anxiety_teacher'), 'wrap="virtual" rows="5" cols="100"');
+            $mform->setDefault('preamble', $preamble);
+            $mform->addElement('submit', 'submit_preamble', get_string('save', 'block_anxiety_teacher'));           
         }
 
     }
@@ -87,14 +87,12 @@ class individual_settings_form_edit_postamble extends moodleform {
         $mform =& $this->_form;
         
         //Delete courses
-        if(!empty($this->_customdata['courses'])) {
-            $courses = $this->_customdata['courses'];
-            $options_delete = array();
-            foreach ($courses as $course) {
-                $options_delete[$course->courseid] = $course->fullname;
-            }
-            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_anxiety_teacher'), $options_delete);
-            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_anxiety_teacher'));           
+        if(!empty($this->_customdata['postamble'])) {
+            $postamble = $this->_customdata['postamble'];
+            
+            $mform->addElement('textarea', 'postamble', get_string('postamble_textbox', 'block_anxiety_teacher'), 'wrap="virtual" rows="5" cols="100"');
+            $mform->setDefault('postamble', $postamble);
+            $mform->addElement('submit', 'submit_postamble', get_string('save', 'block_anxiety_teacher'));           
         }
 
     }
