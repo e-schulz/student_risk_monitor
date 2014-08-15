@@ -32,12 +32,18 @@ $string['simplehtml:myaddinstance'] = 'Add a new Test Anxiety Help block to the 
 $string['overview'] = "Overview";
 $string['no_user'] = "There is no user!";
 $string['wrong_user'] = "Wrong user trying to access";
+$string['overview_body'] = "This module is designed to help detect students who may be experiencing anxiety about an upcoming exam, using their online activity and grades, within a week of an upcoming exam<br>"
+        . "Please note this module uses the Moodle Calendar to determine whether any exams are coming up, searching for events with 'exam' or 'test' in the name, so please ensure any exams have been added to the calendar in order for the module to work properly.<br> "
+        . "Click on the course tabs below to view data for that course.<br>";
 
 //Settings strings
 $string['settings'] = "Settings";
-$string['daysbeforeexam'] = "Number of days before the exam to detect at-risk students";
-$string['save'] = "Save changes";
+$string['delete_course'] = "Delete a course:";
+$string['submit_delete'] = "Delete";
 $string['changessaved'] = "Changes saved.";
+$string['add_course'] = "Add a course:";
+$string['submit_add'] = "Add";
+$string['edit-prepostambles'] = "The messages shown below are presented before and after the intervention module. Edit and save to change the messages.";
 
 //Course strings
 $string['submitintervention'] = " Generate intervention ";
@@ -51,5 +57,14 @@ $string['high'] = "High";
 
 //Errors
 $string['errorinsertexam'] = "Error trying to add exam to database.";
+$string['errorinsertcourse'] = "Error trying to add course to database.";
+
+//Templates
+$string['preamble-template'] = 'This is a small module designed to help with any stress or anxiety you might be feeling over the upcoming exam for this subject.<br>'
+        . 'There is a reading followed by four short answer questions - your responses are not recorded and are completely anonymous. Feel free to write out your answers on paper if it will make you feel more comfortable.<br><br>';
+
+$string['postamble-template'] = 'Thankyou for taking the time to complete the module. <br>'
+        . 'Research shows that encouraging students to view their performance as largely due to their persistence and effort (studying better, taking notes in class, etc.) leads to students feeling more motivated and performing significantly better in the future.<br>'
+        . 'In answering the previous set of questions, hopefully you were able to relate these principles to your own academic experiences.<br><br>';
 
 ?>

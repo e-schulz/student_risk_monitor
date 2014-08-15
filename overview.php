@@ -38,12 +38,12 @@ $context = context_user::instance($userid);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($header);
 
+$PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
 $PAGE->set_url('/blocks/anxiety_teacher/overview.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
-$PAGE->set_context($context);
 
 /*
 //RENDERING THE TABS
@@ -100,23 +100,8 @@ $table->data[] = new html_table_row($coursetabs);*/
 
 
 
-//NEXT - BODY: TODO
-//Overview
-$body = html_writer::tag('static',
-    get_string('overview', 'block_anxiety_teacher'));
-
-//Courses and data. Data: exam, unread/total anxiety instances, 
-foreach($teachercourses as $teachercourse) {
-    
-    //Get the course id
-    $courseid = $teachercourse->instanceid;
-    
-    //Get the exam and date.
-    
-}
-
-
-
+//NEXT - BODY
+$body = get_string('overview_body', 'block_anxiety_teacher');
 
 //FINAL RENDERING
 echo $OUTPUT->header();
@@ -126,7 +111,9 @@ echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //html table goes here.
 //echo block_anxiety_teacher_get_tabs_html($userid, false);
 $currenttoptab = 'overview';
+$currentcoursetab = '';
 require('top_tabs.php');
+echo $body;
 require('course_tabs.php');
 echo html_writer::end_tag('div');
 

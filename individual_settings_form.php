@@ -8,38 +8,94 @@
 require_once($CFG->libdir . '/formslib.php');
 require_once('locallib.php');
 
-class individual_settings_form extends moodleform {
+//Recieves a list of all unregistered courses taught by the teacher (ie, courses that are able to be added)
+class individual_settings_form_add_course extends moodleform {
         
     //This is the form itself
     public function definition() {
    
-        global $block_anxiety_teacher_config;
-        
         $mform =& $this->_form;
-        $options = array('1' => 1,
-                         '2' => 2,
-                         '3' => 3,
-                         '4' => 4,
-                         '5' => 5,
-                         '6' => 6,
-                         '7' => 7,
-                         '8' => 8,
-                         '9' => 9,
-                         '10' => 10,
-                         '11' => 11,
-                         '12' => 12,
-                         '13' => 13,
-                         '14' => 14,
-                         '15' => 15,
-                         '16' => 16,
-                         '17' => 17,
-                         '18' => 18,
-                         '19' => 19,
-                         '20' => 20);
-        $mform->addElement('select', 'numberdays', get_string('daysbeforeexam', 'block_anxiety_teacher'), $options);
-        $mform->setDefault('numberdays', ($block_anxiety_teacher_config->timebeforeexam)/(60*60*24));        
-        $mform->addElement('submit', 'save', get_string('save', 'block_anxiety_teacher'));
+    
+        if(!empty($this->_customdata['courses'])) {
+        
+            //Add courses
+            $options_add = array();
+            $all_courses = $this->_customdata['courses'];
+            foreach($all_courses as $single_course) {
+                $options_add[$single_course->id] = $single_course->fullname;
+            }
+            $mform->addElement('select', 'add_course', get_string('add_course', 'block_anxiety_teacher'), $options_add);
 
+            $mform->addElement('submit', 'submit_add', get_string('submit_add', 'block_anxiety_teacher'));
+        }
+    }
+    
+}
+
+//Received an array containing all the courses able to be deleted (registered courses)
+class individual_settings_form_remove_course extends moodleform {
+        
+    //This is the form itself
+    public function definition() {
+   
+        $mform =& $this->_form;
+        
+        //Delete courses
+        if(!empty($this->_customdata['courses'])) {
+            $courses = $this->_customdata['courses'];
+            $options_delete = array();
+            foreach ($courses as $course) {
+                $options_delete[$course->courseid] = $course->fullname;
+            }
+            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_anxiety_teacher'), $options_delete);
+            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_anxiety_teacher'));           
+        }
+
+    }
+    
+}
+
+//Takes preamble text
+class individual_settings_form_edit_preamble extends moodleform {
+        
+    //This is the form itself
+    public function definition() {
+   
+        $mform =& $this->_form;
+        
+        //Delete courses
+        if(!empty($this->_customdata['courses'])) {
+            $courses = $this->_customdata['courses'];
+            $options_delete = array();
+            foreach ($courses as $course) {
+                $options_delete[$course->courseid] = $course->fullname;
+            }
+            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_anxiety_teacher'), $options_delete);
+            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_anxiety_teacher'));           
+        }
+
+    }
+    
+}
+
+//Takes postamble text
+class individual_settings_form_edit_postamble extends moodleform {
+        
+    //This is the form itself
+    public function definition() {
+   
+        $mform =& $this->_form;
+        
+        //Delete courses
+        if(!empty($this->_customdata['courses'])) {
+            $courses = $this->_customdata['courses'];
+            $options_delete = array();
+            foreach ($courses as $course) {
+                $options_delete[$course->courseid] = $course->fullname;
+            }
+            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_anxiety_teacher'), $options_delete);
+            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_anxiety_teacher'));           
+        }
 
     }
     

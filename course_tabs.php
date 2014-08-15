@@ -21,9 +21,12 @@
  * @copyright  2010 Petr Skoda (http://moodle.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+require_once('locallib.php');
+
     $row = array();
             //Get the context instances where the user is the teacher
-        $roleassigns = $DB->get_records('role_assignments', array('userid' => $USER->id, 'roleid' => 3), 'contextid');
+       /* $roleassigns = $DB->get_records('role_assignments', array('userid' => $USER->id, 'roleid' => 3), 'contextid');
 
         $teachercourses = array();
 
@@ -44,8 +47,14 @@
             $row[] = new tabobject('course'.$course->id,
                             new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
                             $course->shortname);
-        }
-        
+        }*/
+    $courses = block_anxiety_teacher_get_courses($USER->id);
+    foreach($courses as $course) {
+        $row[] = new tabobject('course'.$course->id,
+                            new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
+                            $course->shortname);        
+    }
+    
     echo '<div class="coursedisplay">';
     echo $OUTPUT->tabtree($row, $currentcoursetab);
     echo '</div>';

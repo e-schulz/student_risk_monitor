@@ -168,7 +168,7 @@ if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => 
     }
 }
 else {
-    $body .= "No exams within ".$block_anxiety_teacher_config->timebeforeexam;
+    $body .= "No exams within a week.";
 }
 
 echo $OUTPUT->header();
@@ -177,8 +177,9 @@ echo $OUTPUT->heading($blockname);
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //html table goes here
 //echo block_anxiety_teacher_get_tabs_html($USER->id, false, $courseid);
-$currenttoptab = 'overview';
+$currenttoptab = 'none';
 require('top_tabs.php');
+echo get_string('overview_body', 'block_anxiety_teacher');
 $currentcoursetab = 'course'.$courseid;
 require('course_tabs.php');
 echo $body;

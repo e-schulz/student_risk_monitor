@@ -9,13 +9,8 @@
 defined('MOODLE_INTERNAL') || die();
 require_once("../../config.php");
 require_once("../../calendar/lib.php");
-if(!$block_anxiety_teacher_config = $DB->get_record('block_anxiety_teacher_config', array('teacherid' => $USER->id))) {
-    $block_anxiety_teacher_config = new object();
-    $block_anxiety_teacher_config->teacherid = $USER->id;
-    $block_anxiety_teacher_config->dateupdated = time();
-    $block_anxiety_teacher_config->timebeforeexam = (7*24*60*60);
-    $DB->insert_record('block_anxiety_teacher_config', $block_anxiety_teacher_config);
-}
+
+$block_anxiety_teacher_block = $DB->get_record('block_anxiety_teacher_block', array('teacherid' => $USER->id));
 
 /**
  * Does something really useful with the passed things
@@ -73,6 +68,43 @@ function block_anxiety_teacher_create_exam($courseid, $teacherid) {
         }
     }
     return false;
+}
+
+//Get all the courses a teacher is teacher of
+function block_anxiety_teacher_get_courses($teacherid) {
+    
+        global $DB;
+        $roleassigns = $DB->get_records('role_assignments', array('userid' => $teacherid, 'roleid' => 3), 'contextid');
+
+        $teachercourses = array();
+
+        foreach ($roleassigns as $roleassign) {
+
+            //Get only the context instances where context = course 
+            $contextinstances = $DB->get_records('context', array('contextlevel' => 50, 'id' => $roleassign->contextid));
+
+            //add to the courses
+            $teachercourses = array_merge($teachercourses, $contextinstances);
+        }
+
+        $courses = array();
+
+        foreach($teachercourses as $teachercourse) {
+
+            //Get the course.
+            $course = $DB->get_records('course', array('id' => $teachercourse->instanceid));
+            $courses = array_merge($courses, $course);
+        }
+        
+        return $courses;
+}
+
+//Get all the courses registered for this block
+function block_anxiety_teacher_get_registered_courses() {
+    
+        global $DB, $block_anxiety_teacher_block;
+        $registered_courses = $DB->get_records('block_anxiety_teacher_course', array('blockid' => $block_anxiety_teacher_block->id));
+        return $registered_courses;
 }
 
 /**
@@ -164,5 +196,4 @@ function block_anxiety_teacher_get_tabs_html($userid, $settings, $courseid = nul
     return html_writer::table($table);
 }
     
-    
-
+   

@@ -81,8 +81,107 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014180603, 'anxiety_teacher');
     }
 
+        if ($oldversion < 2014130800) {
 
+        // Define field id to be dropped from block_anxiety_teacher_config.
+        $table = new xmldb_table('block_anxiety_teacher_config');
+        $field = new xmldb_field('timebeforeexam');
 
- 
+        // Conditionally launch drop field id.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define field id to be dropped from block_anxiety_teacher_anx.
+        $table = new xmldb_table('block_anxiety_teacher_anx');
+        $field = new xmldb_field('activitylevel');
+
+        // Conditionally launch drop field id.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+        
+        // Define table block_anxiety_teacher_exam to be dropped.
+        $table = new xmldb_table('block_anxiety_teacher_trait');
+
+        // Conditionally launch drop table for block_anxiety_teacher_exam.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014130800, 'anxiety_teacher');
+    }
+
+    if ($oldversion < 2014260802) {
+
+        // Rename field dateadded on table block_anxiety_teacher_config to NEWNAMEGOESHERE.
+        $table = new xmldb_table('block_anxiety_teacher_config');
+        $field = new xmldb_field('dateupdated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'teacherid');
+
+        // Launch rename field dateadded.
+        $dbman->rename_field($table, $field, 'dateadded');
+        
+        // Define table block_anxiety_teacher_block to be renamed to NEWNAMEGOESHERE.
+        $table = new xmldb_table('block_anxiety_teacher_block');
+
+        // Launch rename table for block_anxiety_teacher_block.
+        $dbman->rename_table($table, 'block_anxiety_teacher_config');
+
+        // Define table block_anxiety_teacher_course to be created.
+        $table = new xmldb_table('block_anxiety_teacher_course');
+
+        // Adding fields to table block_anxiety_teacher_course.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('blockid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('preamble_template', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('postamble_template', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table block_anxiety_teacher_course.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'course', array('id'));
+        $table->add_key('blockid', XMLDB_KEY_FOREIGN, array('blockid'), 'block_anxiety_teacher_block', array('id'));
+
+        // Conditionally launch create table for block_anxiety_teacher_course.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260802, 'test_anxiety_teacher');
+    }
+
+    if ($oldversion < 2014130804) {
+
+         // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014130804, 'anxiety_teacher');
+    }
+    
+        if ($oldversion < 2014260807) {
+
+        // Define field fullname to be added to block_anxiety_teacher_course.
+        $table = new xmldb_table('block_anxiety_teacher_course');
+        $field = new xmldb_field('fullname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'postamble_template');
+
+        // Conditionally launch add field fullname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field fullname to be added to block_anxiety_teacher_course.
+        $table = new xmldb_table('block_anxiety_teacher_course');
+        $field = new xmldb_field('shortname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'fullname');
+
+        // Conditionally launch add field fullname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260807, 'anxiety_teacher');
+    }
+
+    
     return true;
 }

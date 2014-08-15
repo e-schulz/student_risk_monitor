@@ -15,16 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Prints navigation tabs
  *
- * @package    block
- * @subpackage anxiety_teacher
+ * @package    core_group
+ * @copyright  2010 Petr Skoda (http://moodle.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once('locallib.php');
 
-$plugin->version   = 2014260807;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013111801.03;        // Requires this Moodle version
-$plugin->component = 'block_anxiety_teacher';  // Full name of the plugin (used for diagnostics)
-
-?>
+    $row = array();
+    $courses = block_anxiety_teacher_get_registered_courses();
+    foreach($courses as $course) {
+        $row[] = new tabobject('course'.$course->id,
+                            new moodle_url('/blocks/anxiety_teacher/settings_course_page.php', array('courseid' => $course->id)),
+                            $course->fullname);        
+    }
+    
+    echo '<div class="coursedisplay">';
+    echo $OUTPUT->tabtree($row, $currentcoursetab);
+    echo '</div>';
