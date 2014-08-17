@@ -47,6 +47,12 @@ $string['edit-prepostambles'] = "The messages shown below are presented before a
 $string['preamble_textbox'] = "Message at the start of the module";
 $string['postamble_textbox'] = "Message at the end of the module";
 $string['save'] = "Save";
+$string['add_button'] = "Add";
+$string['delete_button'] = "Remove";
+$string['add_all_button'] = "Add all";
+$string['delete_all_button'] = "Remove all";
+$string['registered_courses'] = "Registered courses";
+$string['unregistered_courses'] = "Courses to add";
 
 //Course strings
 $string['submitintervention'] = " Generate intervention ";

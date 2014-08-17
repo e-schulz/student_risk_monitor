@@ -216,7 +216,7 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
         }
 
         // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260810, 'test_anxiety_teacher');
+        upgrade_block_savepoint(true, 2014260810, 'anxiety_teacher');
     }
 
 
