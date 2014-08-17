@@ -67,18 +67,22 @@ class individual_settings_form_add_remove_courses extends moodleform {
         
        //Create the options for courses to add
        $options_add = array();
-       $add_courses = $this->_customdata['courses_to_add'];
-       foreach($add_courses as $single_course) {
-            $options_add[$single_course->id] = $single_course->fullname;
-        }        
-        
+       if(!empty($this->_customdata['courses_to_add'])) {
+            $add_courses = $this->_customdata['courses_to_add'];
+            foreach($add_courses as $single_course) {
+                 $options_add[$single_course->id] = $single_course->fullname;
+            }        
+       }
+       
         //Create the options for courses to delete
        $options_delete = array();
-       $delete_courses = $this->_customdata['courses_to_delete'];
-       foreach($delete_courses as $single_course) {
-            $options_delete[$single_course->id] = $single_course->fullname;
-        } 
-        
+       if(!empty($this->_customdata['courses_to_delete'])) {
+            $delete_courses = $this->_customdata['courses_to_delete'];
+            foreach($delete_courses as $single_course) {
+                 $options_delete[$single_course->id] = $single_course->fullname;
+             } 
+       }
+       
         $table = new html_table();
         $table->attributes['class'] = 'coursestable';
 

@@ -53,6 +53,12 @@ $string['add_all_button'] = "Add all";
 $string['delete_all_button'] = "Remove all";
 $string['registered_courses'] = "Registered courses";
 $string['unregistered_courses'] = "Courses to add";
+$string['course_templates_text'] = "Select a course to alter the messages that will be shown before and after the anxiety module.";
+$string['back_to_settings'] = "Back to settings";
+$string['add_or_delete'] = "Add or delete a course";
+$string['edit_templates'] = "Edit module messages";
+$string['add_delete_text'] = "Click to determine which courses to track.";
+$string['edit_templates_text'] = "Click to edit the messages displayed before and after the anxiety module.";
 
 //Course strings
 $string['submitintervention'] = " Generate intervention ";

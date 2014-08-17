@@ -23,6 +23,12 @@ require_login();
 $userid = required_param('userid', PARAM_INT);
 //$message = optional_param('message', 0, PARAM_INT);
 $settingspage = optional_param('settingspage', 0, PARAM_INT);
+$courseid = optional_param('courseid', 0, PARAM_INT);
+
+//if no course given
+if($courseid == 0 && $settingspage == 3){
+    $settingspage = 2;
+}
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -50,7 +56,6 @@ $PAGE->set_url('/blocks/anxiety_teacher/individual_settings.php?userid='.$userid
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-$settingspage = 1;
 //Create the body
 $body = '';
 //Add or delete course
@@ -86,31 +91,41 @@ if ($settingspage == 1) {
 
     //The add/delete form
     $add_delete_form = new individual_settings_form_add_remove_courses('individual_settings.php?userid='.$USER->id.'&settingspage='.$settingspage, array('courses_to_add' => $unregistered_courses, 'courses_to_delete' => $registered_courses));    
+    $back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'settingspage' => 0)), get_string('back_to_settings','block_anxiety_teacher'));
     
 }
 //Course templates page
-else if ($settingspage == 2) {
-    //Text 
+else if ($settingspage == 2) {   
     
+    //Text 
+    $body .= get_string('course_templates_text','block_anxiety_teacher').'<br><br>';
     //Back to settings button
+    $back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'settingspage' => 0)), get_string('back_to_settings','block_anxiety_teacher'));
+    
 }
 //Individual course template instance
 else if ($settingspage == 3) {
-    
-    //Pre form
-    
-    //Post form
+
+    $course_instance = $DB->get_record('block_anxiety_teacher_course', array('blockid' => $block_anxiety_teacher_block->id, 'id' => $courseid), '*',MUST_EXIST);
+
+    $preamble_form = new individual_settings_form_edit_preamble('individual_settings.php?userid='.$USER->id.'&settingspage='.$settingspage.'&courseid='.$courseid, array('preamble' => $course_instance->preamble_template));
+    $postamble_form = new individual_settings_form_edit_postamble('individual_settings.php?userid='.$USER->id.'&settingspage='.$settingspage.'&courseid='.$courseid, array('postamble' => $course_instance->postamble_template));
+
 }
 //Just go initial settings
 else {
     //Link to add or delete
-    //$body .= 
+    $body .= html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'settingspage' => 1)), get_string('add_or_delete','block_anxiety_teacher')).'<br><br>';
             
     //Description for add or delete
+    $body .= html_writer::tag('div', get_string('add_delete_text','block_anxiety_teacher').'<br><br>');
             
     //Link to edit templates
+    $body .= html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'settingspage' => 2)), get_string('edit_templates','block_anxiety_teacher').'<br><br>');
          
     //Description for edit templates
+    $body .= html_writer::tag('div', get_string('edit_templates_text','block_anxiety_teacher').'<br><br>');
+
 }
 
 ///GETTING THE INFORMATION FROM THE DATABASE
@@ -158,6 +173,23 @@ if ($fromform2 = $mform2->get_data()) {
     redirect(new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)));
 }*/
 
+//from add/delete form
+if ($settingspage == 1) {
+
+
+}
+
+else if ($settingspage == 3) {
+    if ($fromform2 = $preamble_form->get_data()) {
+
+    }
+    //post
+    if ($fromform3 = $postamble_form->get_data()) {
+
+    }
+}
+
+
 
 //Render the HTML
 echo $OUTPUT->header();
@@ -167,25 +199,32 @@ echo $OUTPUT->heading($blockname);
 
 //display the settings form
 //echo block_anxiety_teacher_get_tabs_html($userid, true);
-/*$currenttoptab = 'settings';
+$currenttoptab = 'settings';
 require('top_tabs.php');
-$currentcoursetab = '';
-require('settings_course_tabs.php');
-echo html_writer::end_tag('div');
-$mform1->display();       
-$mform2->display();*/
+
+if ($settingspage == 2 || $settingspage == 3) {
+    $currentcoursetab = '';
+    require('settings_course_tabs.php'); 
+}
+
 echo $body;
+
 if ($settingspage == 1) {
     //Display form
     $add_delete_form->display();
     //Display button
+    echo $back_to_settings;
 }
 else if ($settingspage == 2) {
     //Display button
+     echo $back_to_settings;
 }
 else if ($settingspage == 3) {
     //Display pre form
     //Display post form
+    $preamble_form->display();
+    $postamble_form->display();
+    
 }
 
 echo $OUTPUT->footer();
