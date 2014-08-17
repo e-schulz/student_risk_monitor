@@ -219,7 +219,48 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260810, 'anxiety_teacher');
     }
 
+         if ($oldversion < 2014260813) {
+   
+       // Define field id to be dropped from block_anxiety_teacher_anx.
+        $table = new xmldb_table('block_anxiety_teacher_anx');
+        $field = new xmldb_field('activitylevel');
 
-    
+        // Conditionally launch drop field id.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+        
+        // Define table block_anxiety_teacher_exam to be dropped.
+        $table = new xmldb_table('block_anxiety_teacher_trait');
+
+        // Conditionally launch drop table for block_anxiety_teacher_exam.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260813, 'anxiety_teacher');
+        
+         }
+         
+      if ($oldversion < 2014260814) {
+
+        // Define key examid (foreign-unique) to be dropped form block_anxiety_teacher_anx.
+        $table = new xmldb_table('block_anxiety_teacher_anx');
+        $key = new xmldb_key('examid', XMLDB_KEY_FOREIGN_UNIQUE, array('examid'), 'exam', array('id'));
+
+        // Launch drop key examid.
+        $dbman->drop_key($table, $key);
+
+                // Define key examid (foreign) to be added to block_anxiety_teacher_anx.
+        $table = new xmldb_table('block_anxiety_teacher_anx');
+        $key = new xmldb_key('examid', XMLDB_KEY_FOREIGN, array('examid'), 'exam', array('id'));
+
+        // Launch add key examid.
+        $dbman->add_key($table, $key);
+        
+        // Test_anxiety_teacher savepoint reached.
+        upgrade_block_savepoint(true, 2014260814, 'anxiety_teacher');
+    }
     return true;
 }

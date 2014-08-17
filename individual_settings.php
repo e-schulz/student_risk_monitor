@@ -56,6 +56,52 @@ $PAGE->set_url('/blocks/anxiety_teacher/individual_settings.php?userid='.$userid
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
+/*$DB->delete_records('block_anxiety_teacher_course');
+        
+   $all_courses = block_anxiety_teacher_get_courses($USER->id);
+
+    //Set the full and short names
+    foreach($all_courses as $single_course) {
+            $new_course = new object();
+            $new_course->courseid = $single_course->id;
+            $new_course->blockid = $block_anxiety_teacher_block->id;//????TO DO!
+            $new_course->preamble_template = get_string('preamble-template', 'block_anxiety_teacher');
+            $new_course->postamble_template = get_string('postamble-template', 'block_anxiety_teacher');            
+            $new_course->fullname = $single_course->fullname;
+            $new_course->shortname = $single_course->shortname;
+        if (!$DB->insert_record('block_anxiety_teacher_course', $new_course)) {
+        echo get_string('errorinsertcourse', 'block_anxiety_teacher');
+    }
+        
+    }*/
+                //doesn't exist - so create one
+               /* $exam = new object();
+                $exam->currentgradepercent = 49;
+                $exam->examid = 4;//????TO DO!
+                $exam->studentid = 6;
+                $exam->anxietylevel = 'med';     
+                $exam->dategenerated = time();
+                $exam->status = 'new';      
+                $DB->insert_record('block_anxiety_teacher_anx', $exam);
+                
+                                $exam = new object();
+                $exam->currentgradepercent = 49;
+                $exam->examid = 4;//????TO DO!
+                $exam->studentid = 7;
+                $exam->anxietylevel = 'high';     
+                $exam->dategenerated = time();
+                $exam->status = 'new';      
+                $DB->insert_record('block_anxiety_teacher_anx', $exam);
+                
+                                $exam = new object();
+                $exam->currentgradepercent = 49;
+                $exam->examid = 4;//????TO DO!
+                $exam->studentid = 8;
+                $exam->anxietylevel = 'low';     
+                $exam->dategenerated = time();
+                $exam->status = 'new';      
+                $DB->insert_record('block_anxiety_teacher_anx', $exam);*/
+                
 //Create the body
 $body = '';
 //Add or delete course
@@ -175,8 +221,10 @@ if ($fromform2 = $mform2->get_data()) {
 
 //from add/delete form
 if ($settingspage == 1) {
+    if ($fromform1 = $add_delete_form->get_data()) {
+  $body .= "jjddbhgg";
 
-
+    }
 }
 
 else if ($settingspage == 3) {

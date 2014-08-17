@@ -64,6 +64,7 @@ $string['edit_templates_text'] = "Click to edit the messages displayed before an
 $string['submitintervention'] = " Generate intervention ";
 $string['unread'] = "Unread";
 $string['read'] = "Marked as read";
+$string['new'] = "New";
 $string['intervention'] = "Intervention generated";
 $string['low'] = "Low";
 $string['med'] = "Med";

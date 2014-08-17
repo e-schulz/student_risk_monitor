@@ -89,7 +89,7 @@ class individual_settings_form_add_remove_courses extends moodleform {
         
         $registered_courses = new html_table_cell();
         $registered_courses->text = html_writer::tag('div', '<b>'.get_string('registered_courses','block_anxiety_teacher').'</b>')
-                                    .html_writer::tag('div', html_writer::select($options_delete, 'registered_courses', '', null, array('multiple' => 'multiple', 'size' => 7)));
+                                    .html_writer::tag('div', html_writer::select($options_delete, 'registered_courses', '', array('' => 'choosedots'), array('multiple' => 'multiple', 'size' => 7)));
         
         $centre_buttons = new html_table_cell();
         $centre_buttons->text = "<br>".html_writer::tag('p',html_writer::empty_tag('input', array('value' => $OUTPUT->larrow().''.get_string('add_button','block_anxiety_teacher'), 'type' => 'submit', 'id' => 'add_button')))
@@ -99,7 +99,7 @@ class individual_settings_form_add_remove_courses extends moodleform {
                                 
         $unregistered_courses = new html_table_cell();
         $unregistered_courses->text = html_writer::tag('div', '<b>'.get_string('unregistered_courses','block_anxiety_teacher').'</b>')
-                                    .html_writer::tag('div', html_writer::select($options_add, 'unregistered_courses', '', null, array('multiple' => 'multiple', 'size' => 7)));
+                                    .html_writer::tag('div', html_writer::select($options_add, 'unregistered_courses', '', array('' => 'choosedots'), array('multiple' => 'multiple', 'size' => 7)));
    
         $table->data[] = new html_table_row(array($registered_courses, $centre_buttons, $unregistered_courses));
         $mform->addElement('static', 'selectors', '', html_writer::table($table));
