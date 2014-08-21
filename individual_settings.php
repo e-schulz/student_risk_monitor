@@ -77,7 +77,7 @@ $PAGE->set_pagelayout('standard');
                 //doesn't exist - so create one
                /* $exam = new object();
                 $exam->currentgradepercent = 49;
-                $exam->examid = 4;//????TO DO!
+                $exam->examid = 4;//????TO DO!999999999999999999999999999999999999999999999999999
                 $exam->studentid = 6;
                 $exam->anxietylevel = 'med';     
                 $exam->dategenerated = time();
