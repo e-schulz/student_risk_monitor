@@ -19,19 +19,19 @@ $userid = required_param('userid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
-    print_error('no_user', 'block_anxiety_teacher', '', $userid);
+    print_error('no_user', 'block_risk_monitor', '', $userid);
 }
 
 //Error - the user trying to access this instance is the wrong one
 if (!($USER->id == $userid)) {
-    print_error('wrong_user', 'block_anxiety_teacher', '', $userid);
+    print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
 //CRON IS HERE FOR NOW - TO DO - GET RID OF IT
-block_anxiety_teacher_cron();
+block_risk_monitor_cron();
 
 //PAGE PARAMS
-$blockname = get_string('pluginname', 'block_anxiety_teacher');
-$header = get_string('overview', 'block_anxiety_teacher');
+$blockname = get_string('pluginname', 'block_risk_monitor');
+$header = get_string('overview', 'block_risk_monitor');
 
 //need block id! get block instance - for now we will do course :-)
 $context = context_user::instance($userid);
@@ -42,7 +42,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/anxiety_teacher/overview.php');
+$PAGE->set_url('/blocks/risk_monitor/overview.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -56,13 +56,13 @@ $tabs = array();
 
 $overviewtab = new html_table_cell();
 $overviewtab->text = html_writer::tag('static',
-    get_string('overview', 'block_anxiety_teacher'));
+    get_string('overview', 'block_risk_monitor'));
 $tabs[] = $overviewtab;
 
 $settingstab = new html_table_cell();
 $settingstab->text = html_writer::link(
-    new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)),
-    get_string('settings', 'block_anxiety_teacher')
+    new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id)),
+    get_string('settings', 'block_risk_monitor')
 );
 $tabs[] = $settingstab;
 
@@ -92,7 +92,7 @@ foreach($teachercourses as $teachercourse) {
     
     $coursetab = new html_table_cell();
     $coursetab->text = html_writer::link(
-        new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
+        new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->id)),
         $course->shortname
     );
     $coursetabs[] = $coursetab;
@@ -102,7 +102,7 @@ $table->data[] = new html_table_row($coursetabs);*/
 
 
 //NEXT - BODY
-$body = get_string('overview_body', 'block_anxiety_teacher');
+$body = get_string('overview_body', 'block_risk_monitor');
 
 //FINAL RENDERING
 echo $OUTPUT->header();
@@ -110,10 +110,9 @@ echo $OUTPUT->heading($blockname);
 
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //html table goes here.
-//echo block_anxiety_teacher_get_tabs_html($userid, false);
-$currenttoptab = 'overview';
+//echo block_risk_monitor_get_tabs_html($userid, false);
 $currentcoursetab = '';
-require('top_tabs.php');
+echo block_risk_monitor_get_top_tabs('overview');
 echo $body;
 require('course_tabs.php');
 echo html_writer::end_tag('div');

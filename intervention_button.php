@@ -14,7 +14,7 @@ class intervention_button extends moodleform {
         
         $mform = $this->_form;
     
-        $mform->addElement('submit', 'interventionbutton', get_string('submitintervention','block_anxiety_teacher'));
+        $mform->addElement('submit', 'interventionbutton', get_string('submitintervention','block_risk_monitor'));
         //Change above to a string!
 
         }

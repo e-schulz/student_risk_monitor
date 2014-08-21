@@ -45,13 +45,13 @@ require_once('locallib.php');
             $course = $DB->get_record('course', array('id' => $teachercourse->instanceid));
 
             $row[] = new tabobject('course'.$course->id,
-                            new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
+                            new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->id)),
                             $course->shortname);
         }*/
-    $courses = block_anxiety_teacher_get_registered_courses();
+    $courses = block_risk_monitor_get_registered_courses();
     foreach($courses as $course) {
         $row[] = new tabobject('course'.$course->id,
-                            new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
+                            new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->id)),
                             $course->fullname);        
     }
     

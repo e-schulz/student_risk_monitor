@@ -33,8 +33,8 @@ require_once(dirname(__FILE__).'/locallib.php');
 
 require_login();
 //PAGE PARAMS
-$blockname = get_string('pluginname', 'block_anxiety_teacher');
-$header = get_string('overview', 'block_anxiety_teacher');
+$blockname = get_string('pluginname', 'block_risk_monitor');
+$header = get_string('overview', 'block_risk_monitor');
 
 //need block id! get block instance - for now we will do user :-)
 $context = context_user::instance($USER->id);
@@ -45,7 +45,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/anxiety_teacher/test_view_data.php');
+$PAGE->set_url('/blocks/risk_monitor/test_view_data.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -54,7 +54,7 @@ $body = '';
 //Submissions
 $body .= "<div><b>Blocks</b><br><br>";
 
-if($submission_instances = $DB->get_records('block_anxiety_teacher_block')) {
+if($submission_instances = $DB->get_records('block_risk_monitor_block')) {
             
             $table = new html_table();
             $headers = array();
@@ -102,7 +102,7 @@ if($submission_instances = $DB->get_records('block_anxiety_teacher_block')) {
 //Demographics
 $body .= "<div><b>Courses (for this block)</b><br><br>";
 
-if($demographic_instances = $DB->get_records('block_anxiety_teacher_course')) {
+if($demographic_instances = $DB->get_records('block_risk_monitor_course')) {
             
             $table = new html_table();
             $headers = array();
@@ -118,14 +118,6 @@ if($demographic_instances = $DB->get_records('block_anxiety_teacher_course')) {
             $field3 = new html_table_cell();
             $field3->text = '<b>blockid</b>';
             $headers[] = $field3;
-                    
-            $field4 = new html_table_cell();
-            $field4->text = '<b>preamble_template</b>';
-            $headers[] = $field4;
-
-            $field5 = new html_table_cell();
-            $field5->text = '<b>postamble_template</b>';
-            $headers[] = $field5;
             
             $field6 = new html_table_cell();
             $field6->text = '<b>fullname</b>';
@@ -155,14 +147,6 @@ if($demographic_instances = $DB->get_records('block_anxiety_teacher_course')) {
                 $field3value->text = $demographic_instance->blockid;
                 $instancerow[] = $field3value;
                 
-                $field4value = new html_table_cell();
-                $field4value->text = $demographic_instance->preamble_template;
-                $instancerow[] = $field4value;
-                
-                $field5value = new html_table_cell();
-                $field5value->text = $demographic_instance->postamble_template;
-                $instancerow[] = $field5value;
-                
                 $field6value = new html_table_cell();
                 $field6value->text = $demographic_instance->fullname;
                 $instancerow[] = $field6value;
@@ -179,9 +163,9 @@ if($demographic_instances = $DB->get_records('block_anxiety_teacher_course')) {
 }
 
 //Pretest
-$body .= "<div><b>Exams (for this block)</b><br><br>";
+$body .= "<div><b>Rules (for this block)</b><br><br>";
 
-if($pretest_instances = $DB->get_records('block_anxiety_teacher_exam')) {
+if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
             
             $table = new html_table();
             $headers = array();
@@ -191,20 +175,28 @@ if($pretest_instances = $DB->get_records('block_anxiety_teacher_exam')) {
             $headers[] = $field1;
                     
             $field2 = new html_table_cell();
-            $field2->text = '<b>examdate</b>';
+            $field2->text = '<b>name</b>';
             $headers[] = $field2;
             
             $field3 = new html_table_cell();
-            $field3->text = '<b>weighting</b>';
+            $field3->text = '<b>description</b>';
             $headers[] = $field3;
 
             $field4 = new html_table_cell();
-            $field4->text = '<b>courseid</b>';
+            $field4->text = '<b>weighting</b>';
             $headers[] = $field4;
                     
             $field5 = new html_table_cell();
-            $field5->text = '<b>eventid</b>';
+            $field5->text = '<b>enabled</b>';
             $headers[] = $field5;
+                    
+            $field6 = new html_table_cell();
+            $field6->text = '<b>categoryid</b>';
+            $headers[] = $field6;
+                                
+            $field7 = new html_table_cell();
+            $field7->text = '<b>timestamp</b>';
+            $headers[] = $field7;
             
             $table->data[] = new html_table_row($headers);
             
@@ -219,20 +211,28 @@ if($pretest_instances = $DB->get_records('block_anxiety_teacher_exam')) {
                 $instancerow[] = $field1value;
                 
                 $field2value = new html_table_cell();
-                $field2value->text = $pretest_instance->examdate;
+                $field2value->text = $pretest_instance->name;
                 $instancerow[] = $field2value;
                 
                 $field3value = new html_table_cell();
-                $field3value->text = $pretest_instance->weighting;
+                $field3value->text = $pretest_instance->description;
                 $instancerow[] = $field3value;
 
                 $field4value = new html_table_cell();
-                $field4value->text = $pretest_instance->courseid;
+                $field4value->text = $pretest_instance->weighting;
                 $instancerow[] = $field4value;
                 
                 $field5value = new html_table_cell();
-                $field5value->text = $pretest_instance->eventid;
+                $field5value->text = $pretest_instance->enabled;
                 $instancerow[] = $field5value;
+
+                $field6value = new html_table_cell();
+                $field6value->text = $pretest_instance->categoryid;
+                $instancerow[] = $field6value;
+                
+                $field7value = new html_table_cell();
+                $field7value->text = $pretest_instance->timestamp;
+                $instancerow[] = $field7value;
                 
                 
                 $table->data[] = new html_table_row($instancerow);               
@@ -244,9 +244,9 @@ if($pretest_instances = $DB->get_records('block_anxiety_teacher_exam')) {
 }
 
 //Hypothetical
-$body .= "<div><b>Anx instances (for this block)</b><br><br>";
+$body .= "<div><b>Categories (for this block)</b><br><br>";
 
-if($hypothetical_instances = $DB->get_records('block_anxiety_teacher_anx')) {
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_category')) {
             
             $table = new html_table();
             $headers = array();
@@ -256,28 +256,20 @@ if($hypothetical_instances = $DB->get_records('block_anxiety_teacher_anx')) {
             $headers[] = $field1;
                     
             $field2 = new html_table_cell();
-            $field2->text = '<b>currentgradepercent</b>';
+            $field2->text = '<b>name</b>';
             $headers[] = $field2;
             
             $field3 = new html_table_cell();
-            $field3->text = '<b>examid</b>';
+            $field3->text = '<b>description</b>';
             $headers[] = $field3;
             
             $field4 = new html_table_cell();
-            $field4->text = '<b>studentid</b>';
+            $field4->text = '<b>courseid</b>';
             $headers[] = $field4;
                     
             $field5 = new html_table_cell();
-            $field5->text = '<b>anxietylevel</b>';
+            $field5->text = '<b>timestamp</b>';
             $headers[] = $field5;
-            
-            $field6 = new html_table_cell();
-            $field6->text = '<b>dategenerated</b>';
-            $headers[] = $field6;
-                    
-            $field7 = new html_table_cell();
-            $field7->text = '<b>status</b>';
-            $headers[] = $field7;
  
             $table->data[] = new html_table_row($headers);
             
@@ -292,29 +284,21 @@ if($hypothetical_instances = $DB->get_records('block_anxiety_teacher_anx')) {
                 $instancerow[] = $field1value;
                 
                 $field2value = new html_table_cell();
-                $field2value->text = $hypothetical_instance->currentgradepercent;
+                $field2value->text = $hypothetical_instance->name;
                 $instancerow[] = $field2value;
                 
                 $field3value = new html_table_cell();
-                $field3value->text = $hypothetical_instance->examid;
+                $field3value->text = $hypothetical_instance->description;
                 $instancerow[] = $field3value;
 
                 $field4value = new html_table_cell();
-                $field4value->text = $hypothetical_instance->studentid;
+                $field4value->text = $hypothetical_instance->courseid;
                 $instancerow[] = $field4value;
                 
                 $field5value = new html_table_cell();
-                $field5value->text = $hypothetical_instance->anxietylevel;
+                $field5value->text = $hypothetical_instance->timestamp;
                 $instancerow[] = $field5value;
-                
-                $field6value = new html_table_cell();
-                $field6value->text = $hypothetical_instance->dategenerated;
-                $instancerow[] = $field6value;
-
-                $field7value = new html_table_cell();
-                $field7value->text = $hypothetical_instance->status;
-                $instancerow[] = $field7value;
-                
+               
                 $table->data[] = new html_table_row($instancerow);               
 
             }
@@ -326,7 +310,7 @@ if($hypothetical_instances = $DB->get_records('block_anxiety_teacher_anx')) {
 //Posttest
 /*$body .= "<div><b>Log (for this block)</b><br><br>";
 
-if($posttest_instances = $DB->get_records('block_anxiety_teacher_log')) {
+if($posttest_instances = $DB->get_records('block_risk_monitor_log')) {
             
             $table = new html_table();
             $headers = array();

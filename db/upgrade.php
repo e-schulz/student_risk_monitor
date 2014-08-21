@@ -38,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param int $oldversion
  * @return bool
  */
-function xmldb_block_anxiety_teacher_upgrade($oldversion) {
+function xmldb_block_risk_monitor_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
@@ -68,8 +68,8 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
     // PHP generation posibilities.
     if ($oldversion < 2014180603) {
 
-        // Define field id to be added to block_anxiety_teacher_trait.
-        $table = new xmldb_table('block_anxiety_teacher_trait');
+        // Define field id to be added to block_risk_monitor_trait.
+        $table = new xmldb_table('block_risk_monitor_trait');
         $field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
 
         // Conditionally launch add field id.
@@ -77,14 +77,14 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014180603, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014180603, 'risk_monitor');
     }
 
         if ($oldversion < 2014130800) {
 
-        // Define field id to be dropped from block_anxiety_teacher_config.
-        $table = new xmldb_table('block_anxiety_teacher_config');
+        // Define field id to be dropped from block_risk_monitor_config.
+        $table = new xmldb_table('block_risk_monitor_config');
         $field = new xmldb_field('timebeforeexam');
 
         // Conditionally launch drop field id.
@@ -92,8 +92,8 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Define field id to be dropped from block_anxiety_teacher_anx.
-        $table = new xmldb_table('block_anxiety_teacher_anx');
+        // Define field id to be dropped from block_risk_monitor_anx.
+        $table = new xmldb_table('block_risk_monitor_anx');
         $field = new xmldb_field('activitylevel');
 
         // Conditionally launch drop field id.
@@ -101,67 +101,67 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
         
-        // Define table block_anxiety_teacher_exam to be dropped.
-        $table = new xmldb_table('block_anxiety_teacher_trait');
+        // Define table block_risk_monitor_exam to be dropped.
+        $table = new xmldb_table('block_risk_monitor_trait');
 
-        // Conditionally launch drop table for block_anxiety_teacher_exam.
+        // Conditionally launch drop table for block_risk_monitor_exam.
         if ($dbman->table_exists($table)) {
             $dbman->drop_table($table);
         }
 
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014130800, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014130800, 'risk_monitor');
     }
 
     if ($oldversion < 2014260802) {
 
-        // Rename field dateadded on table block_anxiety_teacher_config to NEWNAMEGOESHERE.
-        $table = new xmldb_table('block_anxiety_teacher_config');
+        // Rename field dateadded on table block_risk_monitor_config to NEWNAMEGOESHERE.
+        $table = new xmldb_table('block_risk_monitor_config');
         $field = new xmldb_field('dateupdated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'teacherid');
 
         // Launch rename field dateadded.
         $dbman->rename_field($table, $field, 'dateadded');
         
-        // Define table block_anxiety_teacher_block to be renamed to NEWNAMEGOESHERE.
-        $table = new xmldb_table('block_anxiety_teacher_block');
+        // Define table block_risk_monitor_block to be renamed to NEWNAMEGOESHERE.
+        $table = new xmldb_table('block_risk_monitor_block');
 
-        // Launch rename table for block_anxiety_teacher_block.
-        $dbman->rename_table($table, 'block_anxiety_teacher_config');
+        // Launch rename table for block_risk_monitor_block.
+        $dbman->rename_table($table, 'block_risk_monitor_config');
 
-        // Define table block_anxiety_teacher_course to be created.
-        $table = new xmldb_table('block_anxiety_teacher_course');
+        // Define table block_risk_monitor_course to be created.
+        $table = new xmldb_table('block_risk_monitor_course');
 
-        // Adding fields to table block_anxiety_teacher_course.
+        // Adding fields to table block_risk_monitor_course.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('blockid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('preamble_template', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
         $table->add_field('postamble_template', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
 
-        // Adding keys to table block_anxiety_teacher_course.
+        // Adding keys to table block_risk_monitor_course.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'course', array('id'));
-        $table->add_key('blockid', XMLDB_KEY_FOREIGN, array('blockid'), 'block_anxiety_teacher_block', array('id'));
+        $table->add_key('blockid', XMLDB_KEY_FOREIGN, array('blockid'), 'block_risk_monitor_block', array('id'));
 
-        // Conditionally launch create table for block_anxiety_teacher_course.
+        // Conditionally launch create table for block_risk_monitor_course.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260802, 'test_anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260802, 'risk_monitor');
     }
 
     if ($oldversion < 2014130804) {
 
-         // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014130804, 'anxiety_teacher');
+         // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014130804, 'risk_monitor');
     }
     
         if ($oldversion < 2014260807) {
 
-        // Define field fullname to be added to block_anxiety_teacher_course.
-        $table = new xmldb_table('block_anxiety_teacher_course');
+        // Define field fullname to be added to block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
         $field = new xmldb_field('fullname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'postamble_template');
 
         // Conditionally launch add field fullname.
@@ -169,8 +169,8 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field fullname to be added to block_anxiety_teacher_course.
-        $table = new xmldb_table('block_anxiety_teacher_course');
+        // Define field fullname to be added to block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
         $field = new xmldb_field('shortname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'fullname');
 
         // Conditionally launch add field fullname.
@@ -178,14 +178,14 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
         
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260807, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260807, 'risk_monitor');
     }
     
         if ($oldversion < 2014260809) {
 
-        // Define index courseid (not unique) to be dropped form block_anxiety_teacher_exam.
-        $table = new xmldb_table('block_anxiety_teacher_exam');
+        // Define index courseid (not unique) to be dropped form block_risk_monitor_exam.
+        $table = new xmldb_table('block_risk_monitor_exam');
         $index = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
 
         // Conditionally launch drop index courseid.
@@ -193,21 +193,21 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->drop_index($table, $index);
         }
 
-        // Define key courseid (foreign) to be added to block_anxiety_teacher_exam.
-        $table = new xmldb_table('block_anxiety_teacher_exam');
-        $key = new xmldb_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'block_anxiety_teacher_course', array('id'));
+        // Define key courseid (foreign) to be added to block_risk_monitor_exam.
+        $table = new xmldb_table('block_risk_monitor_exam');
+        $key = new xmldb_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'block_risk_monitor_course', array('id'));
 
         // Launch add key courseid.
         $dbman->add_key($table, $key);
         
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260809, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260809, 'risk_monitor');
     }
 
         if ($oldversion < 2014260810) {
 
-        // Define field examname to be dropped from block_anxiety_teacher_exam.
-        $table = new xmldb_table('block_anxiety_teacher_exam');
+        // Define field examname to be dropped from block_risk_monitor_exam.
+        $table = new xmldb_table('block_risk_monitor_exam');
         $field = new xmldb_field('examname');
 
         // Conditionally launch drop field examname.
@@ -215,14 +215,14 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260810, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260810, 'risk_monitor');
     }
 
          if ($oldversion < 2014260813) {
    
-       // Define field id to be dropped from block_anxiety_teacher_anx.
-        $table = new xmldb_table('block_anxiety_teacher_anx');
+       // Define field id to be dropped from block_risk_monitor_anx.
+        $table = new xmldb_table('block_risk_monitor_anx');
         $field = new xmldb_field('activitylevel');
 
         // Conditionally launch drop field id.
@@ -230,37 +230,127 @@ function xmldb_block_anxiety_teacher_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
         
-        // Define table block_anxiety_teacher_exam to be dropped.
-        $table = new xmldb_table('block_anxiety_teacher_trait');
+        // Define table block_risk_monitor_exam to be dropped.
+        $table = new xmldb_table('block_risk_monitor_trait');
 
-        // Conditionally launch drop table for block_anxiety_teacher_exam.
+        // Conditionally launch drop table for block_risk_monitor_exam.
         if ($dbman->table_exists($table)) {
             $dbman->drop_table($table);
         }
 
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260813, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260813, 'risk_monitor');
         
          }
          
       if ($oldversion < 2014260814) {
 
-        // Define key examid (foreign-unique) to be dropped form block_anxiety_teacher_anx.
-        $table = new xmldb_table('block_anxiety_teacher_anx');
+        // Define key examid (foreign-unique) to be dropped form block_risk_monitor_anx.
+        $table = new xmldb_table('block_risk_monitor_anx');
         $key = new xmldb_key('examid', XMLDB_KEY_FOREIGN_UNIQUE, array('examid'), 'exam', array('id'));
 
         // Launch drop key examid.
         $dbman->drop_key($table, $key);
 
-                // Define key examid (foreign) to be added to block_anxiety_teacher_anx.
-        $table = new xmldb_table('block_anxiety_teacher_anx');
+                // Define key examid (foreign) to be added to block_risk_monitor_anx.
+        $table = new xmldb_table('block_risk_monitor_anx');
         $key = new xmldb_key('examid', XMLDB_KEY_FOREIGN, array('examid'), 'exam', array('id'));
 
         // Launch add key examid.
         $dbman->add_key($table, $key);
         
-        // Test_anxiety_teacher savepoint reached.
-        upgrade_block_savepoint(true, 2014260814, 'anxiety_teacher');
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260814, 'risk_monitor');
     }
+    
+        if ($oldversion < 2014260816) {
+
+        // Define table block_risk_monitor_anx to be dropped.
+        $table = new xmldb_table('block_risk_monitor_anx');
+
+        // Conditionally launch drop table for block_risk_monitor_anx.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+        
+        // Define table block_risk_monitor_anx to be dropped.
+        $table = new xmldb_table('block_risk_monitor_exam');
+
+        // Conditionally launch drop table for block_risk_monitor_anx.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+        
+        // Define table block_risk_monitor_anx to be dropped.
+        $table = new xmldb_table('block_risk_monitor_log');
+
+        // Conditionally launch drop table for block_risk_monitor_anx.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+        
+        // Define field postamble_template to be dropped from block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
+        $field = new xmldb_field('preamble_template');
+
+        // Conditionally launch drop field postamble_template.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+        
+        // Define field postamble_template to be dropped from block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
+        $field = new xmldb_field('postamble_template');
+
+        // Conditionally launch drop field postamble_template.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }        
+        // Define table block_risk_monitor_rule to be created.
+        $table = new xmldb_table('block_risk_monitor_rule');
+
+        // Adding fields to table block_risk_monitor_rule.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('weighting', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('enabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_rule.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('categoryid', XMLDB_KEY_FOREIGN, array('categoryid'), 'block_risk_monitor_category', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_rule.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        
+                // Define table block_risk_monitor_category to be created.
+        $table = new xmldb_table('block_risk_monitor_category');
+
+        // Adding fields to table block_risk_monitor_category.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_category.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'course', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_category.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        
+        
+        
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260816, 'risk_monitor');
+    }
+
     return true;
 }

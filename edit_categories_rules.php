@@ -22,6 +22,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 //$message = optional_param('message', 0, PARAM_INT);
+$courseid = optional_param('courseid', -1, PARAM_INT);              
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -45,37 +46,43 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/individual_settings.php?userid='.$userid);
+$PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //Create the body
 $body = '';
 
-    //Link to edit courses
-    $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('edit_courses','block_risk_monitor')).'<br><br>';
-            
-    //Description for add or delete courses
-    $body .= html_writer::tag('div', get_string('edit_courses_text','block_risk_monitor').'<br><br>');
-
-    //Link to edit categories and rules
-    $body .= html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id)), get_string('edit_categories_rules','block_risk_monitor')).'<br><br>';
-            
-    //Description for add or delete
-    $body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');
-
+//Get all the categories and courses.
+if($courseid !== -1) {
+    $body .= html_writer::link (new moodle_url('new_category.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_category','block_risk_monitor')).'<br><br>';
+    $categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
+}       
+else {
+    $body .= get_string('no_courses', 'block_risk_monitor');
+    $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
+    
+}
+        
 ///RENDERING THE HTML
-
+if ($courseid !== -1) {
+    if ($fromform = $categories_rules_form->get_data()) {
+        //Get the data, delete the appropriate stuff.
+    }
+}
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
+
 
 //echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings');
-
+echo $OUTPUT->heading("Categories and rules");
 echo $body;
-
+if ($courseid !== -1) {
+    $categories_rules_form->display();
+}
 echo $OUTPUT->footer();

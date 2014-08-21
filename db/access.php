@@ -17,14 +17,27 @@
 /**
  * This file is used to define the capabilities
  *
- * @package    block_anxiety_teacher
+ * @package    block_risk_monitor
  * @author  Emily Schulz
  * @license    
  */
 
 $capabilities = array(
 	
-	'block/anxiety_teacher:addinstance' => array(
+	'block/risk_monitor:addinstance' => array(
+		'riskbitmask' => RISK_SPAM | RISK_XSS,
+		
+		'captype' => 'write',
+		'contextlevel' => CONTEXT_BLOCK,
+		'archetypes' => array(
+			'editingteacher' => CAP_ALLOW,
+			'manager' => CAP_ALLOW
+		),
+		
+		'clonepermissionsfrom' => 'moodle/site:manageblocks'
+	),
+    
+    	'block/risk_monitor:myaddinstance' => array(
 		'riskbitmask' => RISK_SPAM | RISK_XSS,
 		
 		'captype' => 'write',
@@ -37,7 +50,7 @@ $capabilities = array(
 		'clonepermissionsfrom' => 'moodle/site:manageblocks'
 	),
 	
-	'block/anxiety_teacher:view' => array(
+	'block/risk_monitor:view' => array(
 		
 		'captype' => 'read',
 		'contextlevel' => CONTEXT_BLOCK,

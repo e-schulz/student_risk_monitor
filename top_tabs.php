@@ -23,12 +23,12 @@
  */
     $row = array();
     $row[] = new tabobject('overview',
-                           new moodle_url('/blocks/anxiety_teacher/overview.php', array('userid' => $USER->id)),
-                            get_string('overview', 'block_anxiety_teacher'));
+                           new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id)),
+                            get_string('overview', 'block_risk_monitor'));
 
     $row[] = new tabobject('settings',
-                           new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)),
-                           get_string('settings', 'block_anxiety_teacher'));
+                           new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id)),
+                           get_string('settings', 'block_risk_monitor'));
 
     echo '<div class="topdisplay">';
     echo $OUTPUT->tabtree($row, $currenttoptab);

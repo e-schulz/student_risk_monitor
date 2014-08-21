@@ -17,18 +17,18 @@ $anxid = optional_param('anxid', -1, PARAM_INT);
 //maybe a check to ensure this teacher is actually in this course?
 
 //DB STUFF - Need all anxiety instances with this course, the exam upcoming...
-$course = $DB->get_record('block_anxiety_teacher_course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('block_risk_monitor_course', array('id' => $courseid), '*', MUST_EXIST);
 
 //Teacher must be logged in
 require_login();
 
-//$examcreated = block_anxiety_teacher_create_exam($courseid, $USER->id);
+//$examcreated = block_risk_monitor_create_exam($courseid, $USER->id);
 //if anx id, generate intervention
 if ($anxid !== -1) {
-    if($anx_instance = $DB->get_record('block_anxiety_teacher_anx', array('id' => $anxid))) {
+    if($anx_instance = $DB->get_record('block_risk_monitor_anx', array('id' => $anxid))) {
         
         //first: update the status.
-        $DB->update_record('block_anxiety_teacher_anx', array('id' => $anxid, 'status' => 'intervention'));
+        $DB->update_record('block_risk_monitor_anx', array('id' => $anxid, 'status' => 'intervention'));
         
         //second: do the whole group thing.
         //1. check if the activity has already been created.
@@ -38,8 +38,8 @@ if ($anxid !== -1) {
 
 
 //PAGE PARAMS
-$blockname = get_string('pluginname', 'block_anxiety_teacher');
-$header = get_string('overview', 'block_anxiety_teacher');
+$blockname = get_string('pluginname', 'block_risk_monitor');
+$header = get_string('overview', 'block_risk_monitor');
 
 //need block id! get block instance - for now we will do user :-)
 $context = context_user::instance($USER->id);
@@ -50,20 +50,20 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/anxiety_teacher/course_page.php?courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/course_page.php?courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 $body = '';
 
 //get the exam(s)
-if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => $courseid))) {
+if ($exams = $DB->get_records('block_risk_monitor_exam', array('courseid' => $courseid))) {
     
     foreach($exams as $exam) {
    
         $event = $DB->get_record('event', array('id' => $exam->eventid));
         $body .= "<div><b>Exam: <i>".$event->name."</i> on ".date("d F Y", $exam->examdate)."</b><br><br>";
         
-        if($anxious_students = $DB->get_records('block_anxiety_teacher_anx', array('examid' => $exam->id))) {
+        if($anxious_students = $DB->get_records('block_risk_monitor_anx', array('examid' => $exam->id))) {
             
             $studentstable = new html_table();
             $headers = array();
@@ -111,21 +111,21 @@ if ($exams = $DB->get_records('block_anxiety_teacher_exam', array('courseid' => 
                 $studentrow[] = $studentlastname;
                 
                 $anxiety = new html_table_cell();
-                $anxiety->text = get_string($anxious_student->anxietylevel, 'block_anxiety_teacher');
+                $anxiety->text = get_string($anxious_student->anxietylevel, 'block_risk_monitor');
                 $studentrow[] = $anxiety;
 
                 //For status we want to create a statement summing: action by teacher, when the action was done, action by student, when the action was done.
                 $status = new html_table_cell();
-                $status->text = get_string($anxious_student->status, 'block_anxiety_teacher');
+                $status->text = get_string($anxious_student->status, 'block_risk_monitor');
                 $studentrow[] = $status;
                 
                 $action = new html_table_cell();
                 if($anxious_student->status == 'intervention') {
-                    $action->text = '<button disabled="true">'.get_string('submitintervention','block_anxiety_teacher').'</button>';
+                    $action->text = '<button disabled="true">'.get_string('submitintervention','block_risk_monitor').'</button>';
                     $intervention_generated = true;
                 }
                 else {
-                    $action->text = $OUTPUT->single_button(new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $courseid, 'anxid' => $anxious_student->id)), get_string('submitintervention','block_anxiety_teacher'));
+                    $action->text = $OUTPUT->single_button(new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $courseid, 'anxid' => $anxious_student->id)), get_string('submitintervention','block_risk_monitor'));
                 }
                 $studentrow[] = $action;
                 
@@ -166,10 +166,9 @@ echo $OUTPUT->heading($blockname);
 
 echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //html table goes here
-//echo block_anxiety_teacher_get_tabs_html($USER->id, false, $courseid);
-$currenttoptab = 'none';
-require('top_tabs.php');
-echo get_string('overview_body', 'block_anxiety_teacher');
+//echo block_risk_monitor_get_tabs_html($USER->id, false, $courseid);
+echo block_risk_monitor_get_top_tabs('none');
+echo get_string('overview_body', 'block_risk_monitor');
 $currentcoursetab = 'course'.$courseid;
 require('course_tabs.php');
 echo $body;

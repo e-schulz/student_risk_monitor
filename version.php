@@ -18,13 +18,13 @@
  * Version details
  *
  * @package    block
- * @subpackage anxiety_teacher
+ * @subpackage risk_monitor
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014260814;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2014260817;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013111801.03;        // Requires this Moodle version
-$plugin->component = 'block_anxiety_teacher';  // Full name of the plugin (used for diagnostics)
+$plugin->component = 'block_risk_monitor';  // Full name of the plugin (used for diagnostics)
 
 ?>

@@ -1,10 +1,10 @@
 <?php
 
-class block_anxiety_teacher extends block_base {
+class block_risk_monitor extends block_base {
 
         
 	public function init() {
-		$this->title = get_string('title','block_anxiety_teacher');
+		$this->title = get_string('title','block_risk_monitor');
 	}
         
         //Where this block is allowed to appear? (Only on the my home page!)
@@ -19,22 +19,22 @@ class block_anxiety_teacher extends block_base {
         
         //When the block is created, create the block instance
         public function instance_create() {
-            global $DB;
+            global $DB, $USER;
             
             $data = new object();
             $data->teacherid = $USER->id;
             $data->dateupdated = time();
-            $DB->insert_record('block_anxiety_teacher_block', $data);
+            $DB->insert_record('block_risk_monitor_block', $data);
         }        
         
         //When the block is deleted, delete all courses associated with this block, and the block instance itself
         public function instance_delete() {
-            global $DB;
+            global $DB, $USER;
             
             //get the block instace
-            $block_instance = $DB->get_record('block_anxiety_teacher_block', array('teacherid' => $USER->id)); //todo - see if we can store the block id once created?
-            $DB->delete_records('block_anxiety_teacher_course', array('blockid' => $block_instance->id));
-            $DB->delete_records('block_anxiety_teacher_block', array('id' => $block_instance->id));
+            $block_instance = $DB->get_record('block_risk_monitor_block', array('teacherid' => $USER->id)); //todo - see if we can store the block id once created?
+            $DB->delete_records('block_risk_monitor_course', array('blockid' => $block_instance->id));
+            $DB->delete_records('block_risk_monitor_block', array('id' => $block_instance->id));
         }
         
 	function get_content() {
@@ -53,18 +53,18 @@ class block_anxiety_teacher extends block_base {
                 $this->content->footer = '';
                         
 		//Create the Overview URL 
-                $overview_str = get_string('overview','block_anxiety_teacher');
+                $overview_str = get_string('overview','block_risk_monitor');
                 $overview = html_writer::link(
-                    new moodle_url('/blocks/anxiety_teacher/overview.php', array('userid' => $USER->id)),
+                    new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id)),
                     $overview_str
                 );
                 $this->content->text .= $overview;
                 $this->content->text .= "<br>";
 
                 //Settings URL
-                $settings_str = get_string('settings','block_anxiety_teacher');
+                $settings_str = get_string('settings','block_risk_monitor');
                 $settings = html_writer::link(
-                    new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)),
+                    new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id)),
                     $settings_str
                 );
                 

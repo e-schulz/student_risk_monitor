@@ -10,7 +10,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once("../../config.php");
 require_once("../../calendar/lib.php");
 
-$block_anxiety_teacher_block = $DB->get_record('block_anxiety_teacher_block', array('teacherid' => $USER->id));
+$block_risk_monitor_block = $DB->get_record('block_risk_monitor_block', array('teacherid' => $USER->id));
 
 /**
  * Does something really useful with the passed things
@@ -20,23 +20,23 @@ $block_anxiety_teacher_block = $DB->get_record('block_anxiety_teacher_block', ar
  */
 
 //This is to be implemented in cron later on
-function block_anxiety_teacher_cron() {
+function block_risk_monitor_cron() {
     
     //Check the registered courses
-    $registered_courses = block_anxiety_teacher_get_registered_courses();
+    $registered_courses = block_risk_monitor_get_registered_courses();
     foreach($registered_courses as $registered_course) {
-        block_anxiety_teacher_create_exam($registered_course->id);
+        block_risk_monitor_create_exam($registered_course->id);
     }
     
 }
 
 ///Create an exam instance for the course if there is an exam within a week
 //returns true if new exam instance created, else false
-function block_anxiety_teacher_create_exam($courseid) {
+function block_risk_monitor_create_exam($courseid) {
     
     global $DB;
     
-    $block_course = $DB->get_record('block_anxiety_teacher_course', array('id' => $courseid), '*', MUST_EXIST);
+    $block_course = $DB->get_record('block_risk_monitor_course', array('id' => $courseid), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $block_course->courseid), '*', MUST_EXIST);
     
     $enddate = time() + (7 * 24 * 60 * 60);
@@ -55,7 +55,7 @@ function block_anxiety_teacher_create_exam($courseid) {
             
             
             //found an exam! check it doesn't already exist.
-            if (!$existing = $DB->get_record('block_anxiety_teacher_exam', array('eventid' => $event->id))) {
+            if (!$existing = $DB->get_record('block_risk_monitor_exam', array('eventid' => $event->id))) {
                 
                 //doesn't exist - so create one
                 $exam = new object();
@@ -65,8 +65,8 @@ function block_anxiety_teacher_create_exam($courseid) {
                 $exam->eventid = $event->id;
 
                 //add to DB
-                if (!$DB->insert_record('block_anxiety_teacher_exam', $exam)) {
-                    echo get_string('errorinsertexam', 'block_anxiety_teacher');
+                if (!$DB->insert_record('block_risk_monitor_exam', $exam)) {
+                    echo get_string('errorinsertexam', 'block_risk_monitor');
                 }  
                 return true;
             }
@@ -76,7 +76,7 @@ function block_anxiety_teacher_create_exam($courseid) {
 }
 
 //Get all the courses a teacher is teacher of
-function block_anxiety_teacher_get_courses($teacherid) {
+function block_risk_monitor_get_courses($teacherid) {
     
         global $DB;
         $roleassigns = $DB->get_records('role_assignments', array('userid' => $teacherid, 'roleid' => 3), 'contextid');
@@ -105,10 +105,10 @@ function block_anxiety_teacher_get_courses($teacherid) {
 }
 
 //Get all the courses registered for this block
-function block_anxiety_teacher_get_registered_courses() {
+function block_risk_monitor_get_registered_courses() {
     
-        global $DB, $block_anxiety_teacher_block;
-        $registered_courses = $DB->get_records('block_anxiety_teacher_course', array('blockid' => $block_anxiety_teacher_block->id));
+        global $DB, $block_risk_monitor_block;
+        $registered_courses = $DB->get_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
         return $registered_courses;
 }
 
@@ -120,7 +120,7 @@ function block_anxiety_teacher_get_registered_courses() {
  * @param int $courseid - id of the course tab we are in 
  * @return object
  */
-function block_anxiety_teacher_get_tabs_html($userid, $settings, $courseid = null) {
+function block_risk_monitor_get_tabs_html($userid, $settings, $courseid = null) {
  
     global $USER, $DB;
     
@@ -135,20 +135,20 @@ function block_anxiety_teacher_get_tabs_html($userid, $settings, $courseid = nul
 
     if ($settings) {
         $overviewtab->text = html_writer::link(
-            new moodle_url('/blocks/anxiety_teacher/overview.php', array('userid' => $USER->id)),
-            get_string('overview', 'block_anxiety_teacher')
+            new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id)),
+            get_string('overview', 'block_risk_monitor')
         );        
 
         $settingstab->text = html_writer::tag('static',
-            get_string('settings', 'block_anxiety_teacher'));
+            get_string('settings', 'block_risk_monitor'));
     }
     else {
         $overviewtab->text = html_writer::tag('static',
-            get_string('overview', 'block_anxiety_teacher'));
+            get_string('overview', 'block_risk_monitor'));
 
         $settingstab->text = html_writer::link(
-            new moodle_url('/blocks/anxiety_teacher/individual_settings.php', array('userid' => $USER->id)),
-            get_string('settings', 'block_anxiety_teacher')
+            new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id)),
+            get_string('settings', 'block_risk_monitor')
         );        
     }
     
@@ -185,7 +185,7 @@ function block_anxiety_teacher_get_tabs_html($userid, $settings, $courseid = nul
             
             if ($courseid === null || $courseid != $course->id) {
                 $coursetab->text = html_writer::link(
-                    new moodle_url('/blocks/anxiety_teacher/course_page.php', array('courseid' => $course->id)),
+                    new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->id)),
                     $course->shortname
                 );
             }
@@ -208,3 +208,19 @@ function populate_with_test_data($examid) {
     //Create the anx data using random for grade percent, anxiety level can be the same
     
 }
+
+function block_risk_monitor_get_top_tabs($currenttoptab) {
+    global $OUTPUT, $USER;
+    
+    $row = array();
+    $row[] = new tabobject('overview',
+                           new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id)),
+                            get_string('overview', 'block_risk_monitor'));
+
+    $row[] = new tabobject('settings',
+                           new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id)),
+                           get_string('settings', 'block_risk_monitor'));
+
+    return '<div class="topdisplay">'.$OUTPUT->tabtree($row, $currenttoptab).'</div>';
+}
+
