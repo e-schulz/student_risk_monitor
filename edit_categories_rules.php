@@ -53,23 +53,49 @@ $PAGE->set_pagelayout('standard');
 //Create the body
 $body = '';
 
-//Get all the categories and courses.
-if($courseid !== -1) {
-    $body .= html_writer::link (new moodle_url('new_category.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_category','block_risk_monitor')).'<br><br>';
-    $categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
-}       
-else {
-    $body .= get_string('no_courses', 'block_risk_monitor');
-    $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
+//Link from settings page, if any courses display first available, else signal no courses
+if($courseid == 0) {
     
+    //Check courses
+    if(!$registered_courses = block_risk_monitor_get_registered_courses()) {            //no courses
+        $courseid = -1;
+    }
+    else {                                                                              //first course returned
+        $courseid = reset($registered_courses)->courseid;
+    }
+    
+    
+}
+//Get all the categories and courses.
+$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
+       
+if($courseid == -1) {
+    $body .= get_string('no_courses', 'block_risk_monitor')."<br>";
+    $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
 }
         
 ///RENDERING THE HTML
-if ($courseid !== -1) {
-    if ($fromform = $categories_rules_form->get_data()) {
-        //Get the data, delete the appropriate stuff.
-    }
+if ($fromform = $categories_rules_form->get_data()) {
+        
+        //Get the data, delete everything checked. If category deleted, need to go through and delete all rules.
+    
+        //Get all categories, then all rules assoc with those categories
+        $all_categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid));
+        $all_rules = array();
+        foreach($all_categories as $category) {
+            $category_rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id));
+            array_merge($all_rules, $category_rules);
+        }
+        
+        foreach($all_rules as $rule) {
+            $checkboxname = 'delete_category'.$rule->id;
+            if(isset($fromform->$checkboxname)) {
+                //delete from DB!
+                $DB->delete_record('block_risk_monitor_rule', array('id' => $rule->id));
+            }
+        }
 }
+    
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
@@ -81,6 +107,9 @@ echo $OUTPUT->heading($blockname);
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings');
 echo $OUTPUT->heading("Categories and rules");
+
+//Course tabs
+echo block_risk_monitor_get_course_tabs_html($courseid);
 echo $body;
 if ($courseid !== -1) {
     $categories_rules_form->display();

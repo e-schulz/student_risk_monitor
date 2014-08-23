@@ -69,6 +69,7 @@ $string['edit_category'] = "Edit...";
 $string['add_rule'] = "Add a new rule..";
 $string['no_courses'] = "You are not currently tracking any courses.";
 $string['add_courses'] = "Add courses..";
+$string['edit_rule'] = "Edit...";
 
 
 //Course strings
@@ -86,6 +87,10 @@ $string['high'] = "High";
 $string['errorinsertexam'] = "Error trying to add exam to database.";
 $string['errorinsertcourse'] = "Error trying to add course to database.";
 $string['errorcoursenotexist'] = "Error: course not found in database.";
+$string['errorinsertcategory'] = "Error trying to add category to database.";
+$string['errweightingnotnumeric'] = "Error: weighting must be a number";
+$string['errweightingnotinrange'] = "Error: weighting must be between 0 and 100%";
+$string['errorinsertrule'] = "Error trying to add rule to database.";
 
 
 //Templates
@@ -95,5 +100,19 @@ $string['preamble-template'] = 'This is a small module designed to help with any
 $string['postamble-template'] = 'Thankyou for taking the time to complete the module. <br>'
         . 'Research shows that encouraging students to view their performance as largely due to their persistence and effort (studying better, taking notes in class, etc.) leads to students feeling more motivated and performing significantly better in the future.<br>'
         . 'In answering the previous set of questions, hopefully you were able to relate these principles to your own academic experiences.<br><br>';
+
+//New rule
+$string['weighting_description'] = "The weighting given to a rule determines how important the rule is within a category. Rules with higher weighting will count more towards the risk rating within a category. If rules already exist in this category, they will be automatically adjusted based on the weighting given to this rule.";
+
+//Default rules
+$string['name_not_logged_in'] = "";
+$string['name_grade_less_than'] = "";
+$string['name_grade_greater_than'] = "";
+$string['name_missed_deadlines'] = "";
+
+$string['description_not_logged_in'] = "";
+$string['description_grade_less_than'] = "";
+$string['description_grade_greater_than'] = "";
+$string['description_missed_deadlines'] = "";
 
 ?>

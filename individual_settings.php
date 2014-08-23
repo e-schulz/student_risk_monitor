@@ -59,7 +59,7 @@ $body = '';
     $body .= html_writer::tag('div', get_string('edit_courses_text','block_risk_monitor').'<br><br>');
 
     //Link to edit categories and rules
-    $body .= html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id)), get_string('edit_categories_rules','block_risk_monitor')).'<br><br>';
+    $body .= html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => 0)), get_string('edit_categories_rules','block_risk_monitor')).'<br><br>';
             
     //Description for add or delete
     $body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');

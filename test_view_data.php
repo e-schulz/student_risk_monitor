@@ -49,6 +49,8 @@ $PAGE->set_url('/blocks/risk_monitor/test_view_data.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
+//$DB->delete_records('block_risk_monitor_rule');
+
 $body = '';
 
 //Submissions

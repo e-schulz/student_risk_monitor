@@ -351,6 +351,20 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         // Test_risk_monitor savepoint reached.
         upgrade_block_savepoint(true, 2014260816, 'risk_monitor');
     }
+    
+        if ($oldversion < 2014260818) {
+
+        // Changing nullability of field description on table block_risk_monitor_category to null.
+        $table = new xmldb_table('block_risk_monitor_category');
+        $field = new xmldb_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null, 'name');
+
+        // Launch change of nullability for field description.
+        $dbman->change_field_notnull($table, $field);
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260818, 'risk_monitor');
+    }
+
 
     return true;
 }

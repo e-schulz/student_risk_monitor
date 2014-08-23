@@ -9,6 +9,7 @@
 defined('MOODLE_INTERNAL') || die();
 require_once("../../config.php");
 require_once("../../calendar/lib.php");
+require_once("default_rules.php");
 
 $block_risk_monitor_block = $DB->get_record('block_risk_monitor_block', array('teacherid' => $USER->id));
 
@@ -200,7 +201,33 @@ function block_risk_monitor_get_tabs_html($userid, $settings, $courseid = null) 
     
     return html_writer::table($table);
 }
+
+
+//Takes $courseid = table course field id
+function block_risk_monitor_get_course_tabs_html($courseid = -1) {
     
+    global $OUTPUT, $USER;
+    //If courseid = -1, not currently in a course
+    if($courseid == -1) {
+        $tab = ''; 
+    }
+    //Else in course
+    else {
+        $tab = 'course'.$courseid;
+    }
+    
+    
+    $row = array();
+    $courses = block_risk_monitor_get_registered_courses();
+    foreach($courses as $course) {
+        $row[] = new tabobject('course'.$course->courseid,
+                            new moodle_url('/blocks/risk_monitor/edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $course->courseid)),
+                            $course->fullname);        
+    }
+    
+    return '<div class="coursedisplay">'.$OUTPUT->tabtree($row, $tab).'</div>';
+}
+
 function populate_with_test_data($examid) {
     
     //Get all user IDs
@@ -224,3 +251,61 @@ function block_risk_monitor_get_top_tabs($currenttoptab) {
     return '<div class="topdisplay">'.$OUTPUT->tabtree($row, $currenttoptab).'</div>';
 }
 
+//Get rules for a given category.
+function block_risk_monitor_get_rules($categoryid) {
+    
+    global $DB;
+    $rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $categoryid, 'enabled' => 1));
+    return $rules;
+}
+
+//returns an array of all the default rules that arent yet added to the category
+function block_risk_monitor_get_unregistered_default_rules($categoryid) {
+    
+    global $DB;
+    
+    //Get the default rules
+    $default_rules = DefaultRules::$default_rule_names;
+    
+    //Get the registered rules
+    $registered_rules = block_risk_monitor_get_rules($categoryid);
+    
+    $unregistered_defaults = array();
+    while($default_rule = current($default_rules)) {
+        $found = false;
+        foreach($registered_rules as $registered_rule) {
+            if(strcmp($registered_rule->name, $default_rule) == 0) {
+                $found = true;
+            }
+        }
+        if ($found == false) {
+            $unregistered_defaults[key($default_rules)] = $default_rule;
+        }
+        next($default_rules);
+    }
+    return $unregistered_defaults;
+}
+
+//Goes through existing rules and creates new weightings in order to accommodate for a new rule
+//Sum = 100% minus the specified weighting of the new rule
+function block_risk_monitor_adjust_weightings($categoryid, $sum) {
+    
+    global $DB;
+    
+    //Get the existing rules
+    $registered_rules = block_risk_monitor_get_rules($categoryid);
+    
+    foreach($registered_rules as $registered_rule) {
+        //Get the weighting
+        $weighting_value = $registered_rule->weighting;
+        
+        $new_weighting = ($weighting_value/100) * $sum;
+        
+        //Change in DB
+        $new_record = new object();
+        $new_record->id = $registered_rule->id;
+        $new_record->weighting = $new_weighting;
+        $DB->update_record('block_risk_monitor_rule', $new_record);
+    }
+    
+}
