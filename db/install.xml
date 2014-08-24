@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140823" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
+<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140824" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -29,7 +29,7 @@
         <KEY NAME="blockid" TYPE="foreign" FIELDS="blockid" REFTABLE="block_risk_monitor_block" REFFIELDS="id" COMMENT="Id of the block this course belongs to."/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_risk_monitor_rule" COMMENT="The rules for each category">
+    <TABLE NAME="block_risk_monitor_rule" COMMENT="An instance of a rule type, associated with a category">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
@@ -38,10 +38,12 @@
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is enabled."/>
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The category this rule belongs to"/>
         <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time this rule was created"/>
+        <FIELD NAME="ruletypeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the rule type this rule is an instance of"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="block_risk_monitor_category" REFFIELDS="id" COMMENT="The category this rule belongs to"/>
+        <KEY NAME="ruletypeid" TYPE="foreign" FIELDS="ruletypeid" REFTABLE="block_risk_monitor_rule_type" REFFIELDS="id" COMMENT="The rule type this rule is an instance of"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_risk_monitor_category" COMMENT="A risk category, consisting of one or more rules">
@@ -55,6 +57,47 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id" COMMENT="The id of the course this category belongs to"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_rule_risk" COMMENT="A risk instance - representing a student's score for a rule">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student associated with this risk instance"/>
+        <FIELD NAME="ruleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The rule this risk instance corresponds to"/>
+        <FIELD NAME="value" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The value represents the level of risk - 0 to 100. For binary rules, risk will be either 0 or 100, otherwise it can step up in increments"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this risk instance was generated"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The student this risk is associated with"/>
+        <KEY NAME="ruleid" TYPE="foreign" FIELDS="ruleid" REFTABLE="block_risk_monitor_rule" REFFIELDS="id" COMMENT="The rule this risk instance is associated with"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_rule_type" COMMENT="All possible rules that can be added">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the rule"/>
+        <FIELD NAME="custom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is custom (1 = yes, 0 = no)"/>
+        <FIELD NAME="course_specific" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Whether this rule is course specific or general (1 = course specific, 0 = general)"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is enabled and can be used. (Can be disabled by admin, if a default rule, or teacher, if a custom rule) (1 = true, 0 = false)"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user that created this rule (0 = default rule)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user who created a custom rule"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_cat_risk" COMMENT="An overall risk rating for a student in a given category">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student this risk instance is associated with"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The category this risk rating is associated with"/>
+        <FIELD NAME="value" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The rating of the risk - between 0 and 100."/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time last updated"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

@@ -107,10 +107,13 @@ if ($fromform = $new_rule_form->get_data()) {
     //Adjust the current weightings
     block_risk_monitor_adjust_weightings($categoryid, (100-floatval($weighting_value)));
     
+    //rule type for the new rule
+    $rule_type = $DB->get_record('block_risk_monitor_rule_type', array('id' => $fromform->rule_id));
+    
     //Create the rule
     $new_rule = new object();
-    $new_rule->name = DefaultRules::$default_rule_names[$fromform->rule_id];
-    $new_rule->description = DefaultRules::$default_rule_descriptions[$fromform->rule_id];
+    $new_rule->name = $rule_type->name;
+    $new_rule->description = $rule_type->description;
     $new_rule->weighting = $weighting_value;
     $new_rule->enabled = 1;
     $new_rule->categoryid = $categoryid;

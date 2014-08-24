@@ -17,24 +17,10 @@ $anxid = optional_param('anxid', -1, PARAM_INT);
 //maybe a check to ensure this teacher is actually in this course?
 
 //DB STUFF - Need all anxiety instances with this course, the exam upcoming...
-$course = $DB->get_record('block_risk_monitor_course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('block_risk_monitor_course', array('courseid' => $courseid), '*', MUST_EXIST);
 
 //Teacher must be logged in
 require_login();
-
-//$examcreated = block_risk_monitor_create_exam($courseid, $USER->id);
-//if anx id, generate intervention
-if ($anxid !== -1) {
-    if($anx_instance = $DB->get_record('block_risk_monitor_anx', array('id' => $anxid))) {
-        
-        //first: update the status.
-        $DB->update_record('block_risk_monitor_anx', array('id' => $anxid, 'status' => 'intervention'));
-        
-        //second: do the whole group thing.
-        //1. check if the activity has already been created.
-        //2. add this student to the group
-    }
-}
 
 
 //PAGE PARAMS
@@ -55,110 +41,101 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 $body = '';
 
-//get the exam(s)
-if ($exams = $DB->get_records('block_risk_monitor_exam', array('courseid' => $courseid))) {
-    
-    foreach($exams as $exam) {
-   
-        $event = $DB->get_record('event', array('id' => $exam->eventid));
-        $body .= "<div><b>Exam: <i>".$event->name."</i> on ".date("d F Y", $exam->examdate)."</b><br><br>";
+//get all the categories and associated risk instances.
+if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+ 
+        //Print out the header
+        $studentstable = new html_table();
+        $headers = array();
+           
+        $studentfirstnamehead = new html_table_cell();
+        $studentfirstnamehead->text = '<b>First name</b>';
+        $headers[] = $studentfirstnamehead;
+                    
+        $studentlastnamehead = new html_table_cell();
+        $studentlastnamehead->text = '<b>Last name</b>';
+        $headers[] = $studentlastnamehead;
+            
+        $students_at_risk = array();            //array of userids of at risk students
+        foreach($categories as $category) {
+            
+            //Get all the risk instances
+            if($category_risks = $DB->get_records('block_risk_monitor_cat_risk', array('categoryid' => $category->id))) {
+                   foreach($category_risks as $category_risk) {
+                       array_push($students_at_risk, $category_risk->userid);
+                   }
+                   //make the array unique
+                   array_unique($students_at_risk);
+            }
+            
+            //Create the headers
+            $categoryhead = new html_table_cell();
+            $categoryhead->text = '<b>'.$category->name.'</b>';
+            $headers[] = $categoryhead;            
+        }    
+        $studentstable->data[] = new html_table_row($headers);
         
-        if($anxious_students = $DB->get_records('block_risk_monitor_anx', array('examid' => $exam->id))) {
-            
-            $studentstable = new html_table();
-            $headers = array();
-            
-            $studentfirstnamehead = new html_table_cell();
-            $studentfirstnamehead->text = '<b>First name</b>';
-            $headers[] = $studentfirstnamehead;
-                    
-            $studentlastnamehead = new html_table_cell();
-            $studentlastnamehead->text = '<b>Last name</b>';
-            $headers[] = $studentlastnamehead;
-            
-            $activityhead = new html_table_cell();
-            $activityhead->text = '<b>Potential anxiety level</b>';
-            $headers[] = $activityhead;
-                    
-            $traithead = new html_table_cell();
-            $traithead->text = '<b>Status</b>';
-            $headers[] = $traithead;
-                    
-            $currentgradehead = new html_table_cell();
-            $currentgradehead->text = '<b>Action</b>';
-            $headers[] = $currentgradehead;
-            
-            $studentstable->data[] = new html_table_row($headers);
-            
-            $intervention_generated_rows = array();
-            $intervention_not_generated_rows = array();
-            
-            foreach($anxious_students as $anxious_student) {
-               
-                $intervention_generated = false;
+        //Loop thru the at risk students.
+        if(count($students_at_risk) > 0) {
+            foreach($students_at_risk as $student_at_risk) {
                 
-                //get the user
-                $student = $DB->get_record('user', array('id' => $anxious_student->studentid));
+                //get the student
+                $student = $DB->get_record('user', array('id' => $student_at_risk));
+                
+                //Get all risk instances associated with this user
+                if($student_category_risks = $DB->get_records('block_risk_monitor_cat_risk', array('userid' => $student_at_risk))) {
+                    //Write out the table line
+                    $studentrow = array();
+
+                    $studentfirstname = new html_table_cell();
+                    $studentfirstname->text = $student->firstname;
+                    $studentrow[] = $studentfirstname;
+
+                    $studentlastname = new html_table_cell();
+                    $studentlastname->text = $student->lastname;
+                    $studentrow[] = $studentlastname;
+
+                    foreach($categories as $category) {
+                        $found = false;
+                        $student_risk;
+                        foreach($student_category_risks as $student_category_risk) {
+                            if($student_category_risk->categoryid === $category->id) {
+                                $found = true;
+                                $student_risk = $student_category_risk;
+                            }
+                        }
                         
-                $studentrow = array();
-
-                $studentfirstname = new html_table_cell();
-                $studentfirstname->text = $student->firstname;
-                $studentrow[] = $studentfirstname;
-                
-                $studentlastname = new html_table_cell();
-                $studentlastname->text = $student->lastname;
-                $studentrow[] = $studentlastname;
-                
-                $anxiety = new html_table_cell();
-                $anxiety->text = get_string($anxious_student->anxietylevel, 'block_risk_monitor');
-                $studentrow[] = $anxiety;
-
-                //For status we want to create a statement summing: action by teacher, when the action was done, action by student, when the action was done.
-                $status = new html_table_cell();
-                $status->text = get_string($anxious_student->status, 'block_risk_monitor');
-                $studentrow[] = $status;
-                
-                $action = new html_table_cell();
-                if($anxious_student->status == 'intervention') {
-                    $action->text = '<button disabled="true">'.get_string('submitintervention','block_risk_monitor').'</button>';
-                    $intervention_generated = true;
+                        $category_cell = new html_table_cell();
+                        if($found == false) {           //no risk for this category, leave empty
+                            $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor')));
+                        }
+                        else {                          //risk for this category!
+                            //Get the risk
+                            $rating = $student_risk->value;
+                            if($rating > MODERATE_RISK && $rating < HIGH_RISK) {
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor')));
+                            }
+                            else if($rating > HIGH_RISK) {
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor')));
+                            }
+                            else {
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor')));
+                            }
+                            
+                        }
+                        $studentrow[] = $category_cell;
+                    }
                 }
-                else {
-                    $action->text = $OUTPUT->single_button(new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $courseid, 'anxid' => $anxious_student->id)), get_string('submitintervention','block_risk_monitor'));
-                }
-                $studentrow[] = $action;
-                
-                if($intervention_generated) {
-                    $intervention_generated_rows[] = new html_table_row($studentrow);
-                }
-                else {
-                    $intervention_not_generated_rows[] = new html_table_row($studentrow);
-                }
-                
-                //$studentstable->data[] = new html_table_row($studentrow);               
-
             }
-            
-            //add the non-generated-intervention students at the top
-            foreach($intervention_not_generated_rows as $intervention_not_generated_row) {
-                $studentstable->data[] = $intervention_not_generated_row;
-            }
-            
-            foreach($intervention_generated_rows as $intervention_generated_row) {
-                $studentstable->data[] = $intervention_generated_row;
-            }           
-            
-            $body .= html_writer::table($studentstable);
+            $studentstable->data[] = new html_table_row($studentrow);
         }
         else {
-            $body .= 'No anxious students.<br>';
+            //No students at risk
         }
-        $body .= "</div><br>";
-    }
+        $body .= html_writer::table($studentstable);
 }
 else {
-    $body .= "No exams within a week.";
+    $body .= "No categories created for this course. Go to settings to add categories and rules.";
 }
 
 echo $OUTPUT->header();

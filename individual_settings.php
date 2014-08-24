@@ -16,6 +16,14 @@ global $block_risk_monitor_block, $DB;
 
 //$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
 
+//create some student data.
+/*$data = new object();
+$data->userid = 3;
+$data->categoryid = 7;
+$data->value = 40;
+$data->timestamp = time();
+$DB->insert_record('block_risk_monitor_cat_risk', $data);*/
+
 //Teacher must be logged in
 require_login();
 
@@ -48,6 +56,8 @@ $PAGE->set_heading($blockname . ': '.$header);
 $PAGE->set_url('/blocks/risk_monitor/individual_settings.php?userid='.$userid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
+
+block_risk_monitor_update_default_rules();
 
 //Create the body
 $body = '';

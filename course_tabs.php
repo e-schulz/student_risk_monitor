@@ -50,8 +50,8 @@ require_once('locallib.php');
         }*/
     $courses = block_risk_monitor_get_registered_courses();
     foreach($courses as $course) {
-        $row[] = new tabobject('course'.$course->id,
-                            new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->id)),
+        $row[] = new tabobject('course'.$course->courseid,
+                            new moodle_url('/blocks/risk_monitor/course_page.php', array('courseid' => $course->courseid)),
                             $course->fullname);        
     }
     

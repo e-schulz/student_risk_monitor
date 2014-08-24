@@ -8,6 +8,10 @@
  * This class defines the default rules that can be used.
  */
 
+/*
+ * IMPORTANT- TO ADD DEFAULT RULES, ARRAY KEYS MUST REMAIN CONSECUTIVE
+ */
+
 abstract class DefaultRules {
     
     public static $default_rule_identifiers = array(0 => "NOT_LOGGED_IN",
@@ -29,5 +33,21 @@ abstract class DefaultRules {
                                                1 => 50,
                                                2 => 75,
                                                3 => 1);
+    
+    public static function getDefaultRuleObjects() {
+        
+        $default_rules = array();
+        
+        for($i=0; $i<count(DefaultRules::$default_rule_identifiers); $i++) {
+            
+            $default_rule = new object();
+            $default_rule->name = DefaultRules::$default_rule_names[$i];
+            $default_rule->description = DefaultRules::$default_rule_descriptions[$i];
+            $default_rule->custom = 0;
+            array_push($default_rules, $default_rule);
+        }
+        
+        return $default_rules;
+    }
 
 }

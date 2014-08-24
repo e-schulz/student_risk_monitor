@@ -274,17 +274,18 @@ class individual_settings_form_new_rule extends moodleform {
         $total_rules = count(block_risk_monitor_get_rules(intval($categoryid)))+1;
         $weighting_default = 100/intval($total_rules);
         
-        if($unregistered_rules = block_risk_monitor_get_unregistered_default_rules($categoryid)) {
+        if($unregistered_rules = block_risk_monitor_get_unregistered_default_rule_names($categoryid)) {
             //Name: select from default rules (for now)
             $rulegroup = array();
-            $rulegroup[] =& $mform->createElement('select', 'rule_id', '', block_risk_monitor_get_unregistered_default_rules($categoryid));
+            $rulegroup[] =& $mform->createElement('select', 'rule_id', '', block_risk_monitor_get_unregistered_default_rule_names($categoryid));
             $rulegroup[] =& $mform->createElement('submit', 'submit_get_rule_description', "View rule description");
             $mform->addGroup($rulegroup, 'rulegroup', "Rule", ' ', false);
            
             //Description if required
             if($this->_customdata['rule_id'] !== -1) {
+                $default_rule = $DB->get_record('block_risk_monitor_rule_type', array('id' => $this->_customdata['rule_id']));                
                 $mform->setDefault('rule_id', $this->_customdata['rule_id']);
-                $mform->addElement('static', 'rule_description_text', "Description", DefaultRules::$default_rule_descriptions[$this->_customdata['rule_id']]);
+                $mform->addElement('static', 'rule_description_text', "Description", $default_rule->description);
             }
 
             $mform->addElement('static', 'whitespace1', '', "<br><br><br><br>");

@@ -7,6 +7,11 @@ class block_risk_monitor extends block_base {
 		$this->title = get_string('title','block_risk_monitor');
 	}
         
+        //Regularly check and make sure the default rules are updated in the database.
+        public function cron() {
+            block_risk_monitor_update_default_rules();
+        }
+        
         //Where this block is allowed to appear? (Only on the my home page!)
         function applicable_formats() {
             return array('my' => true);
@@ -17,7 +22,12 @@ class block_risk_monitor extends block_base {
             return false;
         }
         
-        //When the block is created, create the block instance
+        // enable this later if you want admin to be able to disable rules.
+        function has_config() {
+            return false;
+        }
+        
+        //When the block is created, create the block instance 
         public function instance_create() {
             global $DB, $USER;
             
@@ -25,6 +35,9 @@ class block_risk_monitor extends block_base {
             $data->teacherid = $USER->id;
             $data->dateupdated = time();
             $DB->insert_record('block_risk_monitor_block', $data);
+            
+            //Check to make sure default rules are updated
+            block_risk_monitor_update_default_rules();
         }        
         
         //When the block is deleted, delete all courses associated with this block, and the block instance itself

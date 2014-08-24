@@ -13,6 +13,8 @@ require_once("default_rules.php");
 
 $block_risk_monitor_block = $DB->get_record('block_risk_monitor_block', array('teacherid' => $USER->id));
 
+define("HIGH_RISK", 75);
+define("MODERATE_RISK", 50);
 /**
  * Does something really useful with the passed things
  *
@@ -260,12 +262,13 @@ function block_risk_monitor_get_rules($categoryid) {
 }
 
 //returns an array of all the default rules that arent yet added to the category
-function block_risk_monitor_get_unregistered_default_rules($categoryid) {
+//returns array where key = ruleid, value = names
+function block_risk_monitor_get_unregistered_default_rule_names($categoryid) {
     
     global $DB;
     
     //Get the default rules
-    $default_rules = DefaultRules::$default_rule_names;
+    $default_rules = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 1));
     
     //Get the registered rules
     $registered_rules = block_risk_monitor_get_rules($categoryid);
@@ -274,12 +277,12 @@ function block_risk_monitor_get_unregistered_default_rules($categoryid) {
     while($default_rule = current($default_rules)) {
         $found = false;
         foreach($registered_rules as $registered_rule) {
-            if(strcmp($registered_rule->name, $default_rule) == 0) {
+            if(strcmp($registered_rule->name, $default_rule->name) == 0) {
                 $found = true;
             }
         }
         if ($found == false) {
-            $unregistered_defaults[key($default_rules)] = $default_rule;
+            $unregistered_defaults[$default_rule->id] = $default_rule->name;
         }
         next($default_rules);
     }
@@ -339,4 +342,62 @@ function block_risk_monitor_adjust_weightings($categoryid, $newsum, $ruleid = -1
         $DB->update_record('block_risk_monitor_rule', $new_record);
     }
     
+}
+
+function block_risk_monitor_update_default_rules() {
+    global $DB;
+    
+    //Get all current default rules in the database.
+    if($DB->record_exists('block_risk_monitor_rule_type', array('custom' => 0))) {
+        
+        //Get the enabled and disabled rules -DONT BOTHER FOR NOW.
+        /*$default_rules = DefaultRules::getDefaultRuleObjects();
+        $enabled_rules_by_admin = array();
+        $disabled_rules_by_admin = array();
+        $m = 'moodle';
+        $i = 0;
+        foreach($default_rules as $default_rule) {
+             $default_rule_enabled = get_config($m, 'block_risk_monitor_default_rule'.$i);
+             if(intval($default_rule_enabled) == 1) {
+                 array_push($enabled_rules_by_admin, $default_rule);
+             }
+             else {
+                 array_push($disabled_rules_by_admin, $default_rule);
+             }
+             $i++;
+        }
+        
+        $enabled_rules_in_database = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 1));
+        $disabled_rules_in_database = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 0));
+
+        foreach($enabled_rules_by_admin as $enabled_rule_by_admin) {
+            foreach($disabled_rules_in_database as $disabled_rule_in_database) {
+                if(strcmp($enabled_rule_by_admin->name, $disabled_rule_in_database->name) == 0) {
+                    //enable in database
+                    $changed_rule = new object();
+                    $changed_rule->id = $disabled_rule_in_database->id;
+                    $changed_rule->enabled = 1;
+                    $DB->update_record('block_risk_monitor_rule_type', $changed_rule);
+                }
+            }
+        }
+        
+        foreach($disabled_rules_by_admin as $disabled_rule_by_admin) {
+            foreach($enabled_rules_in_database as $enabled_rule_in_database) {
+                if(strcmp($disabled_rule_by_admin->name, $enabled_rule_in_database->name) == 0) {
+                    $changed_rule = new object();
+                    $changed_rule->id = $enabled_rule_in_database->id;
+                    $changed_rule->enabled = 0;
+                    $DB->update_record('block_risk_monitor_rule_type', $changed_rule);                }                
+            }
+        }*/
+    }
+    else {      //default rules have not yet been added to database
+        //Get the default objects
+        $default_rules = DefaultRules::getDefaultRuleObjects();
+        foreach($default_rules as $default_rule) {
+            $DB->insert_record('block_risk_monitor_rule_type', $default_rule);
+        }
+    }
+
 }

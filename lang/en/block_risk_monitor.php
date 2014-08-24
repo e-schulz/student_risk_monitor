@@ -115,4 +115,9 @@ $string['description_grade_less_than'] = "";
 $string['description_grade_greater_than'] = "";
 $string['description_missed_deadlines'] = "";
 
+//Icon paths
+$string['no_risk_icon'] = "pix/no_risk_icon.png";
+$string['moderate_risk_icon'] = "pix/moderate_risk_icon.png";
+$string['high_risk_icon'] = "pix/high_risk_icon.png";
+
 ?>
