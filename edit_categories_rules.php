@@ -22,7 +22,9 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 //$message = optional_param('message', 0, PARAM_INT);
-$courseid = optional_param('courseid', -1, PARAM_INT);              
+$courseid = optional_param('courseid', 0, PARAM_INT);
+$categoryid = optional_param('categoryid', -1, PARAM_INT);
+$ruleid = optional_param('ruleid', -1, PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -32,6 +34,25 @@ if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
 //Error - the user trying to access this instance is the wrong one
 if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
+}
+
+//Delete things
+if($categoryid !== -1) {
+    
+    //Delete category
+    if($DB->record_exists('block_risk_monitor_category', array('id' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_category', array('id' => $categoryid));
+    }    
+    
+    //Delete all rules associated with a category
+    if($DB->record_exists('block_risk_monitor_rule', array('categoryid' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_rule', array('categoryid' => $categoryid));        
+    }
+}
+else if ($ruleid !== -1) {
+    if($DB->record_exists('block_risk_monitor_rule', array('id' => $ruleid))) {
+        $DB->delete_records('block_risk_monitor_rule', array('id' => $ruleid));
+    }
 }
 
 $context = context_user::instance($userid);
@@ -53,7 +74,7 @@ $PAGE->set_pagelayout('standard');
 //Create the body
 $body = '';
 
-//Link from settings page, if any courses display first available, else signal no courses
+//If any courses display first available, else signal no courses
 if($courseid == 0) {
     
     //Check courses
@@ -73,28 +94,32 @@ if($courseid == -1) {
     $body .= get_string('no_courses', 'block_risk_monitor')."<br>";
     $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
 }
+
         
 ///RENDERING THE HTML
-if ($fromform = $categories_rules_form->get_data()) {
+/*if ($fromform = $categories_rules_form->get_data()) {
         
         //Get the data, delete everything checked. If category deleted, need to go through and delete all rules.
     
         //Get all categories, then all rules assoc with those categories
         $all_categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid));
+        
         $all_rules = array();
         foreach($all_categories as $category) {
             $category_rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id));
-            array_merge($all_rules, $category_rules);
+            foreach($category_rules as $category_rule) {
+                array_push($all_rules, $category_rule);
+            }
         }
         
         foreach($all_rules as $rule) {
-            $checkboxname = 'delete_category'.$rule->id;
+            $checkboxname = "delete_category".$rule->id;
             if(isset($fromform->$checkboxname)) {
                 //delete from DB!
                 $DB->delete_record('block_risk_monitor_rule', array('id' => $rule->id));
             }
         }
-}
+}*/
     
 //Render the HTML
 echo $OUTPUT->header();

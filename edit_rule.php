@@ -21,9 +21,8 @@ require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
-$categoryid = required_param('categoryid', PARAM_INT);
+$ruleid = required_param('ruleid', PARAM_INT);
 $message = optional_param('message', -1, PARAM_INT);
-$rule_id = optional_param('rule_id', -1, PARAM_INT);
 $weighting_description = optional_param('weightingdesc', -1, PARAM_INT);
 
 //Error- there is no user associated with the passed param
@@ -36,11 +35,13 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
         
-//Check that the category exists.
-if(!$getcategory = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid))) {
-    print_error('no_category', 'block_risk_monitor', '', $categoryid);
+//Check that the rule exists.
+if(!$getrule = $DB->get_record('block_risk_monitor_rule', array('id' => $ruleid))) {
+    print_error('no_rule', 'block_risk_monitor', '', $ruleid);
 }
 
+$getcategory = $DB->get_record('block_risk_monitor_category', array('id' => $getrule->categoryid));
+$getcourse = $DB->get_record('block_risk_monitor_course', array('courseid' => $getcategory->courseid));
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -53,7 +54,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/new_rule.php?userid='.$userid.'&categoryid='.$categoryid);
+$PAGE->set_url('/blocks/risk_monitor/edit_rule.php?userid='.$userid.'&ruleid='.$ruleid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -73,26 +74,23 @@ if($message != -1) {
 }
 
 //Create the form
-$new_rule_form = new individual_settings_form_new_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid, array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
+$edit_rule_form = new individual_settings_form_edit_rule('edit_rule.php?userid='.$USER->id.'&ruleid='.$ruleid, array('ruleid' => $ruleid, 'weightingdesc' => $weighting_description, 'categoryname' => $getcategory->name, 'coursename' => $getcourse->fullname));    
 
 //On submit
-if ($fromform = $new_rule_form->get_data()) {
+if ($fromform = $edit_rule_form->get_data()) {
     
-    //If they want to view description
-    if(isset($fromform->submit_get_rule_description)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id)));
-    }
-    else if(isset($fromform->submit_get_weighting_description)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'weightingdesc' => 1)));
+    //If they want to view weighting description
+    if(isset($fromform->submit_get_weighting_description)) {
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'weightingdesc' => 1)));
     }
     
     //Error checking
     //if weighting is not numeric, refresh with error
     if(!is_numeric($fromform->weighting_text)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 1)));
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 1)));
     }
     else if(intval($fromform->weighting_text < 0 || $fromform->weighting_text > 100)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2)));        
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 2)));        
     }
     
     $weighting_value = $fromform->weighting_text;
@@ -105,24 +103,16 @@ if ($fromform = $new_rule_form->get_data()) {
     }
     
     //Adjust the current weightings
-    block_risk_monitor_adjust_weightings($categoryid, (100-floatval($weighting_value)));
+    block_risk_monitor_adjust_weightings($getcategory->id, (100-floatval($weighting_value)), $ruleid);
     
-    //Create the rule
-    $new_rule = new object();
-    $new_rule->name = DefaultRules::$default_rule_names[$fromform->rule_id];
-    $new_rule->description = DefaultRules::$default_rule_descriptions[$fromform->rule_id];
-    $new_rule->weighting = $weighting_value;
-    $new_rule->enabled = 1;
-    $new_rule->categoryid = $categoryid;
-    $new_rule->timestamp = time();
+    //Edit the rule
+    $edited_rule = new object();
+    $edited_rule->id = $ruleid;
+    $edited_rule->weighting = $weighting_value;
     
     //add to DB
-    if (!$DB->insert_record('block_risk_monitor_rule', $new_rule)) {
-        echo get_string('errorinsertrule', 'block_risk_monitor');
-    }     
-    
-    //Adjust the other weightings so they all add to 100%
-    
+    $DB->update_record('block_risk_monitor_rule', $edited_rule);
+        
     //Redirect to categories+rules
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $getcategory->courseid)));
 }
@@ -137,10 +127,10 @@ echo $OUTPUT->heading($blockname);
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings');
-echo $OUTPUT->heading("New Rule");
+echo $OUTPUT->heading("Edit Rule");
 /*if($message) {
     echo $message;
 }*/
 echo $body;
-$new_rule_form->display();
+$edit_rule_form->display();
 echo $OUTPUT->footer();

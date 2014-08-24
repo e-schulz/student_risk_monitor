@@ -286,24 +286,55 @@ function block_risk_monitor_get_unregistered_default_rules($categoryid) {
     return $unregistered_defaults;
 }
 
-//Goes through existing rules and creates new weightings in order to accommodate for a new rule
+//Goes through existing rules and creates new weightings in order to accommodate for a new or edited rule
 //Sum = 100% minus the specified weighting of the new rule
-function block_risk_monitor_adjust_weightings($categoryid, $sum) {
+//If ruleid given, means the rule already exists and must exclude it from our rearrangements
+function block_risk_monitor_adjust_weightings($categoryid, $newsum, $ruleid = -1) {
     
     global $DB;
     
     //Get the existing rules
     $registered_rules = block_risk_monitor_get_rules($categoryid);
     
-    foreach($registered_rules as $registered_rule) {
-        //Get the weighting
-        $weighting_value = $registered_rule->weighting;
+    //Check the given rule exists
+    if($ruleid !== -1) {
+        if(!$DB->record_exists('block_risk_monitor_rule', array('id' => $ruleid))) {
+            $ruleid = -1;
+        }
+        else {
+            $rule = $DB->get_record('block_risk_monitor_rule', array('id' => $ruleid));
+        }
+    }
+    
+    $previoussum = 0;
+    $rules_to_change = array();
+    //Exclude the existing rule
+    if ($ruleid !== -1) {
+        //Loop thru rules
+        foreach($registered_rules as $registered_rule) {
+            
+            if(!($registered_rule->id == $ruleid)) {
+                array_push($rules_to_change, $registered_rule);
+            }
+        }
         
-        $new_weighting = ($weighting_value/100) * $sum;
+        $previoussum = 100 - floatval($rule->weighting);
+    }
+    else {
+        $rules_to_change = $registered_rules;
+        $previoussum = 100;
+    }
+    
+    
+    foreach($rules_to_change as $rule_to_change) {
+        //Get the weighting
+        $weighting_value = $rule_to_change->weighting;
+        
+        $new_weighting = ($weighting_value/$previoussum) * $newsum;
         
         //Change in DB
         $new_record = new object();
-        $new_record->id = $registered_rule->id;
+        $new_record->id = $rule_to_change->id;
         $new_record->weighting = $new_weighting;
         $DB->update_record('block_risk_monitor_rule', $new_record);
     }

@@ -88,31 +88,6 @@ class individual_settings_form_add_remove_courses extends moodleform {
              $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_risk_monitor'), $options_delete);
              $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_risk_monitor'));     
        }
-       
-        //$table = new html_table();
-        //$table->attributes['class'] = 'coursestable';
-
-        
-        //$registered_courses = html_writer::tag('div', '<b>'.get_string('registered_courses','block_risk_monitor').'</b>')
-          //                          .html_writer::tag('div', html_writer::select($options_delete, 'registered_courses', '', '', array('min-width' => 300, 'multiple' => 'multiple', 'size' => 7)));
-                    
-       //$mform->addElement('static', 'registered_courses', '', $registered_courses);
-        
-        /*$centre_buttons = new html_table_cell();
-        $centre_buttons->text = "<br>".html_writer::tag('p',html_writer::empty_tag('input', array('value' => $OUTPUT->larrow().''.get_string('add_button','block_risk_monitor'), 'type' => 'submit', 'id' => 'add_button')))
-                                .html_writer::tag('p',html_writer::empty_tag('input', array('value' => get_string('delete_button','block_risk_monitor').''.$OUTPUT->rarrow(), 'type' => 'submit', 'id' => 'delete_button')))
-                                .html_writer::tag('p',html_writer::empty_tag('input', array('value' => get_string('add_all_button','block_risk_monitor'), 'type' => 'submit', 'id' => 'add_all_button')))
-                                .html_writer::tag('p',html_writer::empty_tag('input', array('value' => get_string('delete_all_button','block_risk_monitor'), 'type' => 'submit', 'id' => 'delete_all_button')));
-                              */
-        
-        //$unregistered_courses = html_writer::tag('div', '<b>'.get_string('unregistered_courses','block_risk_monitor').'</b>')
-          //                          .html_writer::tag('div', html_writer::select($options_add, 'unregistered_courses', '', '', array('min-width' => 300, 'multiple' => 'multiple', 'size' => 7)));
-   
-        //$table->data[] = new html_table_row(array($registered_courses, $centre_buttons, $unregistered_courses));
-          //$mform->addElement('static', 'unregistered_courses', '', $unregistered_courses);
-      
-        
-        //$mform->addElement('static', 'selectors', '', html_writer::table($table));
 
     }
     
@@ -175,16 +150,10 @@ class individual_settings_form_edit_categories_rules extends moodleform {
             
             if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $this->_customdata['courseid']))) {
                 
-                //Create the heading with "delete"
-                //$table = new html_table();
-                /*$header1 = new html_table_cell();
-                $header2 = new html_table_cell();
-                $header3 = new html_table_cell();
-                $header3->text = "<b>Delete</b>";
-                $table->data[] = new html_table_row(array($header1, $header2, $header3));*/
                 
                 foreach($categories as $category) {
                     
+                    ///TABLE
                     $table = new html_table();
                     //Start up the table
                     //Create heading: category, with an edit, and a checkbox to delete.
@@ -193,35 +162,36 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                     
                     $category_edit = new html_table_cell();
                     $category_edit->text =  html_writer::link (new moodle_url('edit_category.php', array('userid' => $USER->id, 'categoryid' => $category->id)), get_string('edit_category','block_risk_monitor'));
-                                        
-                    if($rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id))) {
+                            
                         $category_delete = new html_table_cell();
-                        $category_delete->text = "<b>Delete</b>";//html_writer::empty_tag('input', array('type' => 'checkbox', 'id' => 'delete_category'.$category->id));
+                        $category_delete->text = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $this->_customdata['courseid'], 'categoryid' => $category->id)), "Delete");//html_writer::empty_tag('input', array('type' => 'checkbox', 'id' => 'delete_category'.$category->id));
                         $table->data[] = new html_table_row(array($category_name, $category_edit, $category_delete));
-                    }
-                    else {
-                        $table->data[] = new html_table_row(array($category_name, $category_edit));
-                    }
-                    
-                    if($rules) {
+
                         
+                    ///TABLE
+                    if($rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id))) {
+                        
+                        ///BOTH
                        foreach($rules as $rule) {
-                                                       
+
+                            ///TABLE
                             $rule_name = new html_table_cell();
                             $rule_name->text =  $rule->name;
                             $rule_name->attributes['colspan'] = "2";
                             
                             $rule_edit = new html_table_cell();
-                            $rule_edit->text = html_writer::link (new moodle_url('edit_rule.php', array('userid' => $USER->id, 'categoryid' => $category->id)), get_string('edit_rule','block_risk_monitor'));
+                            $rule_edit->text = html_writer::link (new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $rule->id)), get_string('edit_rule','block_risk_monitor'));
 
                             $rule_delete = new html_table_cell();
-                            $rule_delete->text = html_writer::empty_tag('input', array('type' => 'checkbox', 'id' => 'delete_category'.$rule->id));
+                            $rule_delete->text = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $this->_customdata['courseid'], 'ruleid' => $rule->id)), "Delete");
 
                             $table->data[] = new html_table_row(array($rule_name, $rule_edit, $rule_delete));   
                        }
                     }
                     
+                    ///TABLE
                     //"add rule"
+                    
                     $rule_add_empty = new html_table_cell();
                     
                     $rule_add = new html_table_cell();
@@ -238,8 +208,7 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                     $mform->addElement('static', 'selectors', '', html_writer::table($table));
 
                 }
-                //$mform->addElement('static', 'selectors', '', html_writer::table($table));
-                $mform->addElement('submit', 'submit'.$this->_customdata['courseid'], get_string('save', 'block_risk_monitor'));     
+                          
             }
             else {
                 //No categories
@@ -259,10 +228,33 @@ class individual_settings_form_new_category extends moodleform {
         //Name: string
         $mform->addElement('textarea', 'name_text', "Name of the category", 'wrap="virtual" rows="1 cols="50"');
         $mform->addRule('name_text', "Name required", 'required', '', 'client');
-
         
         //Description: text
         $mform->addElement('textarea', 'description_text', "A short description of the category", 'wrap="virtual" rows="5" cols="50"');
+        $this->add_action_buttons(false, "Save category");
+         
+    }
+}
+
+class individual_settings_form_edit_category extends moodleform {
+    
+    public function definition() {
+        global $DB, $USER;
+        
+        $mform =& $this->_form;
+        $getcategory = $DB->get_record('block_risk_monitor_category', array('id' => $this->_customdata['categoryid']));
+        
+        //Coursename
+        $mform->addElement('static', 'course_name', "Course", $this->_customdata['coursename']);
+
+        //Name: string
+        $mform->addElement('textarea', 'name_text', "Name of the category", 'wrap="virtual" rows="1 cols="50"');
+        $mform->addRule('name_text', "Name required", 'required', '', 'client');
+        $mform->setDefault('name_text', $getcategory->name);
+        
+        //Description: text
+        $mform->addElement('textarea', 'description_text', "A short description of the category", 'wrap="virtual" rows="5" cols="50"');
+        $mform->setDefault('description_text', $getcategory->description);
         $this->add_action_buttons(false, "Save category");
          
     }
@@ -288,9 +280,10 @@ class individual_settings_form_new_rule extends moodleform {
             $rulegroup[] =& $mform->createElement('select', 'rule_id', '', block_risk_monitor_get_unregistered_default_rules($categoryid));
             $rulegroup[] =& $mform->createElement('submit', 'submit_get_rule_description', "View rule description");
             $mform->addGroup($rulegroup, 'rulegroup', "Rule", ' ', false);
-
+           
             //Description if required
             if($this->_customdata['rule_id'] !== -1) {
+                $mform->setDefault('rule_id', $this->_customdata['rule_id']);
                 $mform->addElement('static', 'rule_description_text', "Description", DefaultRules::$default_rule_descriptions[$this->_customdata['rule_id']]);
             }
 
@@ -315,6 +308,49 @@ class individual_settings_form_new_rule extends moodleform {
         else {
             $mform->addElement('static', 'norules', "", "There are no rules left to add.");
         }
+    }
+    
+    
+}
+
+class individual_settings_form_edit_rule extends moodleform {
+    
+    public function definition() {
+        global $DB, $USER;
+        
+        $mform =& $this->_form;
+        
+        $ruleid = $this->_customdata['ruleid'];
+        $getrule = $DB->get_record('block_risk_monitor_rule', array('id' => $ruleid));
+        
+        //Weighting default: divide 100 by number of rules already registered+1;
+        $weighting_default = $getrule->weighting;
+        
+           //Course
+            $mform->addElement('static', 'course_name', "Course", $this->_customdata['coursename']);
+        
+            //Category
+            $mform->addElement('static', 'category_name', "Category", $this->_customdata['categoryname']);
+
+            //Name
+            $mform->addElement('static', 'rule_name', "Name", $getrule->name);
+            
+            //Description
+            $mform->addElement('static', 'rule_description_text', "Description", $getrule->description);
+
+            //Weighting        
+            $weightingroup=array();
+            $weightingroup[] =& $mform->createElement('textarea', 'weighting_text', '', 'rows="1"');
+            $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
+            $weightingroup[] =& $mform->createElement('submit', 'submit_get_weighting_description', "What is this?");
+            $mform->addGroup($weightingroup, 'weightingroup', "Weighting of this rule", ' ', false);
+            $mform->setDefault('weighting_text', round($weighting_default,2));
+
+            if($this->_customdata['weightingdesc'] !== -1) {
+                $mform->addElement('static', 'weighting_description', '',get_string('weighting_description', 'block_risk_monitor'));
+            }        
+
+            $this->add_action_buttons(false, "Save changes");
     }
     
     
