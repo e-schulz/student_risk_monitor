@@ -26,6 +26,8 @@ $userid = required_param('userid', PARAM_INT);
 $categoryid = optional_param('categoryid', -1, PARAM_INT);
 $ruleid = optional_param('ruleid', -1, PARAM_INT);
 
+$body = '';
+
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
     print_error('no_user', 'block_risk_monitor', '', $userid);
@@ -45,13 +47,17 @@ if($categoryid !== -1) {
     }    
     
     //Delete all rules associated with a category
-    if($DB->record_exists('block_risk_monitor_rule', array('categoryid' => $categoryid))) {
-        $DB->delete_records('block_risk_monitor_rule', array('categoryid' => $categoryid));        
+    if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
     }
 }
 else if ($ruleid !== -1) {
-    if($DB->record_exists('block_risk_monitor_rule', array('id' => $ruleid))) {
-        $DB->delete_records('block_risk_monitor_rule', array('id' => $ruleid));
+    
+    //Delete record and readjust weightings.
+    if($rule_to_delete = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $ruleid))) {
+        $old_sum = 100 - intval($rule_to_delete->weighting);
+        $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $ruleid));
+        $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);        
     }
 }
 
@@ -73,7 +79,6 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //Create the body
-$body = '';
 
 //If any courses display first available, else signal no courses
 /*if($courseid == 0) {
@@ -107,7 +112,7 @@ $categories_rules_form = new individual_settings_form_edit_categories_rules('edi
         
         $all_rules = array();
         foreach($all_categories as $category) {
-            $category_rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id));
+            $category_rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
             foreach($category_rules as $category_rule) {
                 array_push($all_rules, $category_rule);
             }
@@ -117,7 +122,7 @@ $categories_rules_form = new individual_settings_form_edit_categories_rules('edi
             $checkboxname = "delete_category".$rule->id;
             if(isset($fromform->$checkboxname)) {
                 //delete from DB!
-                $DB->delete_record('block_risk_monitor_rule', array('id' => $rule->id));
+                $DB->delete_record('block_risk_monitor_rule_inst', array('id' => $rule->id));
             }
         }
 }*/

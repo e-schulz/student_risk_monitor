@@ -56,7 +56,7 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //block_risk_monitor_update_default_rules();
-//$DB->delete_records('block_risk_monitor_rule_type');
+//$DB->delete_records('block_risk_monitor_rule_inst_type');
 //block_risk_monitor_update_default_rules();
 
 //Create the body

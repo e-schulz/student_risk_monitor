@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140825" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
+<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140828" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -29,24 +29,6 @@
         <KEY NAME="blockid" TYPE="foreign" FIELDS="blockid" REFTABLE="block_risk_monitor_block" REFFIELDS="id" COMMENT="Id of the block this course belongs to."/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_risk_monitor_rule" COMMENT="An instance of a rule type, associated with a category">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
-        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the rule."/>
-        <FIELD NAME="weighting" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Weighting of this rule, relative to sum of weighting for all rules in a category"/>
-        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is enabled."/>
-        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The category this rule belongs to"/>
-        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time this rule was created"/>
-        <FIELD NAME="ruletypeid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the rule type this rule is an instance of"/>
-        <FIELD NAME="value" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Any value required by the rule (such as student has not logged in for x days)"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="block_risk_monitor_category" REFFIELDS="id" COMMENT="The category this rule belongs to"/>
-        <KEY NAME="ruletypeid" TYPE="foreign" FIELDS="ruletypeid" REFTABLE="block_risk_monitor_rule_type" REFFIELDS="id" COMMENT="The rule type this rule is an instance of"/>
-      </KEYS>
-    </TABLE>
     <TABLE NAME="block_risk_monitor_category" COMMENT="A risk category, consisting of one or more rules">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
@@ -71,26 +53,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The student this risk is associated with"/>
-        <KEY NAME="ruleid" TYPE="foreign" FIELDS="ruleid" REFTABLE="block_risk_monitor_rule" REFFIELDS="id" COMMENT="The rule this risk instance is associated with"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="block_risk_monitor_rule_type" COMMENT="All possible rules that can be added">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
-        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the rule"/>
-        <FIELD NAME="custom" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is custom (1 = yes, 0 = no)"/>
-        <FIELD NAME="course_specific" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Whether this rule is course specific or general (1 = course specific, 0 = general)"/>
-        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this rule is enabled and can be used. (Can be disabled by admin, if a default rule, or teacher, if a custom rule) (1 = true, 0 = false)"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user that created this rule (0 = default rule)"/>
-        <FIELD NAME="value_required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether a value is required when this rule is created. (1 = yes, 0 = no)"/>
-        <FIELD NAME="value_description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A description for the value required (such as, number of days since last login)"/>
-        <FIELD NAME="action" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The action assoc with this rule, loaded in from the default rules source file. For custom rules, action is simply &quot;CUSTOM&quot;."/>
-        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this rule type was last changed"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user who created a custom rule"/>
+        <KEY NAME="ruleid" TYPE="foreign" FIELDS="ruleid" REFTABLE="block_risk_monitor_rule_inst" REFFIELDS="id" COMMENT="The rule this risk instance is associated with"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_risk_monitor_cat_risk" COMMENT="An overall risk rating for a student in a given category">
@@ -103,6 +66,60 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_rule_inst" COMMENT="An instance of a rule type, associated with a category">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the rule."/>
+        <FIELD NAME="weighting" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Weighting of this rule, relative to sum of weighting for all rules in a category"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time this rule was created"/>
+        <FIELD NAME="value" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Any value required by the rule (such as student has not logged in for x days)"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The category this rule belongs to"/>
+        <FIELD NAME="ruletype" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Type of rule: 1 = default, 2 = custom"/>
+        <FIELD NAME="custruleid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the custom rule this rule is an instance of. If ruletype=2, this ruleid will reference the block_risk_monitor_cust_rule table."/>
+        <FIELD NAME="defaultruleid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="This is references the id of the rule in the rule.php file."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="block_risk_monitor_category" REFFIELDS="id" COMMENT="The category this rule belongs to"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_cust_rule" COMMENT="Custom rules.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the rule"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the rule"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Creator of this rule."/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this rule type was created"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The creator of this rule."/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_question" COMMENT="A question created by teachers to ask students for subjective rules">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="question" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The question text itself"/>
+        <FIELD NAME="custruleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the custom rule this question belongs to"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="custruleid" TYPE="foreign" FIELDS="custruleid" REFTABLE="block_risk_monitor_cust_rule" REFFIELDS="id" COMMENT="The id of the custom rule this question corresponds to"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_option" COMMENT="An option associated with a question">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="label" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The option text to be displayed"/>
+        <FIELD NAME="value" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The value of this option (0 to 100)"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the question this option is associated with"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="block_risk_monitor_question" REFFIELDS="id" COMMENT="The id of the question this option is associated with"/>
       </KEYS>
     </TABLE>
   </TABLES>

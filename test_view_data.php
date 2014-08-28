@@ -49,7 +49,7 @@ $PAGE->set_url('/blocks/risk_monitor/test_view_data.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//$DB->delete_records('block_risk_monitor_rule');
+//$DB->delete_records('block_risk_monitor_rule_inst');
 
 $body = '';
 
@@ -167,7 +167,7 @@ if($demographic_instances = $DB->get_records('block_risk_monitor_course')) {
 //Pretest
 $body .= "<div><b>Rules (for this block)</b><br><br>";
 
-if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
+if($pretest_instances = $DB->get_records('block_risk_monitor_rule_inst')) {
             
             $table = new html_table();
             $headers = array();
@@ -187,11 +187,7 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
             $field4 = new html_table_cell();
             $field4->text = '<b>weighting</b>';
             $headers[] = $field4;
-                    
-            $field5 = new html_table_cell();
-            $field5->text = '<b>enabled</b>';
-            $headers[] = $field5;
-                    
+            
             $field6 = new html_table_cell();
             $field6->text = '<b>categoryid</b>';
             $headers[] = $field6;
@@ -201,7 +197,7 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
             $headers[] = $field7;
 
             $field8 = new html_table_cell();
-            $field8->text = '<b>ruletypeid</b>';
+            $field8->text = '<b>ruletype</b>';
             $headers[] = $field8;
                                 
             $field9 = new html_table_cell();
@@ -232,10 +228,6 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
                 $field4value->text = $pretest_instance->weighting;
                 $instancerow[] = $field4value;
                 
-                $field5value = new html_table_cell();
-                $field5value->text = $pretest_instance->enabled;
-                $instancerow[] = $field5value;
-
                 $field6value = new html_table_cell();
                 $field6value->text = $pretest_instance->categoryid;
                 $instancerow[] = $field6value;
@@ -245,7 +237,7 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
                 $instancerow[] = $field7value;
                 
                 $field8value = new html_table_cell();
-                $field8value->text = $pretest_instance->ruletypeid;
+                $field8value->text = $pretest_instance->ruletype;
                 $instancerow[] = $field8value;
                 
                 $field9value = new html_table_cell();
@@ -325,9 +317,9 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_category')) {
             $body .= "<br><br></div>";
 }
 
-$body .= "<div><b>Rule types</b><br><br>";
+$body .= "<div><b>Custom rules</b><br><br>";
 
-if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_cust_rule')) {
             
             $table = new html_table();
             $headers = array();
@@ -345,14 +337,14 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
             $headers[] = $field3;
             
             $field4 = new html_table_cell();
-            $field4->text = '<b>custom</b>';
+            $field4->text = '<b>userid</b>';
             $headers[] = $field4;
                     
             $field5 = new html_table_cell();
-            $field5->text = '<b>course_specific</b>';
+            $field5->text = '<b>timestamp</b>';
             $headers[] = $field5;
             
-            $field6 = new html_table_cell();
+/*            $field6 = new html_table_cell();
             $field6->text = '<b>enabled</b>';
             $headers[] = $field6;
                     
@@ -366,7 +358,7 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
                     
             $field9 = new html_table_cell();
             $field9->text = '<b>value_description</b>';
-            $headers[] = $field9; 
+            $headers[] = $field9; */
             $table->data[] = new html_table_row($headers);
             
             //header.
@@ -388,14 +380,14 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
                 $instancerow[] = $field3value;
 
                 $field4value = new html_table_cell();
-                $field4value->text = $hypothetical_instance->custom;
+                $field4value->text = $hypothetical_instance->userid;
                 $instancerow[] = $field4value;
                 
                 $field5value = new html_table_cell();
-                $field5value->text = $hypothetical_instance->course_specific;
+                $field5value->text = $hypothetical_instance->timestamp;
                 $instancerow[] = $field5value;
                
-                $field6value = new html_table_cell();
+/*                $field6value = new html_table_cell();
                 $field6value->text = $hypothetical_instance->enabled;
                 $instancerow[] = $field6value;
                 
@@ -409,8 +401,111 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
                 
                 $field9value = new html_table_cell();
                 $field9value->text = $hypothetical_instance->value_description;
-                $instancerow[] = $field9value;
+                $instancerow[] = $field9value;*/
                                
+                $table->data[] = new html_table_row($instancerow);               
+
+            }
+            
+            $body .= html_writer::table($table);
+            $body .= "<br><br></div>";
+}
+
+$body .= "<div><b>Questions</b><br><br>";
+
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_question')) {
+            
+            $table = new html_table();
+            $headers = array();
+            
+            $field1 = new html_table_cell();
+            $field1->text = '<b>ID</b>';
+            $headers[] = $field1;
+                    
+            $field2 = new html_table_cell();
+            $field2->text = '<b>question</b>';
+            $headers[] = $field2;
+            
+            $field3 = new html_table_cell();
+            $field3->text = '<b>custruleid</b>';
+            $headers[] = $field3;
+            
+            $table->data[] = new html_table_row($headers);
+            
+            //header.
+            foreach($hypothetical_instances as $hypothetical_instance) {
+                
+                //get the user                        
+                $instancerow = array();
+
+                $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->id;
+                $instancerow[] = $field1value;
+                
+                $field2value = new html_table_cell();
+                $field2value->text = $hypothetical_instance->question;
+                $instancerow[] = $field2value;
+                
+                $field3value = new html_table_cell();
+                $field3value->text = $hypothetical_instance->custruleid;
+                $instancerow[] = $field3value;;
+               
+                $table->data[] = new html_table_row($instancerow);               
+
+            }
+            
+            $body .= html_writer::table($table);
+            $body .= "<br><br></div>";
+}
+
+$body .= "<div><b>Options</b><br><br>";
+
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_option')) {
+            
+            $table = new html_table();
+            $headers = array();
+            
+            $field1 = new html_table_cell();
+            $field1->text = '<b>ID</b>';
+            $headers[] = $field1;
+                    
+            $field2 = new html_table_cell();
+            $field2->text = '<b>label</b>';
+            $headers[] = $field2;
+            
+            $field3 = new html_table_cell();
+            $field3->text = '<b>value</b>';
+            $headers[] = $field3;
+            
+            $field4 = new html_table_cell();
+            $field4->text = '<b>questionid</b>';
+            $headers[] = $field4;
+                    
+ 
+            $table->data[] = new html_table_row($headers);
+            
+            //header.
+            foreach($hypothetical_instances as $hypothetical_instance) {
+                
+                //get the user                        
+                $instancerow = array();
+
+                $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->id;
+                $instancerow[] = $field1value;
+                
+                $field2value = new html_table_cell();
+                $field2value->text = $hypothetical_instance->label;
+                $instancerow[] = $field2value;
+                
+                $field3value = new html_table_cell();
+                $field3value->text = $hypothetical_instance->value;
+                $instancerow[] = $field3value;
+
+                $field4value = new html_table_cell();
+                $field4value->text = $hypothetical_instance->questionid;
+                $instancerow[] = $field4value;
+               
                 $table->data[] = new html_table_row($instancerow);               
 
             }
@@ -481,6 +576,108 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_risk')) {
             $body .= html_writer::table($table);
             $body .= "<br><br></div>";
 }
+
+$body .= "<div><b>Risk instances</b><br><br>";
+
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_risk')) {
+            
+            $table = new html_table();
+            $headers = array();
+            
+            $field1 = new html_table_cell();
+            $field1->text = '<b>ID</b>';
+            $headers[] = $field1;
+                    
+            $field2 = new html_table_cell();
+            $field2->text = '<b>userid</b>';
+            $headers[] = $field2;
+            
+            $field3 = new html_table_cell();
+            $field3->text = '<b>ruleid</b>';
+            $headers[] = $field3;
+            
+            $field4 = new html_table_cell();
+            $field4->text = '<b>value</b>';
+            $headers[] = $field4;
+                    
+            $field5 = new html_table_cell();
+            $field5->text = '<b>timestamp</b>';
+            $headers[] = $field5;
+ 
+            $table->data[] = new html_table_row($headers);
+            
+            //header.
+            foreach($hypothetical_instances as $hypothetical_instance) {
+                
+                //get the user                        
+                $instancerow = array();
+
+                $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->id;
+                $instancerow[] = $field1value;
+                
+                $field2value = new html_table_cell();
+                $field2value->text = $hypothetical_instance->userid;
+                $instancerow[] = $field2value;
+                
+                $field3value = new html_table_cell();
+                $field3value->text = $hypothetical_instance->ruleid;
+                $instancerow[] = $field3value;
+
+                $field4value = new html_table_cell();
+                $field4value->text = $hypothetical_instance->value;
+                $instancerow[] = $field4value;
+                
+                $field5value = new html_table_cell();
+                $field5value->text = $hypothetical_instance->timestamp;
+                $instancerow[] = $field5value;
+               
+                $table->data[] = new html_table_row($instancerow);               
+
+            }
+            
+            $body .= html_writer::table($table);
+            $body .= "<br><br></div>";
+}
+/*$body .= "<div><b>Feedbacks</b><br><br>";
+
+if($hypothetical_instances = $DB->get_records('feedback_value')) {
+            
+            $table = new html_table();
+            $headers = array();
+            
+            $field1 = new html_table_cell();
+            $field1->text = '<b>id</b>';
+            $headers[] = $field1;
+
+            $field1 = new html_table_cell();
+            $field1->text = '<b>courseid</b>';
+            $headers[] = $field1;
+ 
+            $table->data[] = new html_table_row($headers);
+            
+            //header.
+            foreach($hypothetical_instances as $hypothetical_instance) {
+                
+                //get the user                        
+                $instancerow = array();
+
+                $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->value;
+                $instancerow[] = $field1value;
+                
+                 $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->course_id;
+                $instancerow[] = $field1value;
+                     
+               
+                $table->data[] = new html_table_row($instancerow);               
+
+            }
+            
+            $body .= html_writer::table($table);
+            $body .= "<br><br></div>";
+}*/
 //Posttest
 /*$body .= "<div><b>Log (for this block)</b><br><br>";
 

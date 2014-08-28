@@ -31,15 +31,21 @@ function block_risk_monitor_calculate_risks() {
                 $categories = $DB->get_records('block_risk_monitor_category'/*, array('courseid' => $courseid)*/);
                 foreach($categories as $category) {
                     
-                    $rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $category->id));
+                    $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
                     foreach($rules as $rule) {
                         
-                        if($rule_type = $DB->get_record('block_risk_monitor_rule_type', array('id' => $rule->ruletypeid))) {
-                            $action = $rule_type->action;
+                        //if rule is a default rule
+                        //if($rule_type = $DB->get_record('block_risk_monitor_rule_inst_type', array('id' => $rule->ruletypeid))) {
+                        if($rule->ruletype == 1) {
                             
-                            $value = -1;
-                            if($rule_type->value_required == 1) {
+                            $default_rule_id = $rule->defaultruleid;
+                            $action = DefaultRules::$default_rule_actions[$default_rule_id];
+                            
+                            if(DefaultRules::$default_rule_value_required[$default_rule_id]) {
                                 $value = $rule->value;
+                            }
+                            else {
+                                $value = -1;
                             }
                             
                             //Determine the risk rating (between 0 and 100)
@@ -70,7 +76,6 @@ function block_risk_monitor_calculate_risks() {
                             }
                             //If risk rating is zero, don't bother creating a risk instance.
                         }
-                        //If this rule isn't assoc with a rule type, can't really do anything (this should never happen.)
                                             
                     }
                     
@@ -125,18 +130,6 @@ function block_risk_monitor_calculate_risks() {
 function block_risk_monitor_clear_risks($timestamp) {
     
     global $DB;
-
-    //Ruletypes have been updated
-    $updated_ruletypes = block_risk_monitor_get_out_of_date_ruletypes($timestamp);
-    foreach($updated_ruletypes as $updated_ruletype) {
-        
-        //Get all the rules with this rule type.
-        if($rules = $DB->get_records('block_risk_monitor_rule', array('ruletypeid' => $updated_ruletype->id))) {
-            foreach($rules as $rule) {
-                $DB->delete_records('block_risk_monitor_risk', array('ruleid' => $rule->id));
-            }
-        }
-    }
     
     //Rules have been updated
     $updated_rules = block_risk_monitor_get_out_of_date_rules($timestamp);
@@ -151,20 +144,11 @@ function block_risk_monitor_clear_risks($timestamp) {
     }
 }
 
-//Returns ruletypes that have been updated since timestamp
-function block_risk_monitor_get_updated_ruletypes($timestamp) {   
-    global $DB;
-
-    //Get updated ruletypes (timestamp is more recent than given)
-    $updated_ruletypes = $DB->get_records_select('block_risk_monitor_rule_type','timestamp > '.$timestamp);
-    return $updated_ruletypes;
-}
-
 //Returns rules that have been updated since timestamp
 function block_risk_monitor_get_updated_rules($timestamp) {
     global $DB;
 
-    $updated_rules = $DB->get_records_select('block_risk_monitor_rule','timestamp > '.$timestamp);
+    $updated_rules = $DB->get_records_select('block_risk_monitor_rule_inst','timestamp > '.$timestamp);
     return $updated_rules;
 }
 

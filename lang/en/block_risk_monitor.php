@@ -72,7 +72,8 @@ $string['add_rule'] = "Add new rule..";
 $string['no_courses'] = "You are not currently tracking any courses.";
 $string['add_courses'] = "Add courses..";
 $string['edit_rule'] = "Edit...";
-$string['new_survey'] = "Create a custom survey..";
+$string['new_custom_rule'] = "Create custom rules..";
+$string['back_to_categories'] = "Back to categories and rules";
 
 
 //Course strings
@@ -85,6 +86,11 @@ $string['low'] = "Low";
 $string['med'] = "Med";
 $string['high'] = "High";
 
+//Custom rule strings
+$string['new_custom'] = "Create new custom rule";
+$string['high_risk'] = "High risk";
+$string['moderate_risk'] = "Moderate risk";
+$string['low_risk'] = "Low risk";
 
 //Errors
 $string['errorinsertexam'] = "Error trying to add exam to database.";
@@ -107,7 +113,7 @@ $string['postamble-template'] = 'Thankyou for taking the time to complete the mo
 //New rule
 $string['weighting_description'] = "The weighting given to a rule determines how important the rule is within a category. Rules with higher weighting will count more towards the risk rating within a category. If rules already exist in this category, they will be automatically adjusted based on the weighting given to this rule.";
 $string['default_rule'] = "Default rule";
-$string['custom_rule'] = "Custom survey";
+$string['custom_rule'] = "Custom rule";
 
 //Default rules
 $string['name_not_logged_in'] = "";

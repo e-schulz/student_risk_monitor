@@ -46,9 +46,9 @@ abstract class DefaultRules {
         for($i=0; $i<count(DefaultRules::$default_rule_actions); $i++) {
             
             $default_rule = new object();
+            $default_rule->id = $i;
             $default_rule->name = DefaultRules::$default_rule_names[$i];
             $default_rule->description = DefaultRules::$default_rule_descriptions[$i];
-            $default_rule->custom = 0;
             $default_rule->value_required = DefaultRules::$default_rule_value_required[$i];
             if ($default_rule->value_required == 1) {
                 $default_rule->value_description = DefaultRules::$default_rule_value_description[$i];

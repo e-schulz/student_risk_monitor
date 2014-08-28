@@ -569,6 +569,149 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260829, 'risk_monitor');
     }
     
-    
+        if ($oldversion < 2014260834) {
+
+        // Define table block_risk_monitor_rule_inst to be created.
+        $table = new xmldb_table('block_risk_monitor_rule_inst');
+
+        // Adding fields to table block_risk_monitor_rule_inst.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('weighting', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('value', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('ruletype', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_rule_inst.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('categoryid', XMLDB_KEY_FOREIGN, array('categoryid'), 'block_risk_monitor_category', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_rule_inst.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table block_risk_monitor_rule to be dropped.
+        $table = new xmldb_table('block_risk_monitor_rule');
+
+        // Conditionally launch drop table for block_risk_monitor_rule.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+         // Define key ruleid (foreign) to be dropped form block_risk_monitor_rule_risk.
+        $table = new xmldb_table('block_risk_monitor_rule_risk');
+        $key = new xmldb_key('ruleid', XMLDB_KEY_FOREIGN, array('ruleid'), 'block_risk_monitor_rule', array('id'));
+
+        // Launch drop key ruleid.
+        $dbman->drop_key($table, $key);
+        
+                // Define key ruleid (foreign) to be added to block_risk_monitor_rule_risk.
+        $table = new xmldb_table('block_risk_monitor_rule_risk');
+        $key = new xmldb_key('ruleid', XMLDB_KEY_FOREIGN, array('ruleid'), 'block_risk_monitor_rule_inst', array('id'));
+
+        // Launch add key ruleid.
+        $dbman->add_key($table, $key);
+
+                // Define table block_risk_monitor_cust_rule to be created.
+        $table = new xmldb_table('block_risk_monitor_cust_rule');
+
+        // Adding fields to table block_risk_monitor_cust_rule.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_cust_rule.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_cust_rule.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        
+                // Define table block_risk_monitor_rule_type to be dropped.
+        $table = new xmldb_table('block_risk_monitor_rule_type');
+
+        // Conditionally launch drop table for block_risk_monitor_rule_type.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+        
+        // Changing nullability of field ruleid on table block_risk_monitor_rule_inst to null.
+        $table = new xmldb_table('block_risk_monitor_rule_inst');
+        $field = new xmldb_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'ruletype');
+
+        // Launch change of nullability for field ruleid.
+        $dbman->change_field_notnull($table, $field);
+        
+        // Rename field ruleid on table block_risk_monitor_rule_inst to NEWNAMEGOESHERE.
+        $table = new xmldb_table('block_risk_monitor_rule_inst');
+        $field = new xmldb_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'ruletype');
+
+        // Launch rename field ruleid.
+        $dbman->rename_field($table, $field, 'custruleid');
+        
+        
+        // Define field defaultruleid to be added to block_risk_monitor_rule_inst.
+        $table = new xmldb_table('block_risk_monitor_rule_inst');
+        $field = new xmldb_field('defaultruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'custruleid');
+
+        // Conditionally launch add field defaultruleid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260834, 'risk_monitor');
+    }
+
+        if ($oldversion < 2014260835) {
+
+        // Define table block_risk_monitor_question to be created.
+        $table = new xmldb_table('block_risk_monitor_question');
+
+        // Adding fields to table block_risk_monitor_question.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('question', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('custruleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_question.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('custruleid', XMLDB_KEY_FOREIGN, array('custruleid'), 'block_risk_monitor_cust_rule', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_question.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        
+                // Define table block_risk_monitor_option to be created.
+        $table = new xmldb_table('block_risk_monitor_option');
+
+        // Adding fields to table block_risk_monitor_option.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('label', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('value', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_option.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('questionid', XMLDB_KEY_FOREIGN, array('questionid'), 'block_risk_monitor_question', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_option.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260835, 'risk_monitor');
+    }
+
     return true;
 }

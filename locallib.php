@@ -235,11 +235,27 @@ function block_risk_monitor_get_top_tabs($currenttoptab) {
     return '<div class="topdisplay">'.$OUTPUT->tabtree($row, $currenttoptab).'</div>';
 }
 
-//Get rules for a given category.
+//Get all rules for a given category.
 function block_risk_monitor_get_rules($categoryid) {
     
     global $DB;
-    $rules = $DB->get_records('block_risk_monitor_rule', array('categoryid' => $categoryid, 'enabled' => 1));
+    $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
+    return $rules;
+}
+
+//Get default rules for a given category.
+function block_risk_monitor_get_default_rules($categoryid) {
+    
+    global $DB;
+    $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid, 'ruletype' => 1));
+    return $rules;
+}
+
+//Get custom rules for a given category.
+function block_risk_monitor_get_custom_rules($categoryid) {
+    
+    global $DB;
+    $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid, 'ruletype' => 2));
     return $rules;
 }
 
@@ -250,16 +266,17 @@ function block_risk_monitor_get_unregistered_default_rule_names($categoryid) {
     global $DB;
     
     //Get the default rules
-    $default_rules = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 1));
+    //$default_rules = $DB->get_records('block_risk_monitor_rule_inst_type', array('custom' => 0, 'enabled' => 1));
+    $default_rules = DefaultRules::getDefaultRuleObjects();
     
     //Get the registered rules
-    $registered_rules = block_risk_monitor_get_rules($categoryid);
+    $registered_rules = block_risk_monitor_get_default_rules($categoryid);
     
     $unregistered_defaults = array();
     while($default_rule = current($default_rules)) {
         $found = false;
         foreach($registered_rules as $registered_rule) {
-            if(strcmp($registered_rule->name, $default_rule->name) == 0) {
+            if(intval($registered_rule->defaultruleid) == intval($default_rule->id)) {
                 $found = true;
             }
         }
@@ -271,10 +288,38 @@ function block_risk_monitor_get_unregistered_default_rule_names($categoryid) {
     return $unregistered_defaults;
 }
 
+//Returns all custom rules that aren't already in the category.
+function block_risk_monitor_get_unregistered_custom_rule_names($categoryid) {
+    
+    global $DB;
+    
+    //Get the default rules
+    //$default_rules = $DB->get_records('block_risk_monitor_rule_inst_type', array('custom' => 0, 'enabled' => 1));
+    $custom_rules = $DB->get_records('block_risk_monitor_cust_rule');
+    
+    //Get the registered rules
+    $registered_rules = block_risk_monitor_get_custom_rules($categoryid);
+    
+    $unregistered_customs = array();
+    while($custom_rule = current($custom_rules)) {
+        $found = false;
+        foreach($registered_rules as $registered_rule) {
+            if(intval($registered_rule->custruleid) == intval($custom_rule->id)) {
+                $found = true;
+            }
+        }
+        if ($found == false) {
+            $unregistered_customs[$custom_rule->id] = $custom_rule->name;
+        }
+        next($custom_rules);
+    }
+    return $unregistered_customs;
+}
+
 //Goes through existing rules and creates new weightings in order to accommodate for a new or edited rule
 //Sum = 100% minus the specified weighting of the new rule
 //If ruleid given, means the rule already exists and must exclude it from our rearrangements
-function block_risk_monitor_adjust_weightings($categoryid, $newsum, $ruleid = -1) {
+function block_risk_monitor_adjust_weightings_rule_added($categoryid, $newsum, $ruleid = -1) {
     
     global $DB;
     
@@ -283,113 +328,61 @@ function block_risk_monitor_adjust_weightings($categoryid, $newsum, $ruleid = -1
     
     //Check the given rule exists
     if($ruleid !== -1) {
-        if(!$DB->record_exists('block_risk_monitor_rule', array('id' => $ruleid))) {
+        if(!$DB->record_exists('block_risk_monitor_rule_inst', array('id' => $ruleid))) {
             $ruleid = -1;
         }
         else {
-            $rule = $DB->get_record('block_risk_monitor_rule', array('id' => $ruleid));
+            $rule = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $ruleid));
         }
     }
     
-    $previoussum = 0;
+    
     $rules_to_change = array();
+    $previous_sum = 0;
     //Exclude the existing rule
-    if ($ruleid !== -1) {
-        //Loop thru rules
-        foreach($registered_rules as $registered_rule) {
+    foreach($registered_rules as $registered_rule) {
             
-            if(!($registered_rule->id == $ruleid)) {
-                array_push($rules_to_change, $registered_rule);
-            }
+        if(!($registered_rule->id == $ruleid)) {
+            array_push($rules_to_change, $registered_rule);
         }
-        
-        $previoussum = 100 - floatval($rule->weighting);
+        $previous_sum += $registered_rule->weighting;
     }
-    else {
-        $rules_to_change = $registered_rules;
-        $previoussum = 100;
-    }
+ 
     
     
     foreach($rules_to_change as $rule_to_change) {
         //Get the weighting
         $weighting_value = $rule_to_change->weighting;
         
-        $new_weighting = ($weighting_value/$previoussum) * $newsum;
+        $new_weighting = ($weighting_value/$previous_sum) * $newsum;
         
         //Change in DB
         $new_record = new object();
         $new_record->id = $rule_to_change->id;
         $new_record->weighting = $new_weighting;
-        $DB->update_record('block_risk_monitor_rule', $new_record);
+        $DB->update_record('block_risk_monitor_rule_inst', $new_record);
     }
     
 }
 
-function block_risk_monitor_update_default_rules() {
+//A rule has just been deleted from this category. old_sum = 100% minus the weighting of the deleted rule
+function block_risk_monitor_adjust_weightings_rule_deleted($categoryid, $old_sum) {
+    
     global $DB;
     
-    //Get all current default rules in the database.
-    if($DB->record_exists('block_risk_monitor_rule_type', array('custom' => 0))) {
-        
-        //Get the enabled and disabled rules -DONT BOTHER FOR NOW.
-        /*$default_rules = DefaultRules::getDefaultRuleObjects();
-        $enabled_rules_by_admin = array();
-        $disabled_rules_by_admin = array();
-        $m = 'moodle';
-        $i = 0;
-        foreach($default_rules as $default_rule) {
-             $default_rule_enabled = get_config($m, 'block_risk_monitor_default_rule'.$i);
-             if(intval($default_rule_enabled) == 1) {
-                 array_push($enabled_rules_by_admin, $default_rule);
-             }
-             else {
-                 array_push($disabled_rules_by_admin, $default_rule);
-             }
-             $i++;
-        }
-        
-        $enabled_rules_in_database = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 1));
-        $disabled_rules_in_database = $DB->get_records('block_risk_monitor_rule_type', array('custom' => 0, 'enabled' => 0));
+    //Get all the rules
+    $registered_rules = block_risk_monitor_get_rules($categoryid);
+    
+       foreach($registered_rules as $registered_rule) {
+        //Get the weighting
+                $weighting_value = $registered_rule->weighting;
 
-        foreach($enabled_rules_by_admin as $enabled_rule_by_admin) {
-            foreach($disabled_rules_in_database as $disabled_rule_in_database) {
-                if(strcmp($enabled_rule_by_admin->name, $disabled_rule_in_database->name) == 0) {
-                    //enable in database
-                    $changed_rule = new object();
-                    $changed_rule->id = $disabled_rule_in_database->id;
-                    $changed_rule->enabled = 1;
-                    $DB->update_record('block_risk_monitor_rule_type', $changed_rule);
-                }
-            }
-        }
-        
-        foreach($disabled_rules_by_admin as $disabled_rule_by_admin) {
-            foreach($enabled_rules_in_database as $enabled_rule_in_database) {
-                if(strcmp($disabled_rule_by_admin->name, $enabled_rule_in_database->name) == 0) {
-                    $changed_rule = new object();
-                    $changed_rule->id = $enabled_rule_in_database->id;
-                    $changed_rule->enabled = 0;
-                    $DB->update_record('block_risk_monitor_rule_type', $changed_rule);                }                
-            }
-        }*/
-    }
-    else {      //default rules have not yet been added to database
-        block_risk_monitor_load_default_rules();
-    }
+                $new_weighting = ($weighting_value/$old_sum) * 100;
 
-}
-
-function block_risk_monitor_load_default_rules() {
-
-    //If rules arent already loaded.
-    if(!$DB->record_exists('block_risk_monitor_rule_type', array('custom' => 0))) {
-
-        $default_rules = DefaultRules::getDefaultRuleObjects();
-        foreach($default_rules as $default_rule) {
-            $default_rule->enabled = 1;
-            $default_rule->timestamp = time();
-            $DB->insert_record('block_risk_monitor_rule_type', $default_rule);
-        }
+                //Change in DB
+                $new_record = new object();
+                $new_record->id = $registered_rule->id;
+                $new_record->weighting = $new_weighting;
+                $DB->update_record('block_risk_monitor_rule_inst', $new_record);
     }
 }
