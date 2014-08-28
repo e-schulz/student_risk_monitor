@@ -61,15 +61,18 @@ $string['edit_courses_text'] = "Click to determine which courses to track.";
 $string['edit_templates_text'] = "Click to edit the messages displayed before and after the anxiety module.";
 $string['edit_categories_rules'] = "Edit categories and rules";
 $string['edit_categories_rules_description'] = "Click to edit the categories and rules.";
+$string['edit_interventions'] = "Edit interventions";
+$string['edit_interventions_description'] = "Click to add new intervention templates or edit existing.";
 
 //Edit categories rules strings
 $string['new_category'] = "Add category";
 $string['no_categories'] = "No categories created. Click 'Add category' to create one.";
 $string['edit_category'] = "Edit...";
-$string['add_rule'] = "Add a new rule..";
+$string['add_rule'] = "Add new rule..";
 $string['no_courses'] = "You are not currently tracking any courses.";
 $string['add_courses'] = "Add courses..";
 $string['edit_rule'] = "Edit...";
+$string['new_survey'] = "Create a custom survey..";
 
 
 //Course strings
@@ -103,6 +106,8 @@ $string['postamble-template'] = 'Thankyou for taking the time to complete the mo
 
 //New rule
 $string['weighting_description'] = "The weighting given to a rule determines how important the rule is within a category. Rules with higher weighting will count more towards the risk rating within a category. If rules already exist in this category, they will be automatically adjusted based on the weighting given to this rule.";
+$string['default_rule'] = "Default rule";
+$string['custom_rule'] = "Custom survey";
 
 //Default rules
 $string['name_not_logged_in'] = "";
@@ -119,5 +124,6 @@ $string['description_missed_deadlines'] = "";
 $string['no_risk_icon'] = "pix/no_risk_icon.png";
 $string['moderate_risk_icon'] = "pix/moderate_risk_icon.png";
 $string['high_risk_icon'] = "pix/high_risk_icon.png";
-
+$string['edit_icon'] = "../../pix/t/edit.png";
+$string['delete_icon'] = "../../pix/t/delete.png";
 ?>

@@ -42,7 +42,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //get all the categories and associated risk instances.
-if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+if ($categories = $DB->get_records('block_risk_monitor_category'/*, array('courseid' => $courseid)*/)) {
  
         //Print out the header
         $studentstable = new html_table();
@@ -77,6 +77,7 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
         
         //Loop thru the at risk students.
         if(count($students_at_risk) > 0) {
+            
             foreach($students_at_risk as $student_at_risk) {
                 
                 //get the student
@@ -107,19 +108,19 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                         
                         $category_cell = new html_table_cell();
                         if($found == false) {           //no risk for this category, leave empty
-                            $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor')));
+                            $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'), 'align' => 'middle'));
                         }
                         else {                          //risk for this category!
                             //Get the risk
                             $rating = $student_risk->value;
                             if($rating > MODERATE_RISK && $rating < HIGH_RISK) {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor')));
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                             }
                             else if($rating > HIGH_RISK) {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor')));
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                             }
                             else {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor')));
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                             }
                             
                         }

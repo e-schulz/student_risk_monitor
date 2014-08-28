@@ -47,7 +47,7 @@ $capabilities = array(
 			'manager' => CAP_ALLOW
 		),
 		
-		'clonepermissionsfrom' => 'moodle/site:manageblocks'
+		//'clonepermissionsfrom' => 'moodle/site:manageblocks'
 	),
 	
 	'block/risk_monitor:view' => array(

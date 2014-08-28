@@ -68,6 +68,15 @@ if($message != -1) {
         CASE 2: 
             $body .= get_string('errweightingnotinrange','block_risk_monitor');
             break;
+        CASE 3:
+            $body .= "Error: value must be numeric";
+            break;
+        CASE 4: 
+            $body .= "Error: value must be a positive number.";
+            break;
+        CASE 5:
+            $body .= "Error: must insert a value";
+            break;
         default:
             break;
     }
@@ -93,6 +102,17 @@ if ($fromform = $edit_rule_form->get_data()) {
         redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 2)));        
     }
     
+    if(!is_numeric($fromform->value_text)) {
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 3)));
+    }
+    else if(intval($fromform->value_text < 0)) {
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 4)));        
+    }
+    
+    if(empty($fromform->value_text)) {
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 5)));
+    }
+    
     $weighting_value = $fromform->weighting_text;
    //if no weighing given, default to 0
     if(empty($fromform->weighting_text)) {
@@ -109,6 +129,8 @@ if ($fromform = $edit_rule_form->get_data()) {
     $edited_rule = new object();
     $edited_rule->id = $ruleid;
     $edited_rule->weighting = $weighting_value;
+    $edited_rule->value = $fromform->value_text;
+    $edited_rule->timestamp = time();
     
     //add to DB
     $DB->update_record('block_risk_monitor_rule', $edited_rule);
@@ -131,6 +153,7 @@ echo $OUTPUT->heading("Edit Rule");
 /*if($message) {
     echo $message;
 }*/
+    
 echo $body;
 $edit_rule_form->display();
 echo $OUTPUT->footer();

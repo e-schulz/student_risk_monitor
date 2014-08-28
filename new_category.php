@@ -21,7 +21,7 @@ require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
-$courseid = required_param('courseid', PARAM_INT);              
+//$courseid = required_param('courseid', PARAM_INT);              
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -55,7 +55,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Create the form
-$new_category_form = new individual_settings_form_new_category('new_category.php?userid='.$USER->id.'&courseid='.$courseid); 
+$new_category_form = new individual_settings_form_new_category('new_category.php?userid='.$USER->id/*.'&courseid='.$courseid*/); 
 
 //On submit
 if ($fromform = $new_category_form->get_data()) {
@@ -63,7 +63,7 @@ if ($fromform = $new_category_form->get_data()) {
     $new_category = new object();
     $new_category->name = $fromform->name_text;
     $new_category->description = $fromform->description_text;
-    $new_category->courseid = $courseid;
+    $new_category->courseid = /*$courseid*/0;
     $new_category->timestamp = time();
     
     //add to DB
@@ -72,7 +72,7 @@ if ($fromform = $new_category_form->get_data()) {
     }     
     
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $courseid*/)));
 
 }
 

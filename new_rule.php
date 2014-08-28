@@ -67,15 +67,32 @@ if($message != -1) {
         CASE 2: 
             $body .= get_string('errweightingnotinrange','block_risk_monitor');
             break;
+        CASE 3:
+            $body .= "Error: value must be numeric";
+            break;
+        CASE 4: 
+            $body .= "Error: value must be a positive number.";
+            break;
+        CASE 5:
+            $body .= "Error: must insert a value";
+            break;
         default:
             break;
     }
 }
 
-//Create the form
-$new_rule_form = new individual_settings_form_new_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid, array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
+//$default_rule_link = get_string('default_rule', 'block_risk_monitor');
+//$custom_rule_link = html_writer::link(new moodle_url('new_survey.php', array('userid' => $USER->id, 'categoryid' => $categoryid)), get_string('custom_rule', 'block_risk_monitor'));
+
+//$rule_type_links = $default_rule_link."&nbsp;|&nbsp;".$custom_rule_link."<br><br>";
+
+$new_rule_form = new individual_settings_form_new_default_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid, array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
 
 //On submit
+if($new_rule_form->is_cancelled()) {
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $getcategory->courseid*/)));    
+}
+
 if ($fromform = $new_rule_form->get_data()) {
     
     //If they want to view description
@@ -83,7 +100,7 @@ if ($fromform = $new_rule_form->get_data()) {
         redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id)));
     }
     else if(isset($fromform->submit_get_weighting_description)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'weightingdesc' => 1)));
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'weightingdesc' => 1, 'rule_id' => $fromform->rule_id)));
     }
     
     //Error checking
@@ -93,6 +110,18 @@ if ($fromform = $new_rule_form->get_data()) {
     }
     else if(intval($fromform->weighting_text < 0 || $fromform->weighting_text > 100)) {
         redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2)));        
+    }
+    
+    //Error checking: value
+    if(!is_numeric($fromform->value_text)) {
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3)));
+    }
+    else if(intval($fromform->value_text < 0)) {
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 4)));        
+    }
+    
+    if(empty($fromform->value_text)) {
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 5)));
     }
     
     $weighting_value = $fromform->weighting_text;
@@ -117,6 +146,7 @@ if ($fromform = $new_rule_form->get_data()) {
     $new_rule->weighting = $weighting_value;
     $new_rule->enabled = 1;
     $new_rule->categoryid = $categoryid;
+    $new_rule->value = $fromform->value_text;
     $new_rule->timestamp = time();
     
     //add to DB
@@ -124,10 +154,16 @@ if ($fromform = $new_rule_form->get_data()) {
         echo get_string('errorinsertrule', 'block_risk_monitor');
     }     
     
+    //Edit the category timestamp, to show a new rule has been added.
+    $edited_category = new object();
+    $edited_category->id = $categoryid;
+    $edited_category->timestamp = time();
+    $DB->update_record('block_risk_monitor_category', $edited_category);
+    
     //Adjust the other weightings so they all add to 100%
     
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $getcategory->courseid)));
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $getcategory->courseid*/)));
 }
 
 //Render the HTML
@@ -141,6 +177,7 @@ echo $OUTPUT->heading($blockname);
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings');
 echo $OUTPUT->heading("New Rule");
+//echo $rule_type_links;
 /*if($message) {
     echo $message;
 }*/

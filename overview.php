@@ -27,7 +27,7 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
 //CRON IS HERE FOR NOW - TO DO - GET RID OF IT
-block_risk_monitor_cron();
+//block_risk_monitor_cron();
 
 //PAGE PARAMS
 $blockname = get_string('pluginname', 'block_risk_monitor');

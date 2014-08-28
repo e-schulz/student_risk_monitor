@@ -22,7 +22,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 //$message = optional_param('message', 0, PARAM_INT);
-$courseid = optional_param('courseid', 0, PARAM_INT);
+//$courseid = optional_param('courseid', 0, PARAM_INT);
 $categoryid = optional_param('categoryid', -1, PARAM_INT);
 $ruleid = optional_param('ruleid', -1, PARAM_INT);
 
@@ -55,6 +55,7 @@ else if ($ruleid !== -1) {
     }
 }
 
+$back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id)), get_string('back_to_settings','block_risk_monitor'));
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -75,7 +76,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //If any courses display first available, else signal no courses
-if($courseid == 0) {
+/*if($courseid == 0) {
     
     //Check courses
     if(!$registered_courses = block_risk_monitor_get_registered_courses()) {            //no courses
@@ -86,14 +87,14 @@ if($courseid == 0) {
     }
     
     
-}
+}*/
 //Get all the categories and courses.
-$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
+$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
        
-if($courseid == -1) {
+/*if($courseid == -1) {
     $body .= get_string('no_courses', 'block_risk_monitor')."<br>";
     $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
-}
+}*/
 
         
 ///RENDERING THE HTML
@@ -134,9 +135,11 @@ echo block_risk_monitor_get_top_tabs('settings');
 echo $OUTPUT->heading("Categories and rules");
 
 //Course tabs
-echo block_risk_monitor_get_course_tabs_html($courseid);
+//echo block_risk_monitor_get_course_tabs_html($courseid);
 echo $body;
-if ($courseid !== -1) {
-    $categories_rules_form->display();
-}
+//if ($courseid !== -1) {
+$categories_rules_form->display();
+//}
+    
+echo $back_to_settings;
 echo $OUTPUT->footer();

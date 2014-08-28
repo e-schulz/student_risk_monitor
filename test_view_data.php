@@ -199,6 +199,14 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
             $field7 = new html_table_cell();
             $field7->text = '<b>timestamp</b>';
             $headers[] = $field7;
+
+            $field8 = new html_table_cell();
+            $field8->text = '<b>ruletypeid</b>';
+            $headers[] = $field8;
+                                
+            $field9 = new html_table_cell();
+            $field9->text = '<b>value</b>';
+            $headers[] = $field9;
             
             $table->data[] = new html_table_row($headers);
             
@@ -236,7 +244,15 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule')) {
                 $field7value->text = $pretest_instance->timestamp;
                 $instancerow[] = $field7value;
                 
+                $field8value = new html_table_cell();
+                $field8value->text = $pretest_instance->ruletypeid;
+                $instancerow[] = $field8value;
                 
+                $field9value = new html_table_cell();
+                $field9value->text = $pretest_instance->value;
+                $instancerow[] = $field9value;
+                
+                 
                 $table->data[] = new html_table_row($instancerow);               
 
             }
@@ -343,6 +359,14 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
             $field7 = new html_table_cell();
             $field7->text = '<b>userid</b>';
             $headers[] = $field7; 
+
+            $field8 = new html_table_cell();
+            $field8->text = '<b>value_required</b>';
+            $headers[] = $field8;
+                    
+            $field9 = new html_table_cell();
+            $field9->text = '<b>value_description</b>';
+            $headers[] = $field9; 
             $table->data[] = new html_table_row($headers);
             
             //header.
@@ -378,7 +402,15 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_rule_type')) {
                 $field7value = new html_table_cell();
                 $field7value->text = $hypothetical_instance->userid;
                 $instancerow[] = $field7value;
-               
+
+                $field8value = new html_table_cell();
+                $field8value->text = $hypothetical_instance->value_required;
+                $instancerow[] = $field8value;
+                
+                $field9value = new html_table_cell();
+                $field9value->text = $hypothetical_instance->value_description;
+                $instancerow[] = $field9value;
+                               
                 $table->data[] = new html_table_row($instancerow);               
 
             }

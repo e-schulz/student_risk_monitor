@@ -9,29 +9,11 @@
 defined('MOODLE_INTERNAL') || die();
 require_once("../../config.php");
 require_once("../../calendar/lib.php");
-require_once("default_rules.php");
+require_once("rules.php");
+require_once("riskslib.php");
+require_once("rulelib.php");
 
 $block_risk_monitor_block = $DB->get_record('block_risk_monitor_block', array('teacherid' => $USER->id));
-
-define("HIGH_RISK", 75);
-define("MODERATE_RISK", 50);
-/**
- * Does something really useful with the passed things
- *
- * @param array $things
- * @return object
- */
-
-//This is to be implemented in cron later on
-function block_risk_monitor_cron() {
-    
-    //Check the registered courses
-    $registered_courses = block_risk_monitor_get_registered_courses();
-    foreach($registered_courses as $registered_course) {
-        block_risk_monitor_create_exam($registered_course->id);
-    }
-    
-}
 
 ///Create an exam instance for the course if there is an exam within a week
 //returns true if new exam instance created, else false
@@ -393,11 +375,21 @@ function block_risk_monitor_update_default_rules() {
         }*/
     }
     else {      //default rules have not yet been added to database
-        //Get the default objects
+        block_risk_monitor_load_default_rules();
+    }
+
+}
+
+function block_risk_monitor_load_default_rules() {
+
+    //If rules arent already loaded.
+    if(!$DB->record_exists('block_risk_monitor_rule_type', array('custom' => 0))) {
+
         $default_rules = DefaultRules::getDefaultRuleObjects();
         foreach($default_rules as $default_rule) {
+            $default_rule->enabled = 1;
+            $default_rule->timestamp = time();
             $DB->insert_record('block_risk_monitor_rule_type', $default_rule);
         }
     }
-
 }

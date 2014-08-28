@@ -14,8 +14,6 @@ require_once("individual_settings_form.php");
 
 global $block_risk_monitor_block, $DB;
 
-//$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
-
 //create some student data.
 /*$data = new object();
 $data->userid = 3;
@@ -57,7 +55,9 @@ $PAGE->set_url('/blocks/risk_monitor/individual_settings.php?userid='.$userid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-block_risk_monitor_update_default_rules();
+//block_risk_monitor_update_default_rules();
+//$DB->delete_records('block_risk_monitor_rule_type');
+//block_risk_monitor_update_default_rules();
 
 //Create the body
 $body = '';
@@ -74,6 +74,11 @@ $body = '';
     //Description for add or delete
     $body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');
 
+    //Link to edit interventions
+    $body .= html_writer::link (new moodle_url('view_interventions.php', array('userid' => $USER->id)), get_string('edit_interventions','block_risk_monitor')).'<br><br>';
+            
+    //Description for add or delete
+    $body .= html_writer::tag('div', get_string('edit_interventions_description','block_risk_monitor').'<br><br>');
 ///RENDERING THE HTML
 
 //Render the HTML

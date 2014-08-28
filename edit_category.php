@@ -37,7 +37,7 @@ if (!($USER->id == $userid)) {
 if(!$getcategory = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid))) {
     print_error('no_category', 'block_risk_monitor', '', $categoryid);
 }
-$getcourse = $DB->get_record('block_risk_monitor_course', array('courseid' => $getcategory->courseid));
+//$getcourse = $DB->get_record('block_risk_monitor_course', array('courseid' => $getcategory->courseid));
 
 $context = context_user::instance($userid);
 
@@ -59,7 +59,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Create the form
-$edit_category_form = new individual_settings_form_edit_category('edit_category.php?userid='.$USER->id.'&categoryid='.$categoryid, array('categoryid' => $categoryid, 'coursename' => $getcourse->fullname)); 
+$edit_category_form = new individual_settings_form_edit_category('edit_category.php?userid='.$USER->id.'&categoryid='.$categoryid, array('categoryid' => $categoryid/*, 'coursename' => $getcourse->fullname*/)); 
 
 //On submit
 if ($fromform = $edit_category_form->get_data()) {
@@ -74,7 +74,7 @@ if ($fromform = $edit_category_form->get_data()) {
     $DB->update_record('block_risk_monitor_category', $edited_category);
     
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $getcategory->courseid)));
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $getcategory->courseid*/)));
 
 }
 

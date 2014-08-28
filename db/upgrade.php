@@ -505,7 +505,70 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260825, 'risk_monitor');
     }
 
+    if ($oldversion < 2014260827) {
+
+        // Define field value to be added to block_risk_monitor_rule.
+        $table = new xmldb_table('block_risk_monitor_rule');
+        $field = new xmldb_field('value', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'ruletypeid');
+
+        // Conditionally launch add field value.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260827, 'risk_monitor');
+    }
+
+    if ($oldversion < 2014260828) {
+
+        // Define field value_required to be added to block_risk_monitor_rule_type.
+        $table = new xmldb_table('block_risk_monitor_rule_type');
+        $field = new xmldb_field('value_required', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Conditionally launch add field value_required.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field value_description to be added to block_risk_monitor_rule_type.
+        $table = new xmldb_table('block_risk_monitor_rule_type');
+        $field = new xmldb_field('value_description', XMLDB_TYPE_TEXT, null, null, null, null, null, 'value_required');
+
+        // Conditionally launch add field value_description.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
 
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260828, 'risk_monitor');
+    }
+
+    if ($oldversion < 2014260829) {
+
+        // Define field action to be added to block_risk_monitor_rule_type.
+        $table = new xmldb_table('block_risk_monitor_rule_type');
+        $field = new xmldb_field('action', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'value_description');
+
+        // Conditionally launch add field action.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field timestamp to be added to block_risk_monitor_rule_type.
+        $table = new xmldb_table('block_risk_monitor_rule_type');
+        $field = new xmldb_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'action');
+
+        // Conditionally launch add field timestamp.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260829, 'risk_monitor');
+    }
+    
+    
     return true;
 }
