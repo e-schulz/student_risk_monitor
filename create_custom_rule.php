@@ -12,13 +12,14 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once("individual_settings_form.php");
 
-global $block_risk_monitor_block, $DB;
+global $DB;
 
 //Teacher must be logged in
 require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -41,15 +42,15 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/create_custom_rule.php?userid='.$userid);
+$PAGE->set_url('/blocks/risk_monitor/create_custom_rule.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //Get all the categories and courses.
-$new_custom_rule_form = new individual_settings_form_create_custom_rule('create_custom_rule.php?userid='.$userid); 
+$new_custom_rule_form = new individual_settings_form_create_custom_rule('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid, array('courseid' => $courseid)); 
  
 if($new_custom_rule_form->is_cancelled()) {
-    redirect(new moodle_url('view_custom_rules.php', array('userid' => $USER->id))); 
+    redirect(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
 }
 else if ($fromform = $new_custom_rule_form->get_data()) {
     
@@ -88,14 +89,14 @@ else if ($fromform = $new_custom_rule_form->get_data()) {
         $DB->insert_record('block_risk_monitor_option', $new_option3);
     }
     
-    redirect(new moodle_url('view_custom_rules.php', array('userid' => $USER->id))); 
+    redirect(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
 }
 
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
 
-echo block_risk_monitor_get_top_tabs('settings');
+echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("New custom rule");
 
 $new_custom_rule_form->display();

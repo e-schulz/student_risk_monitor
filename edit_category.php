@@ -12,7 +12,7 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once("individual_settings_form.php");
 
-global $block_risk_monitor_block, $DB;
+global $DB;
 
 //$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
 
@@ -21,7 +21,8 @@ require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
-$categoryid = required_param('categoryid', PARAM_INT);              
+$categoryid = required_param('categoryid', PARAM_INT);       
+$courseid = required_param('courseid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -51,7 +52,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/edit_category.php?userid='.$userid.'&categoryid='.$categoryid);
+$PAGE->set_url('/blocks/risk_monitor/edit_category.php?userid='.$userid.'&categoryid='.$categoryid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -59,7 +60,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Create the form
-$edit_category_form = new individual_settings_form_edit_category('edit_category.php?userid='.$USER->id.'&categoryid='.$categoryid, array('categoryid' => $categoryid/*, 'coursename' => $getcourse->fullname*/)); 
+$edit_category_form = new individual_settings_form_edit_category('edit_category.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('categoryid' => $categoryid/*, 'coursename' => $getcourse->fullname*/)); 
 
 //On submit
 if ($fromform = $edit_category_form->get_data()) {
@@ -74,7 +75,7 @@ if ($fromform = $edit_category_form->get_data()) {
     $DB->update_record('block_risk_monitor_category', $edited_category);
     
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $getcategory->courseid*/)));
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $getcategory->courseid*/)));
 
 }
 
@@ -87,7 +88,7 @@ echo $OUTPUT->heading($blockname);
 
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
-echo block_risk_monitor_get_top_tabs('settings');
+echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("Edit Category");
 echo $body;
 $edit_category_form->display();

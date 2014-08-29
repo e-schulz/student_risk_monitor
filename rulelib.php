@@ -10,6 +10,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
+require_once($CFG->libdir . '/gradelib.php');
 
 //This function returns a risk rating between 0 and 100, given the action userid and value.
 function block_risk_monitor_calculate_risk_rating($action, $user, $value, $courseid) {
@@ -18,19 +19,16 @@ function block_risk_monitor_calculate_risk_rating($action, $user, $value, $cours
     
     //These actions must match actions specified in rules.php
     switch($action){
-        CASE CUSTOM:
-            //here will be what will happen with custom rules.. to do later.
+        CASE 'NOT_LOGGED_IN':
+            $risk_rating = block_risk_monitor_not_logged_in_risk($user, $value);
             break;
-        CASE NOT_LOGGED_IN:
-            $risk_rating = block_risk_monitor_not_logged_in_risk($user, $value, $courseid);
-            break;
-        case GRADE_LESS_THAN:
+        case 'GRADE_LESS_THAN':
             $risk_rating = block_risk_monitor_grade_less_than_risk($user, $value, $courseid);
             break;
-        case GRADE_GREATER_THAN:
+        case 'GRADE_GREATER_THAN':
             $risk_rating = block_risk_monitor_grade_greater_than_risk($user, $value, $courseid);
             break;
-        case MISSED_DEADLINES:
+        case 'MISSED_DEADLINES':
             $risk_rating = block_risk_monitor_missed_deadlines_risk($user, $value, $courseid);
             break;
         default:
@@ -41,7 +39,7 @@ function block_risk_monitor_calculate_risk_rating($action, $user, $value, $cours
 }
 
 //this function returns 100 if user has not logged in for days greater than value, else 0
-function block_risk_monitor_not_logged_in_risk($user, $value, $courseid) {
+function block_risk_monitor_not_logged_in_risk($user, $value) {
    
     $risk_rating = 0;
     
@@ -65,6 +63,7 @@ function block_risk_monitor_not_logged_in_risk($user, $value, $courseid) {
 
 function block_risk_monitor_grade_less_than_risk($user, $value, $courseid) {
     
+    global $DB;
     $risk_rating = 0;
     
     //Get the grade item associated with the course.
@@ -74,7 +73,7 @@ function block_risk_monitor_grade_less_than_risk($user, $value, $courseid) {
     if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id))) {
         $max_grade = $grade_grade->rawgrademax;
         $final_grade = $grade_grade->rawgrade;
-        $percent = intval*(($final_grade/$max_grade)*100);
+        $percent = intval(($final_grade/$max_grade)*100);
         if($percent < $value) {
             $risk_rating = 100;
         }

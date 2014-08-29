@@ -12,15 +12,15 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once("individual_settings_form.php");
 
-global $block_risk_monitor_block, $DB;
-
-//$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
+global $DB;
 
 //Teacher must be logged in
 require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
+
 //$message = optional_param('message', 0, PARAM_INT);
 //$courseid = optional_param('courseid', 0, PARAM_INT);
 $categoryid = optional_param('categoryid', -1, PARAM_INT);
@@ -48,8 +48,27 @@ if($categoryid !== -1) {
     
     //Delete all rules associated with a category
     if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $categoryid))) {
+        $rule_insts = $DB->get_record('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
+        foreach($rule_insts as $rule_inst) {
+            
+            if($rule_inst->ruletype == 1) {
+                $rule_identifier = 'defaultruleid';
+            }
+            else if ($rule_inst->ruletype == 2) {
+                $rule_identifier = 'custruleid';
+            }
+            
+            if($DB->record_exists('block_risk_monitor_rule_risk', array($rule_identifier => $rule_inst->id))) {
+                $DB->delete_records('block_risk_monitor_rule_risk', array($rule_identifier => $rule_inst->id)); 
+            }
+        }
         $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
     }
+    
+    //Delete all cat risks assoc with this category
+    if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_cat_inst', array('categoryid' => $categoryid));        
+    }    
 }
 else if ($ruleid !== -1) {
     
@@ -57,11 +76,23 @@ else if ($ruleid !== -1) {
     if($rule_to_delete = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $ruleid))) {
         $old_sum = 100 - intval($rule_to_delete->weighting);
         $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $ruleid));
-        $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);        
+        $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);    
+        
+        if($rule_to_delete->ruletype == 1) {
+            $rule_identifier = 'defaultruleid';
+        }
+        else if($rule_to_delete->ruletype == 2) {
+            $rule_identifier = 'custruleid';
+        }
+
+        if($DB->record_exists('block_risk_monitor_rule_risk', array($rule_identifier => $rule_to_delete->id))) {
+            $DB->delete_records('block_risk_monitor_rule_inst', array($rule_identifier => $rule_to_delete->id));        
+        }          
     }
+   
 }
 
-$back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id)), get_string('back_to_settings','block_risk_monitor'));
+$back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('back_to_settings','block_risk_monitor'));
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -74,7 +105,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid);
+$PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -94,7 +125,7 @@ $PAGE->set_pagelayout('standard');
     
 }*/
 //Get all the categories and courses.
-$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
+$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
        
 /*if($courseid == -1) {
     $body .= get_string('no_courses', 'block_risk_monitor')."<br>";
@@ -136,11 +167,9 @@ echo $OUTPUT->heading($blockname);
 
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
-echo block_risk_monitor_get_top_tabs('settings');
+echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("Categories and rules");
 
-//Course tabs
-//echo block_risk_monitor_get_course_tabs_html($courseid);
 echo $body;
 //if ($courseid !== -1) {
 $categories_rules_form->display();

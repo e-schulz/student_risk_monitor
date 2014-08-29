@@ -12,13 +12,15 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once("individual_settings_form.php");
 
-global $block_risk_monitor_block, $DB;
+global $DB;
 
 //Teacher must be logged in
 require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
+
 $custom_rule_id = optional_param('custruleid', -1, PARAM_INT);
 $do_view = optional_param('view', -1, PARAM_INT);
 $do_delete = optional_param('delete', -1, PARAM_INT);
@@ -46,7 +48,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_custom_rules.php?userid='.$USER->id);
+$PAGE->set_url('/blocks/risk_monitor/view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -75,10 +77,10 @@ if($do_view !== -1) {
 
 //show descriptions
 
-$back_to_categories = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id)), get_string('back_to_categories','block_risk_monitor'));
+$back_to_categories = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('back_to_categories','block_risk_monitor'));
 
 //Get all the categories and courses.
-$custom_rules_form = new individual_settings_form_view_custom_rules('view_custom_rules.php?userid='.$USER->id); 
+$custom_rules_form = new individual_settings_form_view_custom_rules('view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
  
 //Render the HTML
 echo $OUTPUT->header();
@@ -89,7 +91,7 @@ echo $OUTPUT->heading($blockname);
 
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
-echo block_risk_monitor_get_top_tabs('settings');
+echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("Custom rules");
 
 $custom_rules_form->display();

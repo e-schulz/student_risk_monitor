@@ -18,26 +18,34 @@ define("MODERATE_RISK", 50);
 //This is the method run with the cron() function. Updates the student risks.
 function block_risk_monitor_calculate_risks() {
     
+    
     global $DB;
 
-    //For each course
+    //For each course this block is added on.
+    $return = '';
+    
     if($courses = $DB->get_records('block_risk_monitor_course')) {
         
         foreach($courses as $course) {
             
-            $enrolled_students = block_risk_monitor_get_enrolled_students($course->id);
+            $return .= "<br>Course id: ".$course->id;
+            
+            $enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
             foreach($enrolled_students as $enrolled_student) {
         
-                $categories = $DB->get_records('block_risk_monitor_category'/*, array('courseid' => $courseid)*/);
+                $return .= "<br>Student id: ".$enrolled_student->id;
+                $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
                 foreach($categories as $category) {
                     
+                    $return .= "<br>Category id: ".$category->id;
                     $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
                     foreach($rules as $rule) {
                         
-                        //if rule is a default rule
-                        //if($rule_type = $DB->get_record('block_risk_monitor_rule_inst_type', array('id' => $rule->ruletypeid))) {
+                        
+                        $risk_rating = 0;
                         if($rule->ruletype == 1) {
                             
+                            $return .= "<br>Rule type: default";
                             $default_rule_id = $rule->defaultruleid;
                             $action = DefaultRules::$default_rule_actions[$default_rule_id];
                             
@@ -49,34 +57,65 @@ function block_risk_monitor_calculate_risks() {
                             }
                             
                             //Determine the risk rating (between 0 and 100)
-                            $risk_rating = block_risk_monitor_calculate_risk_rating($action, $enrolled_student, $value, $courseid);
-                            
-                            if($risk_rating > 0) {
-                                
-                                //if risk instance already exists, update it
-                                if($risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
-                                    $edited_risk_instance = new object();
-                                    $edited_risk_instance->id = $risk_instance->id;
-                                    $edited_risk_instance->value = $risk_rating;
-                                    
-                                    $DB->update_record('block_risk_monitor_rule_risk', $edited_risk_instance);
-                                    
-                                }
-                                
-                                //Otherwise create a new one.
-                                else {
-                                    $new_risk_instance = new object();
-                                    $new_risk_instance->userid = $enrolled_student->id;
-                                    $new_risk_instance->ruleid = $rule->id;
-                                    $new_risk_instance->value = $risk_rating;
-                                    $new_risk_instance->timestamp = time();
-                                    
-                                    $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
-                                }
-                            }
-                            //If risk rating is zero, don't bother creating a risk instance.
+                            $risk_rating = block_risk_monitor_calculate_risk_rating($action, $enrolled_student, $value, $course->courseid);
                         }
-                                            
+                        
+                        //Custom rule
+                        else if ($rule->ruletype == 2) {
+                            $return .= "<br>Rule type = custom";
+                            
+                            //Get the custom rule
+                            $custom_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
+                            
+                            //Get the questions
+                            if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $custom_rule->id))) {
+                                $total_questions = count($questions);
+                                
+                                foreach($questions as $question) {
+                                    
+                                    //Check if an answer has been submitted
+                                    if($answer = $DB->get_record('block_risk_monitor_answer', array('userid' => $enrolled_student->id, 'questionid' => $question->id))) {
+                                        $return .= "<br>Answer id: ".$answer->id." Question id :".$question->id;
+                                        //Get the value.
+                                        $option = $DB->get_record('block_risk_monitor_option', array('id' => $answer->optionid));
+                                        $risk_rating += ($option->value)/$total_questions;
+                                    }
+                                }
+                                //No answer, then ignore
+                            }
+                           
+                        }
+                        
+                        $return .= "<br>riskrating: ".$risk_rating;
+
+                        //if risk instance already exists, update it or delete it
+                        if($risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
+                            if($risk_rating > 0) {
+                                $edited_risk_instance = new object();
+                                $edited_risk_instance->id = $risk_instance->id;
+                                $edited_risk_instance->value = $risk_rating;
+
+                                $DB->update_record('block_risk_monitor_rule_risk', $edited_risk_instance);
+                                $return .= "<br>Edited a risk instance";   
+                            }
+                            else {
+                                $DB->delete_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id));
+                                $return .= "<br>Deleted a risk instance"; 
+                            }
+                        }
+                                
+                        //Otherwise create a new one.
+                        else if($risk_rating > 0) {
+                            $new_risk_instance = new object();
+                            $new_risk_instance->userid = $enrolled_student->id;
+                            $new_risk_instance->ruleid = $rule->id;
+                            $new_risk_instance->value = $risk_rating;
+                            $new_risk_instance->timestamp = time();
+                                
+                            $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
+                            $return .= "<br>Made a new risk instance"; 
+                        }
+                        
                     }
                     
                     //Reaching this point, all the risk calculations have been done for every rule in the category for this student
@@ -89,29 +128,35 @@ function block_risk_monitor_calculate_risks() {
                             $category_risk_rating += ($weighting/100)*floatval($rule_risk->value);
                         }
                     }
-                    
-                    if($category_risk_rating > MODERATE_RISK) {
-                        //Check if category risk already exists
-                        if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id))){
+                   $return .= "<br>category risk rating: ".$category_risk_rating;
+                   
+                    //Check if category risk already exists
+                    if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id))){
+                        if($category_risk_rating >= MODERATE_RISK) {
                             $edited_category_risk = new object();
                             $edited_category_risk->id = $risk_instance->id;
                             $edited_category_risk->value = $category_risk_rating;
-                            
-                            $DB->update_record('block_risk_monitor_cat_risk', $edited_category_risk);
-                        }
-                       
-                        //Else create new
-                        else {
-                            $new_category_risk = new object();
-                            $new_category_risk->userid = $enrolled_student->id;
-                            $new_category_risk->categoryid = $category->id;
-                            $new_category_risk->value = intval($category_risk_rating);
-                            $new_category_risk->timestamp = time();
 
-                            $DB->insert_record('block_risk_monitor_cat_risk', $new_category_risk);
+                            $DB->update_record('block_risk_monitor_cat_risk', $edited_category_risk);
+                            $return .= "<br>Edited a cat risk instance"; 
+                        }
+                        else {
+                            $DB->delete_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id));
                         }
                     }
-                    //If risk rating is less than moderate, don't bother creating a risk instance.
+                       
+                        //Else create new
+                    else if ($category_risk_rating >= MODERATE_RISK) {
+                        $new_category_risk = new object();
+                        $new_category_risk->userid = $enrolled_student->id;
+                        $new_category_risk->categoryid = $category->id;
+                        $new_category_risk->value = intval($category_risk_rating);
+                        $new_category_risk->timestamp = time();
+
+                        $DB->insert_record('block_risk_monitor_cat_risk', $new_category_risk);
+                        $return .= "<br>Made a new cat risk instance"; 
+                    }
+                    
                 }
                 //finished looping thru categories.
             
@@ -123,8 +168,9 @@ function block_risk_monitor_calculate_risks() {
     
     }
     //No courses exist.
-    
+    return $return;
 }
+
 
 //clears out any redundant risk ratings (rule type has been changed, rule has been changed, category has been changed)
 function block_risk_monitor_clear_risks($timestamp) {
@@ -132,13 +178,13 @@ function block_risk_monitor_clear_risks($timestamp) {
     global $DB;
     
     //Rules have been updated
-    $updated_rules = block_risk_monitor_get_out_of_date_rules($timestamp);
+    $updated_rules = block_risk_monitor_get_updated_rules($timestamp);
     foreach($updated_rules as $updated_rule) {
         $DB->delete_records('block_risk_monitor_risk', array('ruleid' => $updated_rule->id));
     }
     
     //Categories have been updated
-    $updated_categories = block_risk_monitor_get_out_of_date_categories($timestamp);
+    $updated_categories = block_risk_monitor_get_updated_categories($timestamp);
     foreach($updated_categories as $updated_category) {
         $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $updated_category->id));
     }
@@ -176,8 +222,11 @@ function block_risk_monitor_get_enrolled_students($courseid) {
                 
                 foreach($role_assignments as $role_assignment) {
                     
-                    if($student = $DB->get_records('user', array('id' => $role_assignment->userid))) {
-                        array_push($enrolled_students, $student);
+                    if($students = $DB->get_records('user', array('id' => $role_assignment->userid))) {
+                        //array_push($enrolled_students, $student);
+                        foreach($students as $student) {
+                            $enrolled_students[] = $student;
+                        }
                     }
                 }
             }

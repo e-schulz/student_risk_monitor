@@ -712,6 +712,64 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         // Test_risk_monitor savepoint reached.
         upgrade_block_savepoint(true, 2014260835, 'risk_monitor');
     }
+    
+        if ($oldversion < 2014260839) {
+
+        // Define key blockid (foreign) to be dropped form block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
+        $key = new xmldb_key('blockid', XMLDB_KEY_FOREIGN, array('blockid'), 'block_risk_monitor_block', array('id'));
+
+        // Launch drop key blockid.
+        $dbman->drop_key($table, $key);
+        
+                // Define field blockid to be dropped from block_risk_monitor_course.
+        $table = new xmldb_table('block_risk_monitor_course');
+        $field = new xmldb_field('blockid');
+
+        // Conditionally launch drop field blockid.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+        
+                // Define table block_risk_monitor_block to be dropped.
+        $table = new xmldb_table('block_risk_monitor_block');
+
+        // Conditionally launch drop table for block_risk_monitor_block.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260839, 'risk_monitor');
+    }
+
+        if ($oldversion < 2014260841) {
+
+        // Define table block_risk_monitor_answer to be created.
+        $table = new xmldb_table('block_risk_monitor_answer');
+
+        // Adding fields to table block_risk_monitor_answer.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('optionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_answer.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('questionid', XMLDB_KEY_FOREIGN, array('questionid'), 'block_risk_monitor_question', array('id'));
+        $table->add_key('optionid', XMLDB_KEY_FOREIGN, array('optionid'), 'block_risk_monitor_option', array('id'));
+        $table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_answer.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260841, 'risk_monitor');
+    }
+
 
     return true;
 }

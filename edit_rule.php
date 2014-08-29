@@ -12,7 +12,7 @@ require_once("../../config.php");
 require_once("locallib.php");
 require_once("individual_settings_form.php");
 
-global $block_risk_monitor_block, $DB;
+global $DB;
 
 //$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
 
@@ -22,6 +22,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $ruleid = required_param('ruleid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
 $message = optional_param('message', -1, PARAM_INT);
 $weighting_description = optional_param('weightingdesc', -1, PARAM_INT);
 $custom_rule = optional_param('custom', -1, PARAM_INT);
@@ -54,7 +55,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/edit_rule.php?userid='.$userid.'&ruleid='.$ruleid);
+$PAGE->set_url('/blocks/risk_monitor/edit_rule.php?userid='.$userid.'&ruleid='.$ruleid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -83,35 +84,35 @@ if($message != -1) {
 }
 
 //Create the form
- $edit_rule_form = new individual_settings_form_edit_rule('edit_rule.php?userid='.$USER->id.'&ruleid='.$ruleid.'&custom='.$custom_rule, array('ruleid' => $ruleid, 'weightingdesc' => $weighting_description, 'categoryname' => $getcategory->name, 'custom' => $custom_rule));    
+ $edit_rule_form = new individual_settings_form_edit_rule('edit_rule.php?userid='.$USER->id.'&courseid='.$courseid.'&ruleid='.$ruleid.'&custom='.$custom_rule, array('ruleid' => $ruleid, 'weightingdesc' => $weighting_description, 'categoryname' => $getcategory->name, 'custom' => $custom_rule));    
 
 //On submit
 if ($fromform = $edit_rule_form->get_data()) {
     
     //If they want to view weighting description
     if(isset($fromform->submit_get_weighting_description)) {
-        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'weightingdesc' => 1)));
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'weightingdesc' => 1, 'courseid' => $courseid)));
     }
     
     //Error checking
     //if weighting is not numeric, refresh with error
     if(!is_numeric($fromform->weighting_text)) {
-        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 1)));
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 1, 'courseid' => $courseid)));
     }
     else if(intval($fromform->weighting_text < 0 || $fromform->weighting_text > 100)) {
-        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 2)));        
+        redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 2, 'courseid' => $courseid)));        
     }
     
     if($custom_rule == -1) {
         if(!is_numeric($fromform->value_text)) {
-            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 3)));
+            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 3, 'courseid' => $courseid)));
         }
         else if(intval($fromform->value_text < 0)) {
-            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 4)));        
+            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 4, 'courseid' => $courseid)));        
         }
 
         if(empty($fromform->value_text)) {
-            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 5)));
+            redirect(new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'message' => 5, 'courseid' => $courseid)));
         }
     }
     
@@ -140,7 +141,7 @@ if ($fromform = $edit_rule_form->get_data()) {
     $DB->update_record('block_risk_monitor_rule_inst', $edited_rule);
         
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id)));
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));
 }
 
 //Render the HTML
@@ -152,7 +153,7 @@ echo $OUTPUT->heading($blockname);
 
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
-echo block_risk_monitor_get_top_tabs('settings');
+echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("Edit Rule");
 /*if($message) {
     echo $message;

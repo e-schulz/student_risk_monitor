@@ -37,7 +37,7 @@ $capabilities = array(
 		'clonepermissionsfrom' => 'moodle/site:manageblocks'
 	),
     
-    	'block/risk_monitor:myaddinstance' => array(
+    	/*'block/risk_monitor:myaddinstance' => array(
 		'riskbitmask' => RISK_SPAM | RISK_XSS,
 		
 		'captype' => 'write',
@@ -48,17 +48,31 @@ $capabilities = array(
 		),
 		
 		//'clonepermissionsfrom' => 'moodle/site:manageblocks'
-	),
+	),*/
 	
-	'block/risk_monitor:view' => array(
+	'block/risk_monitor:teacherview' => array(
 		
 		'captype' => 'read',
-		'contextlevel' => CONTEXT_BLOCK,
+		'contextlevel' => CONTEXT_COURSE,
 		'archetypes' => array(
 			'editingteacher' => CAP_ALLOW,
 			'teacher' => CAP_ALLOW,
 			'manager' => CAP_ALLOW,
 			'student' => CAP_PREVENT
+		),
+		
+		//'clonepermissionsfrom' => 'moodle/site:manageblocks'
+	),	
+    
+    	'block/risk_monitor:studentview' => array(
+		
+		'captype' => 'read',
+		'contextlevel' => CONTEXT_COURSE,
+		'archetypes' => array(
+                        'editingteacher' => CAP_PREVENT,
+			'teacher' => CAP_PREVENT,
+			'manager' => CAP_PREVENT,
+			'student' => CAP_ALLOW
 		),
 		
 		//'clonepermissionsfrom' => 'moodle/site:manageblocks'

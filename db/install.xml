@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140828" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
+<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140829" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -19,14 +19,12 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of this course."/>
-        <FIELD NAME="blockid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The block this course has been added to."/>
         <FIELD NAME="fullname" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The full name of this course."/>
         <FIELD NAME="shortname" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The shortname of this course."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id" COMMENT="Id of the course."/>
-        <KEY NAME="blockid" TYPE="foreign" FIELDS="blockid" REFTABLE="block_risk_monitor_block" REFFIELDS="id" COMMENT="Id of the block this course belongs to."/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_risk_monitor_category" COMMENT="A risk category, consisting of one or more rules">
@@ -120,6 +118,21 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="block_risk_monitor_question" REFFIELDS="id" COMMENT="The id of the question this option is associated with"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_risk_monitor_answer" COMMENT="Student's submissions in response to questions.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The question this answer corresponds to"/>
+        <FIELD NAME="optionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The option selected."/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the student who submitted this answer"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this answer was submitted"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="block_risk_monitor_question" REFFIELDS="id" COMMENT="The question this answer is assoc with"/>
+        <KEY NAME="optionid" TYPE="foreign" FIELDS="optionid" REFTABLE="block_risk_monitor_option" REFFIELDS="id" COMMENT="The option selected by the student"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="The user who submitted this answer"/>
       </KEYS>
     </TABLE>
   </TABLES>

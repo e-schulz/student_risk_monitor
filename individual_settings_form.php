@@ -9,146 +9,19 @@ require_once($CFG->libdir . '/formslib.php');
 require_once('locallib.php');
 global $OUTPUT;
 
-//Recieves a list of all unregistered courses taught by the teacher (ie, courses that are able to be added)
-class individual_settings_form_add_course extends moodleform {
-        
-    //This is the form itself
-    public function definition() {
-   
-        $mform =& $this->_form;
-    
-        if(!empty($this->_customdata['courses'])) {
-        
-            //Add courses
-            $options_add = array();
-            $all_courses = $this->_customdata['courses'];
-            foreach($all_courses as $single_course) {
-                $options_add[$single_course->id] = $single_course->fullname;
-            }
-            $mform->addElement('select', 'add_course', get_string('add_course', 'block_risk_monitor'), $options_add);
-
-            $mform->addElement('submit', 'submit_add', get_string('submit_add', 'block_risk_monitor'));
-        }
-    }
-    
-}
-
-//Received an array containing all the courses able to be deleted (registered courses)
-class individual_settings_form_remove_course extends moodleform {
-        
-    //This is the form itself
-    public function definition() {
-   
-        $mform =& $this->_form;
-        
-        //Delete courses
-        if(!empty($this->_customdata['courses'])) {
-            $courses = $this->_customdata['courses'];
-            $options_delete = array();
-            foreach ($courses as $course) {
-                $options_delete[$course->courseid] = $course->fullname;
-            }
-            $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_risk_monitor'), $options_delete);
-            $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_risk_monitor'));           
-        }
-
-    }
-    
-}
-
-//Receives two arrays, one containing courses to add, one containing courses to delete, for populating the select boxes.
-class individual_settings_form_add_remove_courses extends moodleform {
-            
-    //This is the form itself
-    public function definition() {
-        global $OUTPUT;
-        
-        $mform =& $this->_form;
-        
-       //Create the options for courses to add
-       $options_add = array();
-       if(!empty($this->_customdata['courses_to_add'])) {
-            $add_courses = $this->_customdata['courses_to_add'];
-            foreach($add_courses as $single_course) {
-                 $options_add[$single_course->id] = $single_course->fullname;
-            }        
-            
-            $mform->addElement('select', 'add_course', get_string('add_course', 'block_risk_monitor'), $options_add);
-            $mform->addElement('submit', 'submit_add', get_string('submit_add', 'block_risk_monitor'));
-       }
-       
-        //Create the options for courses to delete
-       $options_delete = array();
-       if(!empty($this->_customdata['courses_to_delete'])) {
-            $delete_courses = $this->_customdata['courses_to_delete'];
-            foreach($delete_courses as $single_course) {
-                 $options_delete[$single_course->id] = $single_course->fullname;
-             } 
-             
-             $mform->addElement('select', 'delete_course', get_string('delete_course', 'block_risk_monitor'), $options_delete);
-             $mform->addElement('submit', 'submit_delete', get_string('submit_delete', 'block_risk_monitor'));     
-       }
-
-    }
-    
-}
-//Takes preamble text
-class individual_settings_form_edit_preamble extends moodleform {
-        
-    //This is the form itself
-    public function definition() {
-   
-        $mform =& $this->_form;
-        
-        //Delete courses
-        if(!empty($this->_customdata['preamble'])) {
-            $preamble = $this->_customdata['preamble'];
-            //$mform->addElement('editor', 'preamble', get_string('preamble_textbox', 'block_risk_monitor'));
-            //$mform->setType('fieldname', PARAM_RAW);
-            
-            $mform->addElement('textarea', 'preamble', get_string('preamble_textbox', 'block_risk_monitor'), 'wrap="virtual" rows="5" cols="100"');
-            $mform->setDefault('preamble', $preamble);
-            $mform->addElement('submit', 'submit_preamble', get_string('save', 'block_risk_monitor'));           
-        }
-
-    }
-    
-}
-
-//Takes postamble text
-class individual_settings_form_edit_postamble extends moodleform {
-        
-    //This is the form itself
-    public function definition() {
-   
-        $mform =& $this->_form;
-        
-        //Delete courses
-        if(!empty($this->_customdata['postamble'])) {
-            $postamble = $this->_customdata['postamble'];
-            
-            $mform->addElement('textarea', 'postamble', get_string('postamble_textbox', 'block_risk_monitor'), 'wrap="virtual" rows="5" cols="100"');
-            $mform->setDefault('postamble', $postamble);
-            $mform->addElement('submit', 'submit_postamble', get_string('save', 'block_risk_monitor'));           
-        }
-
-    }
-    
-}
-
 class individual_settings_form_edit_categories_rules extends moodleform {
     
     public function definition() {
         global $DB, $USER;
         
         $mform =& $this->_form;
-    
+        $courseid = $this->_customdata['courseid'];
         //if(!empty($this->_customdata['courseid']) && $this->_customdata['courseid'] !== -1) {
             
-            $add_category = html_writer::link (new moodle_url('new_category.php', array('userid' => $USER->id/*, 'courseid' => $this->_customdata['courseid']*/)), get_string('new_category','block_risk_monitor')).'<br><br>';
+            $add_category = html_writer::link (new moodle_url('new_category.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $this->_customdata['courseid']*/)), get_string('new_category','block_risk_monitor')).'<br><br>';
             $mform->addElement('static', 'newcategory', '', $add_category);        
             
-            if($categories = $DB->get_records('block_risk_monitor_category'/*, array('courseid' => $this->_customdata['courseid'])*/)) {
+            if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
                 
                 $empty_cell = new html_table_cell();               
                 
@@ -189,10 +62,10 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                                 $custom = 1;
                             }
                             $rule_edit = new html_table_cell();
-                            $rule_edit->text = html_writer::link (new moodle_url('edit_rule.php', array('userid' => $USER->id, 'ruleid' => $rule->id, 'custom' => $custom)), get_string('edit_rule','block_risk_monitor'));
+                            $rule_edit->text = html_writer::link (new moodle_url('edit_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $rule->id, 'custom' => $custom)), get_string('edit_rule','block_risk_monitor'));
 
                             $rule_delete = new html_table_cell();
-                            $rule_delete->text = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id/*, 'courseid' => $this->_customdata['courseid']*/, 'ruleid' => $rule->id)), "Delete");
+                            $rule_delete->text = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $this->_customdata['courseid']*/, 'ruleid' => $rule->id)), "Delete");
 
                             $rule_weighting = new html_table_cell();
                             $rule_weighting->text = $rule->weighting."%";
@@ -200,13 +73,13 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                        }
                                            
                         $rule_add = new html_table_cell();
-                        $rule_add->text = html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $category->id)), get_string('add_rule','block_risk_monitor'));
+                        $rule_add->text = html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), get_string('add_rule','block_risk_monitor'));
                         $table->data[] = new html_table_row(array($rule_add, $empty_cell, $empty_cell, $empty_cell));
                     }
                     else {
                          $table->data[] = new html_table_row(array($category_name));                    
                         $rule_add = new html_table_cell();
-                        $rule_add->text = html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $category->id)), get_string('add_rule','block_risk_monitor'));
+                        $rule_add->text = html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), get_string('add_rule','block_risk_monitor'));
                         $table->data[] = new html_table_row(array($rule_add));
                     }
                     
@@ -214,7 +87,7 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                     $mform->addElement('static', 'selectors', '', html_writer::table($table));
 
                 }
-                $view_custom = html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id)), get_string('new_custom_rule','block_risk_monitor')).'<br><br>';
+                $view_custom = html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_custom_rule','block_risk_monitor')).'<br><br>';
                 $mform->addElement('static', 'viewcustom', '', $view_custom);        
                           
             }
@@ -489,8 +362,8 @@ class individual_settings_form_view_custom_rules extends moodleform {
         global $USER, $DB, $OUTPUT;
         
            $mform =& $this->_form;
-        
-            $add_custom_rule = html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id)), get_string('new_custom','block_risk_monitor')).'<br><br>';
+        $courseid = $this->_customdata['courseid'];
+            $add_custom_rule = html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_custom','block_risk_monitor')).'<br><br>';
             $mform->addElement('static', 'newcustom', '', $add_custom_rule);        
             
             if($custom_rules = $DB->get_records('block_risk_monitor_cust_rule', array('userid' => $USER->id))) {
@@ -506,7 +379,7 @@ class individual_settings_form_view_custom_rules extends moodleform {
                 foreach($custom_rules as $custom_rule) {
                     
                     $rule_link = new html_table_cell();
-                    $rule_link->text =  html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'custruleid' => $custom_rule->id, 'view' => 1)), $custom_rule->name);
+                    $rule_link->text =  html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid, 'custruleid' => $custom_rule->id, 'view' => 1)), $custom_rule->name);
                     
                     $delete_icon = new html_table_cell();
                     $delete_icon->text = html_writer::start_tag('a', array('href' => 'view_custom_rules.php?userid='.$USER->id.'&custruleid='.$custom_rule->id.'&delete=1')).
@@ -534,7 +407,7 @@ class individual_settings_form_create_custom_rule extends moodleform {
         global $DB, $USER;
         
         $mform =& $this->_form;
-        
+        $courseid = $this->_customdata['courseid'];
         //Name
         $mform->addElement('textarea', 'rule_name_text', "Name", 'rows="1" cols="75"');    
         $mform->addRule('rule_name_text', "Name required", 'required', '', 'client');
@@ -571,7 +444,7 @@ class individual_settings_form_create_custom_rule extends moodleform {
         //Save and submit.
         $buttons_group=array();   
         $buttons_group[] =& $mform->createElement('submit', 'submit_rule', "Create rule");    
-        $buttons_group[] =& $mform->createElement('static', 'cancel_link', '', "&nbsp;&nbsp;".html_writer::link(new moodle_url('view_custom_rules.php', array('userid' => $USER->id)), "Cancel"));
+        $buttons_group[] =& $mform->createElement('static', 'cancel_link', '', "&nbsp;&nbsp;".html_writer::link(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Cancel"));
         $mform->addGroup($buttons_group, 'buttons_group', '', '', false);
         
         //$this->add_action_buttons(true, "Create rule");
@@ -579,4 +452,30 @@ class individual_settings_form_create_custom_rule extends moodleform {
     }
     
     
+}
+
+class individual_settings_form_student_questions extends moodleform {
+    
+        public function definition() {
+            
+             global $DB, $USER;
+             $mform =& $this->_form;
+             
+             $questions = $this->_customdata['questions'];
+             
+             foreach($questions as $question) {
+        
+                $options = $DB->get_records('block_risk_monitor_option', array('questionid' => $question->id));
+                $mform->addElement('static', 'question'.$question->id, '', $question->question."<br>");
+
+                $radioarray = array();
+                foreach($options as $option) {
+                    $radioarray[] =& $mform->createElement('radio', 'question_option'.$question->id, '', $option->label, $option->id);
+                }
+                $mform->addGroup($radioarray, 'questiongroup'.$question->id, '', array(' '), false);
+            }
+            
+            $this->add_action_buttons(true, "Submit");
+            
+        }
 }

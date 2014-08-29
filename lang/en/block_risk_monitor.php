@@ -27,6 +27,8 @@ $string['pluginname'] = 'Student Risk Monitor';
 $string['title'] = 'Student Risk Monitor';
 $string['simplehtml:addinstance'] = 'Add a new Student Risk Monitor block';
 $string['simplehtml:myaddinstance'] = 'Add a new Student Risk Monitor block to the My Moodle page';		//???
+$string['student_questions'] = "Questionnaire";
+$string['student_questions_description'] = "Short description";
 
 //Overview strings
 $string['overview'] = "Overview";

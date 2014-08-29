@@ -14,17 +14,12 @@ require_once("individual_settings_form.php");
 
 global $DB;
 
-//$DB->delete_records('block_risk_monitor_course', array('blockid' => $block_risk_monitor_block->id));
-
-//Teacher must be logged in
 require_login();
 
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
-
-//$courseid = required_param('courseid', PARAM_INT);              
-
+       
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
     print_error('no_user', 'block_risk_monitor', '', $userid);
@@ -35,8 +30,6 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
         
-//Check that the course exists.
-
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -57,38 +50,41 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Create the form
-$new_category_form = new individual_settings_form_new_category('new_category.php?userid='.$USER->id.'&courseid='.$courseid/*.'&courseid='.$courseid*/); 
+$questions = block_risk_monitor_get_questions($courseid);
+$student_questions_form = new individual_settings_form_student_questions('student_questions.php?userid='.$USER->id.'&courseid='.$courseid, array('questions' => $questions)); 
 
 //On submit
-if ($fromform = $new_category_form->get_data()) {
-    //Create the category
-    $new_category = new object();
-    $new_category->name = $fromform->name_text;
-    $new_category->description = $fromform->description_text;
-    $new_category->courseid = $courseid;
-    $new_category->timestamp = time();
-    
-    //add to DB
-    if (!$DB->insert_record('block_risk_monitor_category', $new_category)) {
-        echo get_string('errorinsertcategory', 'block_risk_monitor');
-    }     
-    
-    //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $courseid*/)));
+if($student_questions_form->is_cancelled()) {
+    //redirect to course
+    redirect(new moodle_url('/course/view.php?id='.$courseid));
+}
+else if ($fromform = $student_questions_form->get_data()) {
 
+    foreach($questions as $question) {
+       
+        $question_id = 'question_option'.$question->id;
+        
+        if(isset($fromform->$question_id)) {
+            
+            $submitted_answer = new object();
+            $submitted_answer->questionid = $question->id;
+            $submitted_answer->optionid = $fromform->$question_id;
+            $submitted_answer->userid = $userid;
+            $submitted_answer->timestamp = time();
+            
+            $DB->insert_record('block_risk_monitor_answer', $submitted_answer);
+            
+        }
+    }
+    
+    redirect(new moodle_url('/course/view.php?id='.$courseid));
 }
 
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
 
-
-//echo html_writer::start_tag('div', array('class' => 'no-overflow'));
-
-//display the settings form
-//echo block_risk_monitor_get_tabs_html($userid, true);
-echo block_risk_monitor_get_top_tabs('settings', $courseid);
-echo $OUTPUT->heading("New Category");
+echo $OUTPUT->heading("Questions");
 echo $body;
-$new_category_form->display();
+$student_questions_form->display();
 echo $OUTPUT->footer();
