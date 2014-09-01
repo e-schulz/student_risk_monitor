@@ -63,7 +63,9 @@ $PAGE->set_pagelayout('standard');
 //Create the body
 $body = '';
 
-$body .= block_risk_monitor_calculate_risks();
+//$DB->delete_records('block_risk_monitor_answer');
+//block_risk_monitor_clear_risks(time()-10000000);
+//$body .= block_risk_monitor_calculate_risks();
     //Link to edit courses NOTE: THIS WILL NOW BE BROKEN.
     //$body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('edit_courses','block_risk_monitor')).'<br><br>';
             

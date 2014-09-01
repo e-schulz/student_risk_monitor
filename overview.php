@@ -47,7 +47,7 @@ $PAGE->set_url('/blocks/risk_monitor/overview.php&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-$body = '';
+$body = get_string('overview_body', 'block_risk_monitor');
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
  
@@ -56,13 +56,9 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
         $headers = array();
            
         $studentfirstnamehead = new html_table_cell();
-        $studentfirstnamehead->text = '<b>First name</b>';
+        $studentfirstnamehead->text = '<b>Student</b>';
         $headers[] = $studentfirstnamehead;
                     
-        $studentlastnamehead = new html_table_cell();
-        $studentlastnamehead->text = '<b>Last name</b>';
-        $headers[] = $studentlastnamehead;
-            
         $students_at_risk = array();            //array of userids of at risk students
         foreach($categories as $category) {
             
@@ -70,9 +66,9 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
             if($category_risks = $DB->get_records('block_risk_monitor_cat_risk', array('categoryid' => $category->id))) {
                    foreach($category_risks as $category_risk) {
                        array_push($students_at_risk, $category_risk->userid);
+                       //$students_at_risk[] = $category_risk->userid;
                    }
                    //make the array unique
-                   array_unique($students_at_risk);
             }
             
             //Create the headers
@@ -81,6 +77,7 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
             $headers[] = $categoryhead;            
         }    
         $studentstable->data[] = new html_table_row($headers);
+        $students_at_risk = array_unique($students_at_risk);
         
         //Loop thru the at risk students.
         if(count($students_at_risk) > 0) {
@@ -95,13 +92,9 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                     //Write out the table line
                     $studentrow = array();
 
-                    $studentfirstname = new html_table_cell();
-                    $studentfirstname->text = $student->firstname;
-                    $studentrow[] = $studentfirstname;
-
-                    $studentlastname = new html_table_cell();
-                    $studentlastname->text = $student->lastname;
-                    $studentrow[] = $studentlastname;
+                    $studentname = new html_table_cell();
+                    $studentname->text = html_writer::link (new moodle_url('view_student.php', array('userid' => $USER->id, 'courseid' => $courseid,  'studentid' => $student->id)), $student->firstname."&nbsp;".$student->lastname);
+                    $studentrow[] = $studentname;                   
 
                     foreach($categories as $category) {
                         $found = false;
@@ -127,15 +120,15 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                                 $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                             }
                             else {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('low_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                             }
                             
                         }
                         $studentrow[] = $category_cell;
-                    }
+                    }                    
                 }
+                $studentstable->data[] = new html_table_row($studentrow);
             }
-            $studentstable->data[] = new html_table_row($studentrow);
         }
         else {
             //No students at risk
@@ -143,7 +136,7 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
         $body .= html_writer::table($studentstable);
 }
 else {
-    $body .= "No categories. Go to settings to add categories and rules.";
+    $body .= "No categories created for this course. Go to settings to add categories and rules.";
 }
 
 

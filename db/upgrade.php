@@ -769,6 +769,50 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         // Test_risk_monitor savepoint reached.
         upgrade_block_savepoint(true, 2014260841, 'risk_monitor');
     }
+    
+        if ($oldversion < 2014260844) {
+
+        // Define field min_score to be added to block_risk_monitor_cust_rule.
+        $table = new xmldb_table('block_risk_monitor_cust_rule');
+        $field = new xmldb_field('min_score', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'timestamp');
+
+        // Conditionally launch add field min_score.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+                // Define field max_score to be added to block_risk_monitor_cust_rule.
+        $table = new xmldb_table('block_risk_monitor_cust_rule');
+        $field = new xmldb_field('max_score', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '100', 'min_score');
+
+        // Conditionally launch add field max_score.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+                // Define field mod_risk_floor to be added to block_risk_monitor_cust_rule.
+        $table = new xmldb_table('block_risk_monitor_cust_rule');
+        $field = new xmldb_field('low_mod_risk_cutoff', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '50', 'max_score');
+
+        // Conditionally launch add field mod_risk_floor.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+                // Define field high_risk_floor to be added to block_risk_monitor_cust_rule.
+        $table = new xmldb_table('block_risk_monitor_cust_rule');
+        $field = new xmldb_field('mod_high_risk_cutoff', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '75', 'low_mod_risk_cutoff');
+
+        // Conditionally launch add field high_risk_floor.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260844, 'risk_monitor');
+    }
+
 
 
     return true;

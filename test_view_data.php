@@ -92,7 +92,12 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule_inst')) {
             $field9 = new html_table_cell();
             $field9->text = '<b>value</b>';
             $headers[] = $field9;
-            
+
+            $field10 = new html_table_cell();
+            $field10->text = '<b>ruleid (cust or default)</b>';
+            $headers[] = $field10;
+                                
+      
             $table->data[] = new html_table_row($headers);
             
             //header.
@@ -133,7 +138,17 @@ if($pretest_instances = $DB->get_records('block_risk_monitor_rule_inst')) {
                 $field9value->text = $pretest_instance->value;
                 $instancerow[] = $field9value;
                 
-                 
+                if($pretest_instance->ruletype == 1) {
+                    $field10value = new html_table_cell();
+                    $field10value->text = $pretest_instance->defaultruleid;
+                    $instancerow[] = $field10value;
+                }
+                else {
+                    $field11value = new html_table_cell();
+                    $field11value->text = $pretest_instance->custruleid;
+                    $instancerow[] = $field11value;
+                }
+                  
                 $table->data[] = new html_table_row($instancerow);               
 
             }
@@ -233,21 +248,21 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_cust_rule')) {
             $field5->text = '<b>timestamp</b>';
             $headers[] = $field5;
             
-/*            $field6 = new html_table_cell();
-            $field6->text = '<b>enabled</b>';
+            $field6 = new html_table_cell();
+            $field6->text = '<b>max_score</b>';
             $headers[] = $field6;
                     
             $field7 = new html_table_cell();
-            $field7->text = '<b>userid</b>';
+            $field7->text = '<b>min_score</b>';
             $headers[] = $field7; 
 
             $field8 = new html_table_cell();
-            $field8->text = '<b>value_required</b>';
+            $field8->text = '<b>mod_high_risk_cutoff</b>';
             $headers[] = $field8;
                     
             $field9 = new html_table_cell();
-            $field9->text = '<b>value_description</b>';
-            $headers[] = $field9; */
+            $field9->text = '<b>low_mod_risk_cutoff</b>';
+            $headers[] = $field9; 
             $table->data[] = new html_table_row($headers);
             
             //header.
@@ -276,21 +291,21 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_cust_rule')) {
                 $field5value->text = $hypothetical_instance->timestamp;
                 $instancerow[] = $field5value;
                
-/*                $field6value = new html_table_cell();
-                $field6value->text = $hypothetical_instance->enabled;
+                $field6value = new html_table_cell();
+                $field6value->text = $hypothetical_instance->max_score;
                 $instancerow[] = $field6value;
                 
                 $field7value = new html_table_cell();
-                $field7value->text = $hypothetical_instance->userid;
+                $field7value->text = $hypothetical_instance->min_score;
                 $instancerow[] = $field7value;
 
                 $field8value = new html_table_cell();
-                $field8value->text = $hypothetical_instance->value_required;
+                $field8value->text = $hypothetical_instance->mod_high_risk_cutoff;
                 $instancerow[] = $field8value;
                 
                 $field9value = new html_table_cell();
-                $field9value->text = $hypothetical_instance->value_description;
-                $instancerow[] = $field9value;*/
+                $field9value->text = $hypothetical_instance->low_mod_risk_cutoff;
+                $instancerow[] = $field9value;
                                
                 $table->data[] = new html_table_row($instancerow);               
 

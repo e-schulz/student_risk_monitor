@@ -70,7 +70,7 @@ function block_risk_monitor_grade_less_than_risk($user, $value, $courseid) {
     $course_grade_item = grade_item::fetch_course_item($courseid);
     
     //Get the grade_grade instance, if it exists.
-    if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id))) {
+    if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id, 'userid' => $user->id))) {
         $max_grade = $grade_grade->rawgrademax;
         $final_grade = $grade_grade->rawgrade;
         $percent = intval(($final_grade/$max_grade)*100);
@@ -84,16 +84,17 @@ function block_risk_monitor_grade_less_than_risk($user, $value, $courseid) {
 
 function block_risk_monitor_grade_greater_than_risk($user, $value, $courseid) {
     
+    global $DB;
     $risk_rating = 0;
     
     //Get the grade item associated with the course.
     $course_grade_item = grade_item::fetch_course_item($courseid);
     
     //Get the grade_grade instance, if it exists.
-    if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id))) {
+    if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id, 'userid' => $user->id))) {
         $max_grade = $grade_grade->rawgrademax;
         $final_grade = $grade_grade->rawgrade;
-        $percent = intval*(($final_grade/$max_grade)*100);
+        $percent = intval(($final_grade/$max_grade)*100);
         if($percent > $value) {
             $risk_rating = 100;
         }

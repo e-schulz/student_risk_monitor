@@ -48,27 +48,20 @@ if($categoryid !== -1) {
     
     //Delete all rules associated with a category
     if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $categoryid))) {
-        $rule_insts = $DB->get_record('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
+        $rule_insts = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
         foreach($rule_insts as $rule_inst) {
             
-            if($rule_inst->ruletype == 1) {
-                $rule_identifier = 'defaultruleid';
-            }
-            else if ($rule_inst->ruletype == 2) {
-                $rule_identifier = 'custruleid';
-            }
-            
-            if($DB->record_exists('block_risk_monitor_rule_risk', array($rule_identifier => $rule_inst->id))) {
-                $DB->delete_records('block_risk_monitor_rule_risk', array($rule_identifier => $rule_inst->id)); 
-            }
+           // if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id))) {
+             //   $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id)); 
+            //}
         }
         $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
     }
     
     //Delete all cat risks assoc with this category
-    if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
-        $DB->delete_records('block_risk_monitor_cat_inst', array('categoryid' => $categoryid));        
-    }    
+    //if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
+      //  $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $categoryid));        
+    //}    
 }
 else if ($ruleid !== -1) {
     
@@ -77,16 +70,9 @@ else if ($ruleid !== -1) {
         $old_sum = 100 - intval($rule_to_delete->weighting);
         $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $ruleid));
         $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);    
-        
-        if($rule_to_delete->ruletype == 1) {
-            $rule_identifier = 'defaultruleid';
-        }
-        else if($rule_to_delete->ruletype == 2) {
-            $rule_identifier = 'custruleid';
-        }
 
-        if($DB->record_exists('block_risk_monitor_rule_risk', array($rule_identifier => $rule_to_delete->id))) {
-            $DB->delete_records('block_risk_monitor_rule_inst', array($rule_identifier => $rule_to_delete->id));        
+        if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id))) {
+            $DB->delete_records('block_risk_monitor_rule_inst', array('ruleid' => $rule_to_delete->id));        
         }          
     }
    

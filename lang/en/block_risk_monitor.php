@@ -29,15 +29,13 @@ $string['simplehtml:addinstance'] = 'Add a new Student Risk Monitor block';
 $string['simplehtml:myaddinstance'] = 'Add a new Student Risk Monitor block to the My Moodle page';		//???
 $string['student_questions'] = "Questionnaire";
 $string['student_questions_description'] = "Short description";
+$string['view_actions'] = "View actions..";
 
 //Overview strings
 $string['overview'] = "Overview";
 $string['no_user'] = "There is no user!";
 $string['wrong_user'] = "Wrong user trying to access";
-$string['overview_body'] = "This module is designed to help detect students who may be experiencing anxiety about an upcoming exam, using their online activity and grades, within a week of an upcoming exam<br>"
-        . "Please note this module uses the Moodle Calendar to determine whether any exams are coming up, searching for events with 'exam' or 'test' in the name, so please ensure any exams have been added to the calendar in order for the module to work properly.<br> "
-        . "Click on the course tabs below to view data for that course.<br>";
-
+$string['overview_body'] = "[Module description]<br><br><br>";
 //Settings strings
 $string['settings'] = "Settings";
 $string['delete_course'] = "Delete a course:";
@@ -130,6 +128,7 @@ $string['description_missed_deadlines'] = "";
 
 //Icon paths
 $string['no_risk_icon'] = "pix/no_risk_icon.png";
+$string['low_risk_icon'] = "pix/low_risk_icon.png";
 $string['moderate_risk_icon'] = "pix/moderate_risk_icon.png";
 $string['high_risk_icon'] = "pix/high_risk_icon.png";
 $string['edit_icon'] = "../../pix/t/edit.png";

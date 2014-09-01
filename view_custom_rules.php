@@ -71,8 +71,9 @@ if($do_delete !== -1) {
     }
 }
 
+$viewruleid = -1;
 if($do_view !== -1) {
-        //Preview rule or something
+      $viewruleid = $custom_rule_id;
 }
 
 //show descriptions
@@ -80,7 +81,7 @@ if($do_view !== -1) {
 $back_to_categories = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('back_to_categories','block_risk_monitor'));
 
 //Get all the categories and courses.
-$custom_rules_form = new individual_settings_form_view_custom_rules('view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)); 
+$custom_rules_form = new individual_settings_form_view_custom_rules('view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid, 'viewruleid' => $viewruleid)); 
  
 //Render the HTML
 echo $OUTPUT->header();

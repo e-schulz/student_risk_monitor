@@ -33,12 +33,13 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                     //Create heading: category, with an edit, and a checkbox to delete.
                     $category_name = new html_table_cell();
                     $category_name->text =  "<b>".$category->name."</b>&nbsp;".
-                            html_writer::start_tag('a', array('href' => 'edit_category.php?userid='.$USER->id.'&categoryid='.$category->id)).
+                            html_writer::start_tag('a', array('href' => 'edit_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid)).
                             html_writer::empty_tag('img', array('src' => get_string('edit_icon', 'block_risk_monitor'), 'align' => 'middle')).
                             html_writer::end_tag('a')."&nbsp;".
-                            html_writer::start_tag('a', array('href' => 'edit_categories_rules.php?userid='.$USER->id.'&categoryid='.$category->id)).
+                            html_writer::start_tag('a', array('href' => 'edit_categories_rules.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid)).
                             html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
                             html_writer::end_tag('a');
+                    $category_name->attributes['width'] = '200px';
                     
                     ///TABLE
                     if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id))) {
@@ -374,19 +375,112 @@ class individual_settings_form_view_custom_rules extends moodleform {
                 $heading->text =  "<b>Custom rules</b>";
                     
                 $filler = new html_table_cell();   
+
                 $table->data[] = new html_table_row(array($heading, $filler));
                 
                 foreach($custom_rules as $custom_rule) {
                     
-                    $rule_link = new html_table_cell();
-                    $rule_link->text =  html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid, 'custruleid' => $custom_rule->id, 'view' => 1)), $custom_rule->name);
+                    $numeric_scoring = false;
+                    if($custom_rule->max_score < 100) {
+                        $numeric_scoring = true;            
+                    }           
+                    $low_mod_risk_cutoff = $custom_rule->low_mod_risk_cutoff;
+                    $mod_high_risk_cutoff = $custom_rule->mod_high_risk_cutoff;
+                    $max_score = $custom_rule->max_score;
+                    $min_score = $custom_rule->min_score;
                     
-                    $delete_icon = new html_table_cell();
-                    $delete_icon->text = html_writer::start_tag('a', array('href' => 'view_custom_rules.php?userid='.$USER->id.'&custruleid='.$custom_rule->id.'&delete=1')).
-                                        html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
-                                        html_writer::end_tag('a');
-                    
-                    $table->data[] = new html_table_row(array($rule_link, $delete_icon));
+                    if($this->_customdata['viewruleid'] == $custom_rule->id) {
+                        
+                        $questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $custom_rule->id));
+                        
+                        //Description and question.
+                        if($custom_rule->description == '') {
+                            $desc = '<i>No description given</i>';
+                        }
+                        else {
+                            $desc = $custom_rule->description;
+                        }
+
+                        $questions_asked = "<b>Question(s):</b><br><br>";
+                        if($questions) {
+                            $i = 1;
+                            foreach($questions as $question) {
+                                $questions_asked .= "<b>".$i.".</b>&nbsp;".$question->question."<br>";
+                                $i++;
+                                
+
+                                //Options
+                                $options = $DB->get_records('block_risk_monitor_option', array('questionid' => $question->id));
+                                foreach($options as $option) {
+                                    
+                                    if($numeric_scoring) {
+                                        if($low_mod_risk_cutoff < $mod_high_risk_cutoff) {
+                                            if($option->value >= $mod_high_risk_cutoff/count($questions)) {
+                                                $risk_level = "Low risk";
+                                            }
+                                            else if ($option->value >= $low_mod_risk_cutoff/count($questions)) {
+                                                $risk_level = "Moderate risk";
+                                            }
+                                            else {
+                                                $risk_level = "High risk";
+                                            }
+                                        }
+                                        else {
+                                            if($option->value >= $low_mod_risk_cutoff/count($questions)) {
+                                                $risk_level = "Low risk";
+                                            }
+                                            else if ($option->value >= $mod_high_risk_cutoff/count($questions)) {
+                                                $risk_level = "Moderate risk";
+                                            }
+                                            else {
+                                                $risk_level = "High risk";
+                                            }                                            
+                                        }
+                                    }
+                                    else {
+                                        if($option->value >= HIGH_RISK) {
+                                            $risk_level = "High risk";
+                                        }
+                                        else if ($option->value >= MODERATE_RISK) {
+                                            $risk_level = "Moderate risk";
+                                        }
+                                        else {
+                                            $risk_level = "Low risk";
+                                        }
+                                    }
+                                    
+                                    $questions_asked .= "&nbsp;&nbsp;&nbsp;-<i>".$option->label."&nbsp;(".$risk_level.")</i><br>";
+                                }
+                                $questions_asked .= "<br>";
+                            }
+                        }
+                        else {
+                            $questions_asked .= "<i>None</i><br>";
+                        }
+                         
+                        $rule_link = new html_table_cell();
+                        $rule_link->text = html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid, 'custruleid' => $custom_rule->id, 'view' => 1)), $custom_rule->name)."<br>".$desc.'<br><br>'.$questions_asked;
+
+                        $delete_icon = new html_table_cell();
+                        $delete_icon->text = html_writer::start_tag('a', array('href' => 'view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid.'&custruleid='.$custom_rule->id.'&delete=1')).
+                                            html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                            html_writer::end_tag('a');
+
+                        $table->data[] = new html_table_row(array($rule_link, $delete_icon));
+                        
+                    }
+                    else {
+                        $rule_link = new html_table_cell();
+                        $rule_link->text =  html_writer::link (new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid, 'custruleid' => $custom_rule->id, 'view' => 1)), $custom_rule->name);
+
+                        $delete_icon = new html_table_cell();
+                        $delete_icon->text = html_writer::start_tag('a', array('href' => 'view_custom_rules.php?userid='.$USER->id.'&courseid='.$courseid.'&custruleid='.$custom_rule->id.'&delete=1')).
+                                            html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                            html_writer::end_tag('a');
+
+                        $table->data[] = new html_table_row(array($rule_link, $delete_icon));
+                        
+                    }
 
                 }
                 
@@ -408,44 +502,100 @@ class individual_settings_form_create_custom_rule extends moodleform {
         
         $mform =& $this->_form;
         $courseid = $this->_customdata['courseid'];
-        //Name
-        $mform->addElement('textarea', 'rule_name_text', "Name", 'rows="1" cols="75"');    
-        $mform->addRule('rule_name_text', "Name required", 'required', '', 'client');
+        $num_questions = $this->_customdata['numquestions'];
+        $num_options = $this->_customdata['numoptions'];
+        
+        if($num_questions === -1) {
+            //Name
+            $mform->addElement('textarea', 'rule_name_text', "Name", 'rows="1" cols="75"');    
+            $mform->addRule('rule_name_text', "Name required", 'required', '', 'client');
 
-        //Description
-        $mform->addElement('textarea', 'rule_description_text', "Description", 'rows="5" cols="75"');   
-        $mform->addElement('static', 'whitespace', '', "<br><br><br>");
+            //Description
+            $mform->addElement('textarea', 'rule_description_text', "Description", 'rows="5" cols="75"');   
+            $mform->addElement('static', 'whitespace', '', "<br><br><br>");
+
+            //Number of questions and options:
+            $mform->addElement('select', 'number_questions', "Number of questions", range(0,20));  
+
+            $mform->addElement('select', 'number_options', "Number of options per question", range(0,5));  
+            $mform->addElement('select', 'scoring_method', "Scoring method", array("Risk level (High, Med, Low)", "Numeric"));  
+
+            //Save and submit.
+            $buttons_group=array();   
+            $buttons_group[] =& $mform->createElement('submit', 'submit_rule1', "Next");    
+            $buttons_group[] =& $mform->createElement('static', 'cancel_link', '', "&nbsp;&nbsp;".html_writer::link(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Cancel"));
+            $mform->addGroup($buttons_group, 'buttons_group', '', '', false);               
+            
+            
+        }
+        else {
+                        //min, max, ranges.
+            if($this->_customdata['scoringmethod'] == 1) {
+                $mform->addElement('select', 'min_score', "Minimum score", range(0,$num_questions));  
+                $mform->addElement('select', 'max_score', "Maximum score", range($num_questions*($num_options-1),$num_questions*$num_options));
+                
+                $buttons_group=array();   
+                $buttons_group[] =& $mform->createElement('textarea', 'lowrangebegin', '', 'rows="1" cols="5"');
+                $buttons_group[] =& $mform->createElement('static', 'lowrangetext', '', " to ");    
+                $buttons_group[] =& $mform->createElement('textarea', 'lowrangeend', '', 'rows="1" cols="5"');
+                $mform->addGroup($buttons_group, 'lowrange', "Low risk range: ", '&nbsp', false);         
+                
+                $buttons_group=array();   
+                $buttons_group[] =& $mform->createElement('textarea', 'medrangebegin', '', 'rows="1" cols="5"');
+                $buttons_group[] =& $mform->createElement('static', 'medrangetext','', " to ");    
+                $buttons_group[] =& $mform->createElement('textarea', 'medrangeend', '', 'rows="1" cols="5"');
+                $mform->addGroup($buttons_group, 'medrange', "Moderate risk range: ", '&nbsp', false);     
+                
+                $buttons_group=array();  
+                $buttons_group[] =& $mform->createElement('textarea', 'highrangebegin', '', 'rows="1" cols="5"');
+                $buttons_group[] =& $mform->createElement('static', 'highrangetext', '', " to ");    
+                $buttons_group[] =& $mform->createElement('textarea', 'highrangeend', '', 'rows="1" cols="5"');
+                $mform->addGroup($buttons_group, 'highrange', "High risk range: ", '&nbsp', false);     
+                
+                $mform->addRule('lowrange', "Range required", 'required', '', 'client');
+                $mform->addRule('medrange', "Range required", 'required', '', 'client');
+                $mform->addRule('highrange', "Range required", 'required', '', 'client');
+                $mform->addElement('static', 'whitespace', '', "<br><br>");
+
+                
+            }
+            
+            for($i=0; $i<$this->_customdata['numquestions']; $i++) {
+                
+                //Question
+                $mform->addElement('textarea', 'question_text'.$i, "Question ".($i+1), 'rows="2" cols="75"');   
+                $mform->addElement('static', 'whitespace', '', "<br>");
+                $mform->addRule('question_text'.$i, "Question is required", 'required', '', 'client');
+
+                //Options and values
+                $option_values = array();
+                if($this->_customdata['scoringmethod'] == 0) {
+                    $option_values = array(0 => get_string('low_risk','block_risk_monitor'), 50 => get_string('moderate_risk','block_risk_monitor'), 100 => get_string('high_risk','block_risk_monitor'));
+                }
+                else if ($this->_customdata['scoringmethod'] == 1) {
+                    $option_values = range(0, $num_options);
+                }
+                
+                for($j=0; $j<$num_options; $j++) {
+                    $mform->addElement('textarea', 'option_text'.$i.$j, "Option text", 'rows="1"');   
+                    $mform->addElement('select', 'option_value'.$i.$j, "Option value", $option_values);   
+                    $mform->addElement('static', 'whitespace', '', "<br>");
+                    $mform->addRule('option_text'.$i.$j, "Option must have text", 'required', '', 'client');
+                    $mform->setDefault('option_value'.$i.$j, 0);        
+
+                }  
+                $mform->addElement('static', 'whitespace', '', "<br><br>");
+
+      
+            }
+            
+                            //Save and submit.
+                $buttons_group=array();   
+                $buttons_group[] =& $mform->createElement('submit', 'submit_rule2', "Create rule");    
+                $buttons_group[] =& $mform->createElement('static', 'cancel_link', '', "&nbsp;&nbsp;".html_writer::link(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Cancel"));
+                $mform->addGroup($buttons_group, 'buttons_group', '', '', false);  
         
-        //Question
-        $mform->addElement('textarea', 'question_text', "Question", 'rows="2" cols="75"');   
-        $mform->addElement('static', 'whitespace', '', "<br><br>");
-        $mform->addRule('question_text', "Question is required", 'required', '', 'client');
-        
-        //Options and values
-        $risk_values = array(0 => get_string('low_risk','block_risk_monitor'), 50 => get_string('moderate_risk','block_risk_monitor'), 100 => get_string('high_risk','block_risk_monitor'));
-        $mform->addElement('textarea', 'option1_text', "Option label", 'rows="1"');   
-        $mform->addElement('select', 'option1_value', "Risk rating", $risk_values);   
-        $mform->addElement('static', 'whitespace', '', "<br>");
-        $mform->addRule('option1_text', "At least two options are required", 'required', '', 'client');
-        
-        $mform->addElement('textarea', 'option2_text', "Option label", 'rows="1"');   
-        $mform->addElement('select', 'option2_value', "Risk rating", $risk_values);  
-        $mform->addElement('static', 'whitespace', '', "<br>");
-        $mform->addRule('option2_text', "At least two options are required", 'required', '', 'client');
-        
-        $mform->addElement('textarea', 'option3_text', "Option label", 'rows="1"');   
-        $mform->addElement('select', 'option3_value', "Risk rating", $risk_values);  
-        $mform->addElement('static', 'whitespace', '', "<br>");
-        
-        $mform->setDefault('option1_value', 0);        
-        $mform->setDefault('option2_value', 0);        
-        $mform->setDefault('option3_value', 0);   
-        
-        //Save and submit.
-        $buttons_group=array();   
-        $buttons_group[] =& $mform->createElement('submit', 'submit_rule', "Create rule");    
-        $buttons_group[] =& $mform->createElement('static', 'cancel_link', '', "&nbsp;&nbsp;".html_writer::link(new moodle_url('view_custom_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Cancel"));
-        $mform->addGroup($buttons_group, 'buttons_group', '', '', false);
+        }
         
         //$this->add_action_buttons(true, "Create rule");
         
@@ -473,9 +623,109 @@ class individual_settings_form_student_questions extends moodleform {
                     $radioarray[] =& $mform->createElement('radio', 'question_option'.$question->id, '', $option->label, $option->id);
                 }
                 $mform->addGroup($radioarray, 'questiongroup'.$question->id, '', array(' '), false);
+                $mform->addElement('static', 'whitespace', '', "<br><br>");
+
             }
             
             $this->add_action_buttons(true, "Submit");
             
         }
+}
+
+class individual_settings_form_view_student extends moodleform {
+    
+    public function definition() {
+            
+         global $DB, $USER;
+         $mform =& $this->_form;
+             
+         $courseid = $this->_customdata['courseid'];
+         $userid = $this->_customdata['userid'];
+         $studentid = $this->_customdata['studentid'];
+         
+         //Get all the categories
+         if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+
+            foreach($categories as $category) {
+
+                //Get the category risk for this student
+                if($cat_risk = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $studentid))) {
+                    //Color depending on risk.
+                    if($cat_risk->value >= HIGH_RISK) {
+                        $colour = 'red';
+                        $text = 'Risk: High';
+                    }
+                    else if ($cat_risk->value >= MODERATE_RISK) {
+                        $colour = 'orange';
+                        $text = "Risk: Moderate";
+                    }
+                    else {
+                        $colour = 'green';
+                        $text = "Risk: Low";
+                    }
+                }
+                else {
+                    $colour = 'gray';
+                     $text = 'Not enough data available';
+                }
+                
+                
+                //Print out the header
+                $studentstable = new html_table();
+                $headers = array();
+
+                $categoryname = new html_table_cell();
+                $categoryname->text = "<b>".$category->name.'</b>&nbsp;&nbsp;<font color="'.$colour.'"><i>'.$text.'</i></font>';
+                $headers[] = $categoryname;
+
+                $categoryaction = new html_table_cell();
+                $categoryaction->text = html_writer::link (new moodle_url('view_actions.php', array('userid' => $USER->id, 'courseid' => $courseid,  'studentid' => $studentid, 'categoryid' => $category->id)), get_string('view_actions', 'block_risk_monitor'))
+                                        ."";    //category risk.
+                $headers[] = $categoryaction;
+                $studentstable->data[] = new html_table_row($headers);
+
+                //get all the rules
+                if($rules = $DB->get_records(('block_risk_monitor_rule_inst'), array('categoryid' => $category->id))) {
+
+                    foreach($rules as $rule) {
+                        
+                        //Get the risk.
+                        if($rule_risk = $DB->get_record('block_risk_monitor_rule_risk', array('ruleid' => $rule->id, 'userid' => $studentid))) {
+                            if($rule_risk->value >= HIGH_RISK) {
+                                $risk_icon = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                            }
+                            else if ($rule_risk->value >= MODERATE_RISK) {
+                                $risk_icon = html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                            }
+                            else {
+                                $risk_icon = html_writer::empty_tag('img', array('src' => get_string('low_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                            }
+                        }
+                        else {
+                            $risk_icon = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                        }
+                        
+                        $rulerow = array();
+
+                        $rulename = new html_table_cell();
+                        $rulename->text = $risk_icon."&nbsp;&nbsp;".$rule->name;
+                        $rulerow[] = $rulename;
+
+                        $ruleaction = new html_table_cell();
+                        $ruleaction->text = html_writer::link (new moodle_url('view_actions.php', array('userid' => $USER->id, 'courseid' => $courseid,  'studentid' => $studentid, 'ruleid' => $rule->id)), get_string('view_actions', 'block_risk_monitor'));;
+                        $rulerow[] = $ruleaction;
+                        $studentstable->data[] = new html_table_row($rulerow);
+
+                    }
+                }
+                $mform->addElement('static', 'student_table', '', html_writer::table($studentstable));
+
+            }
+
+        }
+        else {
+            //shouldn't get to here.
+        }
+            
+    }    
 }

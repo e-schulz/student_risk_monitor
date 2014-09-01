@@ -22,7 +22,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
     global $CFG, $USER, $COURSE;
     
     $content = '';
-    if(count(block_risk_monitor_get_questions($courseid)) !== 0) {
+    if(count(block_risk_monitor_get_questions($userid, $courseid)) !== 0) {
         $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questions.php', array('userid' => $USER->id, 'courseid' => $COURSE->id)), get_string('student_questions', 'block_risk_monitor'));
         $content .= "<br>".get_string('student_questions_description', 'block_risk_monitor');
     }
@@ -30,7 +30,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
     return $content;
 }
 
-function block_risk_monitor_get_questions($courseid) {
+function block_risk_monitor_get_questions($userid, $courseid) {
     
     global $DB;
     $questions_to_return = array();
@@ -54,7 +54,7 @@ function block_risk_monitor_get_questions($courseid) {
                             if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $cust_rule->id))) {
                                 foreach($questions as $question) {
                                     
-                                    if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id))) && $question_total < MAX_STUDENT_QUESTIONS) {
+                                    if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid))) && $question_total < MAX_STUDENT_QUESTIONS) {
                                         $questions_to_return[] = $question;
                                         $question_total++;
                                     }
