@@ -86,7 +86,7 @@ else if ($fromform = $new_intervention_form->get_data()) {
     file_save_draft_area_files($fromform->files, $course_context->id, 'block_risk_monitor', 'intervention_files',
                    $intervention_template_id, array('subdirs' => 0, 'maxfiles' => 50));    
 
-    //redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+    redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
 }
 
 //Render the HTML
@@ -101,5 +101,4 @@ echo $OUTPUT->heading($blockname);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("New intervention: ".$category->name);
 $new_intervention_form->display();
-echo $number_files;
 echo $OUTPUT->footer();

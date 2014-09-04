@@ -162,5 +162,19 @@
         <KEY NAME="contextid" TYPE="foreign" FIELDS="contextid" REFTABLE="context" REFFIELDS="id" COMMENT="The context that the files for this intervention were uploaded under, for later access"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="block_risk_monitor_int_inst" COMMENT="Intervention instance.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student this intervention is generated for."/>
+        <FIELD NAME="interventiontemplateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the intervention template being used"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this intervention was generated"/>
+        <FIELD NAME="viewed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the intervention has been viewed by the student"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id" COMMENT="The student this intervention is generated for"/>
+        <KEY NAME="interventiontemplateid" TYPE="foreign" FIELDS="interventiontemplateid" REFTABLE="block_risk_monitor_int_tmp" REFFIELDS="id" COMMENT="The id of the intervention template used"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>

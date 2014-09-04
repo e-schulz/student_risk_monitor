@@ -5,7 +5,14 @@ class block_risk_monitor extends block_base {
         public static $last_student_update;            //last time the student risks were updated. 
         
 	public function init() {
-		$this->title = get_string('title','block_risk_monitor');
+            global $COURSE;
+            $context = context_course::instance($COURSE->id);
+            if(has_capability('block/risk_monitor:teacherview', $context)) {
+                $this->title = get_string('title','block_risk_monitor');
+            }
+            else {
+               $this->title = get_string('studenttitle', 'block_risk_monitor');
+            }
 	}
         
         //Regularly check and make sure the default rules are updated in the database.

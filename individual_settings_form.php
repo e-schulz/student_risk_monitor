@@ -642,7 +642,8 @@ class individual_settings_form_view_student extends moodleform {
          $courseid = $this->_customdata['courseid'];
          $userid = $this->_customdata['userid'];
          $studentid = $this->_customdata['studentid'];
-         
+         $student = $DB->get_record('user', array('id' => $studentid));
+         $mform->addElement('static', 'name', '', "<b><i>".$student->firstname."&nbsp;".$student->lastname."</i></b><br><br>");
          //Get all the categories
          if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
 
@@ -650,15 +651,7 @@ class individual_settings_form_view_student extends moodleform {
 
                 //Get the category risk for this student
                 if($cat_risk = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $studentid))) {
-                    //Color depending on risk.
-                    /*if($cat_risk->value >= HIGH_RISK) {
-                        $colour = 'red';
-                        $text = 'Risk: High';
-                    }
-                    else if ($cat_risk->value >= MODERATE_RISK) {
-                        $colour = 'orange';
-                        $text = "Risk: Moderate";
-                    }*/
+
                     if($cat_risk->value >= HIGH_RISK) {
                          $risk_icon = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
                     }
@@ -669,19 +662,8 @@ class individual_settings_form_view_student extends moodleform {
                     //Only show moderate to high risk students
                     if($cat_risk->value >= MODERATE_RISK) {
                         
-                        //Print out the header
-                        $studentstable = new html_table();
-                        $headers = array();
-                        
-                        $categoryname = new html_table_cell();
-                        $categoryname->text = $risk_icon."&nbsp;&nbsp;<b>".$category->name."</b>";
-                        $headers[] = $categoryname;
-
-                        $categoryaction = new html_table_cell();
-                        $categoryaction->text = html_writer::link (new moodle_url('view_actions.php', array('userid' => $USER->id, 'courseid' => $courseid,  'studentid' => $studentid, 'categoryid' => $category->id)), get_string('view_actions', 'block_risk_monitor'))
-                                                ."";    //category risk.
-                        $headers[] = $categoryaction;
-                        $studentstable->data[] = new html_table_row($headers);
+                        $categoryhead = $risk_icon."&nbsp;&nbsp;<b>".$category->name."</b><br>";
+                        $mform->addElement('static', 'category'.$category->id, '', $categoryhead); 
 
                         //get all the rules
                         if($rules = $DB->get_records(('block_risk_monitor_rule_inst'), array('categoryid' => $category->id))) {
@@ -714,7 +696,16 @@ class individual_settings_form_view_student extends moodleform {
                                 }
                             }
                         }
-                        $mform->addElement('static', 'student_table', '', html_writer::table($studentstable));                        
+                        
+                        //Get all the interventions.
+                        if($intervention_templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid' => $category->id))) {
+                            
+                            $mform->addElement('static', 'interventionhead', '', "<div>&emsp;<i>Suggested interventions</i>");
+                            foreach($intervention_templates as $intervention_template) {
+                                $mform->addElement('static', 'interventioncontent', '', "<li>&emsp;".html_writer::link(new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id)), $intervention_template->name)."</li>");   
+                            }
+                            $mform->addElement('static', 'interventionend', '', "</div>");                            
+                        }
 
                     }
                     
@@ -845,6 +836,7 @@ class individual_settings_form_view_intervention extends moodleform {
             //$mform->addElement('header', 'links', "Links");
             $exturl = trim($intervention->url);
             if (!(empty($exturl) or $exturl === 'http://')) {
+                
                 //$fullurl = str_replace('&amp;', '&', url_get_full_url($url, $cm, $course));
                 $mform->addElement('static', 'URL', '', html_writer::alist(array(html_writer::link($exturl, "link"))));
             }
@@ -869,7 +861,8 @@ class individual_settings_form_view_intervention extends moodleform {
                     //$fullurl = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename());
                     //$path = '/'.$intervention->id.'/block_risk_monitor/intervention_files'.$file->get_filepath().$file->get_filename();
                     //$fullurl = moodle_url::make_file_url('/pluginfile.php', $path);
-                    $mform->addElement('static', 'file', '', html_writer::link($url,$filename));
+                    $image = html_writer::empty_tag('img', array('src' => "../../pix/".file_file_icon($file).".png", 'align' => 'middle'));
+                    $mform->addElement('static', 'file', '', html_writer::link($url,$image."&nbsp;".$filename));
                 //}
                 //$i++;
             }
@@ -877,4 +870,53 @@ class individual_settings_form_view_intervention extends moodleform {
     }
     
     
+}
+
+class individual_settings_form_view_category extends moodleform {
+    
+    public function definition() {
+            
+         global $DB, $USER;
+         $mform =& $this->_form;
+             
+         $courseid = $this->_customdata['courseid'];
+         $userid = $this->_customdata['userid'];
+         $studentid = $this->_customdata['studentid'];
+         $categoryid = $this->_customdata['categoryid'];
+         $student = $DB->get_record('user', array('id' => $studentid));
+         
+         $mform->addElement('header', 'problem_areas', "Problem areas");
+         
+         $mform->addElement('header', 'actions', "Interventions");
+         
+         if($intervention_templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid' => $categoryid))) {
+                            
+             foreach($intervention_templates as $intervention_template) {
+                 if($intervention_template->description != '') {
+                     $desc = $intervention_template->description;
+                 }
+                 else {
+                     $desc = "<i>No description given</i>";
+                 }
+                 
+                $rulegroup = array();
+                $rulegroup[] =& $mform->createElement('advcheckbox', 'intervention'.$intervention_template->id);
+                $rulegroup[] =& $mform->createElement('static', 'interventioncontent', '', "<b>".$intervention_template->name."</b>");
+                $mform->addGroup($rulegroup, 'intervention_'.$intervention_template->id, '', ' ', false);
+            
+                if($DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_template->id))) {
+                    $mform->setDefault('intervention'.$intervention_template->id, 1);
+                }
+                else {
+                    $mform->setDefault('intervention'.$intervention_template->id, 0);
+                }
+                 //$mform->addElement('static', 'interventioncontent', '', "<li><b>".$intervention_template->name."</b></li>");   
+                 $mform->addElement('static', 'interventioncontent', '', '&emsp;'.$desc);   
+                 $mform->addElement('static', 'interventioncontent', '', '&emsp;'.html_writer::link(new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id, 'categoryid' => $categoryid)), 'Preview..<br><br>'));  
+             }
+             
+             $mform->addElement('submit', 'update', 'Save');   
+         }         
+            
+    }    
 }

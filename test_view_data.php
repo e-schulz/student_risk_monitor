@@ -605,6 +605,70 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_answer')) {
             $body .= html_writer::table($table);
             $body .= "<br><br></div>";
 }
+
+$body .= "<div><b>Intervention instances</b><br><br>";
+
+if($hypothetical_instances = $DB->get_records('block_risk_monitor_int_inst')) {
+            
+            $table = new html_table();
+            $headers = array();
+            
+            $field1 = new html_table_cell();
+            $field1->text = '<b>ID</b>';
+            $headers[] = $field1;
+                    
+            $field2 = new html_table_cell();
+            $field2->text = '<b>studentid</b>';
+            $headers[] = $field2;
+            
+            $field3 = new html_table_cell();
+            $field3->text = '<b>interventiontemplateid</b>';
+            $headers[] = $field3;
+            
+            $field4 = new html_table_cell();
+            $field4->text = '<b>timestamp</b>';
+            $headers[] = $field4;
+                    
+            $field5 = new html_table_cell();
+            $field5->text = '<b>viewed</b>';
+            $headers[] = $field5;
+ 
+            $table->data[] = new html_table_row($headers);
+            
+            //header.
+            foreach($hypothetical_instances as $hypothetical_instance) {
+                
+                //get the user                        
+                $instancerow = array();
+
+                $field1value = new html_table_cell();
+                $field1value->text = $hypothetical_instance->id;
+                $instancerow[] = $field1value;
+                
+                $field2value = new html_table_cell();
+                $field2value->text = $hypothetical_instance->studentid;
+                $instancerow[] = $field2value;
+                
+                $field3value = new html_table_cell();
+                $field3value->text = $hypothetical_instance->interventiontemplateid;
+                $instancerow[] = $field3value;
+
+                $field4value = new html_table_cell();
+                $field4value->text = $hypothetical_instance->timestamp;
+                $instancerow[] = $field4value;
+                
+                $field5value = new html_table_cell();
+                $field5value->text = $hypothetical_instance->viewed;
+                $instancerow[] = $field5value;
+               
+                $table->data[] = new html_table_row($instancerow);               
+
+            }
+            
+            $body .= html_writer::table($table);
+            $body .= "<br><br></div>";
+}
+
 $body .= "<div><b>Courses</b><br><br>";
 
 if($hypothetical_instances = $DB->get_records('block_risk_monitor_course')) {

@@ -19,7 +19,7 @@ global $DB, $USER, $COURSE;
 //this method will check any questions that need to be answered.
 function block_risk_monitor_generate_student_view($userid, $courseid) {
     
-    global $CFG, $USER, $COURSE;
+    global $CFG, $USER, $COURSE, $DB;
     
     $content = '';
     if(count(block_risk_monitor_get_questions($userid, $courseid)) !== 0) {
@@ -27,7 +27,34 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
         $content .= "<br>".get_string('student_questions_description', 'block_risk_monitor');
     }
     
+    if(count($interventions = block_risk_monitor_get_interventions($userid, $courseid)) !== 0) {
+        foreach($interventions as $intervention) {
+            $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid));
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_module.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
+        }
+    }
+    
     return $content;
+}
+
+function block_risk_monitor_get_interventions($userid, $courseid) {
+    global $DB;
+    $interventions_to_return = array(); 
+    
+    if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+        foreach($categories as $category) {
+            
+            if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('studentid' => $userid))) {
+                
+                foreach($interventions as $intervention) {
+                    if($DB->record_exists('block_risk_monitor_int_tmp', array('categoryid' => $category->id, 'id' => $intervention->interventiontemplateid))) {
+                        $interventions_to_return[] = $intervention;
+                    }
+                }
+            }
+        }
+    }
+    return $interventions_to_return;
 }
 
 function block_risk_monitor_get_questions($userid, $courseid) {

@@ -93,7 +93,7 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                     $studentrow = array();
 
                     $studentname = new html_table_cell();
-                    $studentname->text = html_writer::link (new moodle_url('view_student.php', array('userid' => $USER->id, 'courseid' => $courseid,  'studentid' => $student->id)), $student->firstname."&nbsp;".$student->lastname);
+                    $studentname->text = $student->firstname."&nbsp;".$student->lastname;
                     $studentrow[] = $studentname;                   
 
                     foreach($categories as $category) {
@@ -108,20 +108,24 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                         
                         $category_cell = new html_table_cell();
                         if($found == false) {           //no risk for this category, leave empty
-                            $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'), 'align' => 'middle'));
+                            //$category_cell->text = html_writer::empty_tag('img', array('src' => get_string('no_risk_icon', 'block_risk_monitor'), 'align' => 'middle'));
                         }
                         else {                          //risk for this category!
                             //Get the risk
                             $rating = $student_risk->value;
                             if($rating >= MODERATE_RISK && $rating < HIGH_RISK) {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                     .html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor'),'align' => 'middle'))
+                                     .html_writer::end_tag('a');  
                             }
                             else if($rating >= HIGH_RISK) {
-                                $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                      .html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'))
+                                     .html_writer::end_tag('a');                                  
                             }
-                            else {
+                            /*else {
                                 $category_cell->text = html_writer::empty_tag('img', array('src' => get_string('low_risk_icon', 'block_risk_monitor'),'align' => 'middle'));
-                            }
+                            }*/
                             
                         }
                         $studentrow[] = $category_cell;

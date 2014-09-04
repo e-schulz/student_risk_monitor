@@ -882,6 +882,31 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260847, 'risk_monitor');
     }
     
+    if ($oldversion < 2014260848) {
+
+        // Define table block_risk_monitor_int_inst to be created.
+        $table = new xmldb_table('block_risk_monitor_int_inst');
+
+        // Adding fields to table block_risk_monitor_int_inst.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('studentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('interventiontemplateid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('viewed', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_int_inst.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('studentid', XMLDB_KEY_FOREIGN, array('studentid'), 'user', array('id'));
+        $table->add_key('interventiontemplateid', XMLDB_KEY_FOREIGN, array('interventiontemplateid'), 'block_risk_monitor_int_tmp', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_int_inst.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260848, 'risk_monitor');
+    }
     
     return true;
 }
