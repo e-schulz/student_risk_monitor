@@ -236,3 +236,19 @@ function block_risk_monitor_adjust_weightings_rule_deleted($categoryid, $old_sum
                 $DB->update_record('block_risk_monitor_rule_inst', $new_record);
     }
 }
+
+function block_risk_monitor_fix_url($url) {
+    
+    $url = trim($url);
+
+    // remove encoded entities - we want the raw URI here
+    $url = html_entity_decode($url, ENT_QUOTES, 'UTF-8');
+
+    if (!preg_match('|^[a-z]+:|i', $url) and !preg_match('|^/|', $url)) {
+        // invalid URI, try to fix it by making it normal URL,
+        // please note relative urls are not allowed, /xx/yy links are ok
+        $url = 'http://'.$url;
+    }
+
+    return $url;    
+}

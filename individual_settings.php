@@ -21,6 +21,7 @@ $data->categoryid = 7;
 $data->value = 40;
 $data->timestamp = time();
 $DB->insert_record('block_risk_monitor_cat_risk', $data);*/
+//$DB->delete_records('block_risk_monitor_int_tmp');
 
 //Teacher must be logged in
 require_login();

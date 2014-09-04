@@ -813,7 +813,75 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260844, 'risk_monitor');
     }
 
+    if ($oldversion < 2014260845) {
 
+        // Define table block_risk_monitor_int_tmp to be created.
+        $table = new xmldb_table('block_risk_monitor_int_tmp');
 
+        // Adding fields to table block_risk_monitor_int_tmp.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('instructions', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('url', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('has_files', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_risk_monitor_int_tmp.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+        $table->add_key('categoryid', XMLDB_KEY_FOREIGN, array('categoryid'), 'block_risk_monitor_category', array('id'));
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, array('courseid'), 'course', array('id'));
+
+        // Conditionally launch create table for block_risk_monitor_int_tmp.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260845, 'risk_monitor');
+    }
+
+    if ($oldversion < 2014260846) {
+
+        // Define field title to be added to block_risk_monitor_int_tmp.
+        $table = new xmldb_table('block_risk_monitor_int_tmp');
+        $field = new xmldb_field('title', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null, 'has_files');
+
+        // Conditionally launch add field title.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260846, 'risk_monitor');
+    }
+    
+    if ($oldversion < 2014260847) {
+
+        // Define field contextid to be added to block_risk_monitor_int_tmp.
+        $table = new xmldb_table('block_risk_monitor_int_tmp');
+        $field = new xmldb_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'title');
+
+        // Conditionally launch add field contextid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+                // Define key contextid (foreign) to be added to block_risk_monitor_int_tmp.
+        $table = new xmldb_table('block_risk_monitor_int_tmp');
+        $key = new xmldb_key('contextid', XMLDB_KEY_FOREIGN, array('contextid'), 'context', array('id'));
+
+        // Launch add key contextid.
+        $dbman->add_key($table, $key);
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260847, 'risk_monitor');
+    }
+    
+    
     return true;
 }

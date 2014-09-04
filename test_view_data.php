@@ -645,9 +645,9 @@ if($hypothetical_instances = $DB->get_records('block_risk_monitor_course')) {
             $body .= "<br><br></div>";
 }
 //Posttest
-/*$body .= "<div><b>Log (for this block)</b><br><br>";
+$body .= "<div><b>Intervention templates</b><br><br>";
 
-if($posttest_instances = $DB->get_records('block_risk_monitor_log')) {
+if($posttest_instances = $DB->get_records('block_risk_monitor_int_tmp')) {
             
             $table = new html_table();
             $headers = array();
@@ -657,21 +657,45 @@ if($posttest_instances = $DB->get_records('block_risk_monitor_log')) {
             $headers[] = $field1;
                     
             $field2 = new html_table_cell();
-            $field2->text = '<b>teacherid</b>';
+            $field2->text = '<b>name</b>';
             $headers[] = $field2;
             
             $field3 = new html_table_cell();
-            $field3->text = '<b>anxietyid</b>';
+            $field3->text = '<b>description</b>';
             $headers[] = $field3;
                     
             $field4 = new html_table_cell();
-            $field4->text = '<b>teacheraction</b>';
+            $field4->text = '<b>instructions</b>';
             $headers[] = $field4;
             
             $field5 = new html_table_cell();
-            $field5->text = '<b>dateandtime</b>';
+            $field5->text = '<b>url</b>';
             $headers[] = $field5;
             
+            $field1 = new html_table_cell();
+            $field1->text = '<b>timestamp</b>';
+            $headers[] = $field1;
+                    
+            $field2 = new html_table_cell();
+            $field2->text = '<b>userid</b>';
+            $headers[] = $field2;
+            
+            $field3 = new html_table_cell();
+            $field3->text = '<b>categoryid</b>';
+            $headers[] = $field3;
+                    
+            $field4 = new html_table_cell();
+            $field4->text = '<b>courseid</b>';
+            $headers[] = $field4;
+            
+            $field5 = new html_table_cell();
+            $field5->text = '<b>has_files</b>';
+            $headers[] = $field5;
+            
+            $field5 = new html_table_cell();
+            $field5->text = '<b>title</b>';
+            $headers[] = $field5;
+                                                
             $table->data[] = new html_table_row($headers);
             
             //header.
@@ -685,28 +709,51 @@ if($posttest_instances = $DB->get_records('block_risk_monitor_log')) {
                 $instancerow[] = $field1value;
                 
                 $field2value = new html_table_cell();
-                $field2value->text = $posttest_instance->teacherid;
+                $field2value->text = $posttest_instance->name;
                 $instancerow[] = $field2value;
                 
                 $field3value = new html_table_cell();
-                $field3value->text = $posttest_instance->anxietyid;
+                $field3value->text = $posttest_instance->description;
                 $instancerow[] = $field3value;
                 
                 $field4value = new html_table_cell();
-                $field4value->text = $posttest_instance->teacheraction;
+                $field4value->text = $posttest_instance->instructions;
                 $instancerow[] = $field4value;
                 
                 $field5value = new html_table_cell();
-                $field5value->text = $posttest_instance->dateandtime;
+                $field5value->text = $posttest_instance->url;
+                $instancerow[] = $field5value;
+ 
+                                $field1value = new html_table_cell();
+                $field1value->text = $posttest_instance->timestamp;
+                $instancerow[] = $field1value;
+                
+                $field2value = new html_table_cell();
+                $field2value->text = $posttest_instance->userid;
+                $instancerow[] = $field2value;
+                
+                $field3value = new html_table_cell();
+                $field3value->text = $posttest_instance->categoryid;
+                $instancerow[] = $field3value;
+                
+                $field4value = new html_table_cell();
+                $field4value->text = $posttest_instance->courseid;
+                $instancerow[] = $field4value;
+                
+                $field5value = new html_table_cell();
+                $field5value->text = $posttest_instance->has_files;
+                $instancerow[] = $field5value;
+         
+                                $field5value = new html_table_cell();
+                $field5value->text = $posttest_instance->title;
                 $instancerow[] = $field5value;
                                 
                 $table->data[] = new html_table_row($instancerow);               
-
             }
             
             $body .= html_writer::table($table);
             $body .= "<br><br></div>";
-}*/
+}
 
 
 // Output starts here

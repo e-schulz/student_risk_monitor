@@ -20,6 +20,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
+$interventionid = required_param('interventionid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -31,6 +32,7 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
 
+$intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $interventionid));
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -43,16 +45,16 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': ' . $header);
 $PAGE->set_heading($blockname . ': ' . $header);
-$PAGE->set_url('/blocks/risk_monitor/view_interventions.php?userid=' . $USER->id . '&courseid=' . $courseid);
+$PAGE->set_url('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid.'&interventionid='.$interventionid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-$back_to_settings = html_writer::link(new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to settings");
+$back_to_interventions = html_writer::link(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to interventions");
 
 $body = '';
 
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$interventions_form = new individual_settings_form_view_interventions('/blocks/risk_monitor/view_interventions.php?userid=' . $USER->id . '&courseid=' . $courseid, array('userid' => $userid, 'courseid' => $courseid));
+$intervention_form = new individual_settings_form_view_intervention('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $interventionid));
 
 //Render the HTML
 echo $OUTPUT->header();
@@ -63,9 +65,8 @@ echo $OUTPUT->heading($blockname);
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
-echo $OUTPUT->heading("View interventions");
+echo $OUTPUT->heading($intervention_template->title);
 
-$interventions_form->display();
-echo $body;
-echo $back_to_settings;
+$intervention_form->display();
+echo $back_to_interventions;
 echo $OUTPUT->footer();
