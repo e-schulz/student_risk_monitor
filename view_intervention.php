@@ -55,6 +55,7 @@ $body = '';
 
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
 $intervention_form = new individual_settings_form_view_intervention('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $interventionid));
+$instructions_form = new individual_settings_form_view_intervention_instructions('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('interventionid' => $interventionid));
 
 //Render the HTML
 echo $OUTPUT->header();
@@ -66,6 +67,9 @@ echo $OUTPUT->heading($blockname);
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading($intervention_template->title);
+echo $OUTPUT->box_start();
+$instructions_form->display();
+echo $OUTPUT->box_end();
 echo $OUTPUT->box_start();
 $intervention_form->display();
 echo $OUTPUT->box_end();

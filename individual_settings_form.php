@@ -743,15 +743,18 @@ class individual_settings_form_view_interventions extends moodleform {
                         foreach($interventions as $intervention) {
                             
                             if($intervention->description != "") {
-                                $desc = $intervention->description;
+                                $desc = "<i>".$intervention->description."</i>";
                             }
                             else {
                                 $desc = "<i>No description given</i>";
                             }
                             
                             $output = html_writer::start_tag('ul')."\n";
-                            $output .= html_writer::tag('li', html_writer::link (new moodle_url('view_intervention.php', array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $intervention->id)), $intervention->name))."\n";
-                            $output .= $desc."<br>";
+                            $output .= "<table><tr><td width='200px'>".html_writer::tag('li', html_writer::link (new moodle_url('view_intervention.php', array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $intervention->id)), $intervention->name)."&nbsp;</td><td>".
+                                            html_writer::start_tag('a', array('href' => 'view_interventions.php?userid='.$USER->id."&courseid=".$courseid."&interventionid=".$intervention->id)).
+                                            html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                            html_writer::end_tag('a')."</td></tr><tr><td colspan='2'>");
+                            $output .= $desc."<br></td></tr></table>";
                             $output .= html_writer::end_tag('ul');      
                             
                             $mform->addElement('static', 'intervention'.$intervention->id, '', $output);
@@ -801,6 +804,7 @@ class individual_settings_form_new_intervention extends moodleform {
         //URL
         $mform->addElement('url', 'externalurl', "External URL", array('size'=>'60'), array('usefilepicker'=>true));
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
+        $mform->addElement('textarea', 'url_text', "Url name", 'wrap="virtual" rows="1" cols="50"'); 
         
         //Upload file
         $filemanager_options = array();
@@ -821,24 +825,28 @@ class individual_settings_form_new_intervention extends moodleform {
 class individual_settings_form_view_intervention extends moodleform {
     
     public function definition() {
-        global $DB, $USER, $CFG;
-        
+        global $DB, $USER, $CFG, $OUTPUT;
         $mform =& $this->_form;
         $intervention = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $this->_customdata['interventionid']));
         $course_context = context_course::instance($this->_customdata['courseid']);
         
         //Student instructions
         //$mform->addElement('header', 'description', "Description");
-        $mform->addElement('static', 'instructions', '', $intervention->instructions);
-        
+        //$mform->addElement('static', 'instructions', '', $intervention->instructions);        
         //Url
         if($intervention->url != null) {
+            if($intervention->urlname != '') {
+                $urlname = $intervention->urlname;
+            }
+            else {
+                $urlname = "Link";
+            }
             //$mform->addElement('header', 'links', "Links");
             $exturl = trim($intervention->url);
             if (!(empty($exturl) or $exturl === 'http://')) {
                 
                 //$fullurl = str_replace('&amp;', '&', url_get_full_url($url, $cm, $course));
-                $mform->addElement('static', 'URL', '', html_writer::alist(array(html_writer::link($exturl, "link"))));
+                $mform->addElement('static', 'URL', '', html_writer::alist(array(html_writer::link($exturl, $urlname))));
             }
         }
         
@@ -866,10 +874,25 @@ class individual_settings_form_view_intervention extends moodleform {
                 //}
                 //$i++;
             }
+            
+
         //}
     }
     
     
+}
+
+class individual_settings_form_view_intervention_instructions extends moodleform {
+ 
+        public function definition() {
+        global $DB, $USER, $CFG, $OUTPUT;
+        $mform =& $this->_form;
+        $intervention = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $this->_customdata['interventionid']));
+        
+        //Student instructions
+        //$mform->addElement('header', 'description', "Description");
+        $mform->addElement('static', 'instructions', '', $intervention->instructions);        
+    }
 }
 
 class individual_settings_form_view_category extends moodleform {
@@ -886,9 +909,17 @@ class individual_settings_form_view_category extends moodleform {
          $student = $DB->get_record('user', array('id' => $studentid));
          
          $mform->addElement('header', 'problem_areas', "Problem areas");
-         
-         $mform->addElement('header', 'actions', "Interventions");
-         
+         //Print out rules broken.
+         if($rules_broken = $DB->get_records_sql("SELECT * FROM {block_risk_monitor_rule_risk} r WHERE r.value >= ".MODERATE_RISK." AND r.userid = ".$student->id)) {
+             foreach($rules_broken as $rule_broken) {
+                 $rule_inst = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $rule_broken->ruleid));
+                 if($rule_inst->categoryid == $categoryid) {
+                    $mform->addElement('static', 'rule'.$rule_broken->id, '', $rule_inst->name);   
+                 }
+             }
+         }
+         $mform->addElement('header', 'intervention_templates', "Interventions");
+        
          if($intervention_templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid' => $categoryid))) {
                             
              foreach($intervention_templates as $intervention_template) {

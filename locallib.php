@@ -279,3 +279,34 @@ function block_risk_monitor_fix_url($url) {
 
     return $url;    
 }
+
+function block_risk_monitor_get_enrolled_students($courseid) {
+    global $DB;
+
+     $enrolled_students = array();
+
+    //Get context records where context is course and instanceid = courseid
+    if($context_records = $DB->get_records('context', array('contextlevel' => 50, 'instanceid' => $courseid))) {
+
+        foreach($context_records as $context_record) {
+
+            //Get role assignments where contextid = as given and roleid = 5(student)
+            if($role_assignments = $DB->get_records('role_assignments', array('roleid' => 5, 'contextid' => $context_record->id))) {
+
+                foreach($role_assignments as $role_assignment) {
+
+                    if($students = $DB->get_records('user', array('id' => $role_assignment->userid))) {
+                        //array_push($enrolled_students, $student);
+                        foreach($students as $student) {
+                            $enrolled_students[] = $student;
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+    
+    return $enrolled_students;
+}

@@ -1,8 +1,6 @@
 <?php
 
 class block_risk_monitor extends block_base {
-
-        public static $last_student_update;            //last time the student risks were updated. 
         
 	public function init() {
             global $COURSE;
@@ -19,9 +17,8 @@ class block_risk_monitor extends block_base {
         public function cron() {
             
             //Update the risks
-            block_risk_monitor_clear_risks(block_risk_monitor::$last_student_update);
+            block_risk_monitor_clear_risks();
             block_risk_monitor_calculate_risks();
-            block_risk_monitor::$last_student_update = time();
         }
         
         //Where this block is allowed to appear? (Only on the my home page!)

@@ -69,6 +69,7 @@ else if ($fromform = $new_intervention_form->get_data()) {
     $intervention_template->categoryid = $categoryid;
     $intervention_template->timestamp = time();
     $intervention_template->url = block_risk_monitor_fix_url($fromform->externalurl);
+    $intervention_template->urlname = $fromform->url_text;
     $intervention_template->contextid = $course_context->id;
     
     $fs = get_file_storage();

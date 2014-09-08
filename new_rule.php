@@ -121,8 +121,10 @@ if ($fromform = $new_rule_form->get_data()) {
     }
     
     //Error checking: value
-    if($custom_rule == -1) {
+    if($custom_rule == -1 && DefaultRules::$default_rule_value_required[$fromform->rule_id] == 1) {
+        
         if(!is_numeric($fromform->value_text)) {
+            
             redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3, 'custom' => $custom_rule, 'courseid' => $courseid)));
         }
         else if(intval($fromform->value_text < 0)) {

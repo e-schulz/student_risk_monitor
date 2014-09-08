@@ -908,5 +908,29 @@ function xmldb_block_risk_monitor_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2014260848, 'risk_monitor');
     }
     
+        if ($oldversion < 2014260850) {
+
+        // Define field urlname to be added to block_risk_monitor_int_tmp.
+        $table = new xmldb_table('block_risk_monitor_int_tmp');
+        $field = new xmldb_field('urlname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'contextid');
+
+        // Conditionally launch add field urlname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+                 // Changing nullability of field urlname on table block_risk_monitor_int_tmp to null.
+        /*$table = new xmldb_table('block_risk_monitor_int_tmp');
+        $field = new xmldb_field('urlname', XMLDB_TYPE_TEXT, null, null, null, null, null, 'contextid');
+
+        // Launch change of nullability for field urlname.
+        $dbman->change_field_notnull($table, $field*/
+
+
+        // Test_risk_monitor savepoint reached.
+        upgrade_block_savepoint(true, 2014260850, 'risk_monitor');
+    }
+
+    
     return true;
 }

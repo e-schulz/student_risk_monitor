@@ -20,6 +20,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
+$interventionid = optional_param('interventionid', -1, PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -46,6 +47,20 @@ $PAGE->set_heading($blockname . ': ' . $header);
 $PAGE->set_url('/blocks/risk_monitor/view_interventions.php?userid=' . $USER->id . '&courseid=' . $courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
+
+if($interventionid != -1) {
+    
+    if($DB->record_exists('block_risk_monitor_int_tmp', array('id' => $interventionid))) {
+        $DB->delete_records('block_risk_monitor_int_tmp', array('id' => $interventionid));
+    }
+    
+    //Delete all intervention instances assoc with this template
+    if($DB->record_exists('block_risk_monitor_int_inst', array('interventiontemplateid' => $interventionid))) {
+        $DB->delete_records('block_risk_monitor_int_inst', array('interventiontemplateid' => $interventionid));
+    }
+    
+    redirect(new moodle_url('/blocks/risk_monitor/view_interventions.php?userid=' . $USER->id . '&courseid=' . $courseid));
+}
 
 $back_to_settings = html_writer::link(new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to settings");
 

@@ -60,13 +60,16 @@ $back_to_course = html_writer::link (new moodle_url('/course/view.php?id='.$cour
 
 //Create the form
 $intervention_form = new individual_settings_form_view_intervention('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'courseid' => $courseid, 'userid' => $userid)); 
+$intervention_instructions = new individual_settings_form_view_intervention_instructions('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid)); 
 
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
 
 echo $OUTPUT->heading($intervention_template->title);
-echo $body;
+echo $OUTPUT->box_start();
+$intervention_instructions->display();
+echo $OUTPUT->box_end();
 echo $OUTPUT->box_start();
 $intervention_form->display();
 echo $OUTPUT->box_end();

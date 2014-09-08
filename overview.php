@@ -47,7 +47,8 @@ $PAGE->set_url('/blocks/risk_monitor/overview.php&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-$body = get_string('overview_body', 'block_risk_monitor');
+//$body = get_string('overview_body', 'block_risk_monitor');
+$body = '';
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
  

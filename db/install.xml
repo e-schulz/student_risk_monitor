@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140904" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
+<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140907" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -153,6 +153,7 @@
         <FIELD NAME="has_files" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether any files are associated with this template, 1 = yes 0 = no."/>
         <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The title that will appear to students."/>
         <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The context id the files were added under, for accessing later"/>
+        <FIELD NAME="urlname" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A name for the url, to be displayed in the intervention."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
