@@ -95,71 +95,76 @@ $PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid.
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//Create the body
+$add_category = html_writer::link (new moodle_url('new_category.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $this->_customdata['courseid']*/)), "Create a new category");
 
-//If any courses display first available, else signal no courses
-/*if($courseid == 0) {
-    
-    //Check courses
-    if(!$registered_courses = block_risk_monitor_get_registered_courses()) {            //no courses
-        $courseid = -1;
-    }
-    else {                                                                              //first course returned
-        $courseid = reset($registered_courses)->courseid;
-    }
-    
-    
-}*/
+$links = $add_category." | ".$back_to_settings."<br><br>";
 //Get all the categories and courses.
 $categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
        
-/*if($courseid == -1) {
-    $body .= get_string('no_courses', 'block_risk_monitor')."<br>";
-    $body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('add_courses','block_risk_monitor')).'<br><br>';
-}*/
 
-        
-///RENDERING THE HTML
-/*if ($fromform = $categories_rules_form->get_data()) {
-        
-        //Get the data, delete everything checked. If category deleted, need to go through and delete all rules.
-    
-        //Get all categories, then all rules assoc with those categories
-        $all_categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid));
-        
-        $all_rules = array();
-        foreach($all_categories as $category) {
-            $category_rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
-            foreach($category_rules as $category_rule) {
-                array_push($all_rules, $category_rule);
-            }
-        }
-        
-        foreach($all_rules as $rule) {
-            $checkboxname = "delete_category".$rule->id;
-            if(isset($fromform->$checkboxname)) {
-                //delete from DB!
-                $DB->delete_record('block_risk_monitor_rule_inst', array('id' => $rule->id));
-            }
-        }
-}*/
-    
+
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
-
-
-//echo html_writer::start_tag('div', array('class' => 'no-overflow'));
-
-//display the settings form
-//echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("Categories and rules");
+echo $links;
 
-echo $body;
-//if ($courseid !== -1) {
-$categories_rules_form->display();
-//}
-    
-echo $back_to_settings;
+/////   CATEGORIES  ////
+if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+                
+    foreach($categories as $category) {
+        echo $OUTPUT->box_start();
+        
+        //Category name
+        echo "<b>".$category->name."</b><br>";
+        
+        //Description
+        if($category->description != "") {
+            echo $category->description."<br>";
+        }
+        
+        //Edit icon
+        echo html_writer::start_tag('a', array('href' => 'edit_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
+                                html_writer::empty_tag('img', array('src' => get_string('edit_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                html_writer::end_tag('a')."&nbsp;";
+        
+        //Rules
+        if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id))) {
+            echo "<table><tr><td width=100px></td><td width=500px></td><td><b>Weighting</b></td></tr>";
+            foreach($rules as $rule) {
+
+                if(intval($rule->ruletype) == 1) {
+                    $custom = -1;
+                }
+                else if(intval($rule->ruletype) == 2) {
+                    $custom = 1;
+                }
+               
+                //Rule name
+                echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;".
+                        html_writer::link (new moodle_url('view_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $rule->id)), $rule->name)."<br>&emsp;".
+                        $rule->description."</td><td>".$rule->weighting."%</td></tr>";
+                             
+            }                        
+        }
+        else {
+            echo "<table><tr><td width=100px></td><td width=500px>No rules</td><td><b></b></td></tr>";
+        }
+        
+        echo "</table>";
+        
+        //Add rule
+        echo "<div align='right'><table><tr><td>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
+                html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
+        
+        //Add questionnaire
+         echo html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
+                html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
+                "</td></tr></table></div>";       
+        
+        echo $OUTPUT->box_end();
+    }
+}
+
 echo $OUTPUT->footer();

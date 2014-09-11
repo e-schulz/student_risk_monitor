@@ -4,6 +4,8 @@ defined('MOODLE_INTERNAL') || die;
 if($ADMIN->fulltree) {
     require_once $CFG->dirroot . '/blocks/risk_monitor/rules.php';
     
+    //for each category where course = 0 (block wide) enable editing.
+    //
     //for each default rule in the file, create a checkbox
     $default_rules = DefaultRules::getDefaultRuleObjects();
     $i = 0;

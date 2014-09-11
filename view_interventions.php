@@ -64,8 +64,6 @@ if($interventionid != -1) {
 
 $back_to_settings = html_writer::link(new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to settings");
 
-$body = '';
-
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
 $interventions_form = new individual_settings_form_view_interventions('/blocks/risk_monitor/view_interventions.php?userid=' . $USER->id . '&courseid=' . $courseid, array('userid' => $userid, 'courseid' => $courseid));
 
@@ -73,14 +71,15 @@ $interventions_form = new individual_settings_form_view_interventions('/blocks/r
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
 
-
 //echo html_writer::start_tag('div', array('class' => 'no-overflow'));
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
 echo $OUTPUT->heading("View interventions");
+echo $back_to_settings;
+
+////MAIN CONTENT
+//
 
 $interventions_form->display();
-echo $body;
-echo $back_to_settings;
 echo $OUTPUT->footer();

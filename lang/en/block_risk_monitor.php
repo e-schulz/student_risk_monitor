@@ -135,4 +135,5 @@ $string['moderate_risk_icon'] = "pix/moderate_risk_icon.png";
 $string['high_risk_icon'] = "pix/high_risk_icon.png";
 $string['edit_icon'] = "../../pix/t/edit.png";
 $string['delete_icon'] = "../../pix/t/delete.png";
+$string['add_icon'] = "../../pix/t/add.png";
 ?>
