@@ -13,6 +13,8 @@ require_once("locallib.php");
 require_once($CFG->libdir . '/gradelib.php');
 require_once ($CFG->libdir.'/completionlib.php');
 require_once("moduledeadlineslib.php");
+require_once($CFG->dirroot."/mod/forum/lib.php");
+
 
 class risk_calculator {
         
@@ -25,33 +27,48 @@ class risk_calculator {
     private $course_clicks;
     
     //Array of clicks per session, indexed by userid
-    public $clicks_per_session;
+    private $clicks_per_session;
     
     //Array of average session times, indexed by userid
-    public $average_session_times;
+    private $average_session_times;
     
     //Number of sessions, indexed by userid
-    public $number_of_sessions;
+    private $number_of_sessions;
     
-    public $last_update;
+    //Number of forum posts, indexed by userid
+    private $number_forum_posts;
+    
+    //Number of forum posts read, indexed by userid
+    private $number_forum_posts_read;
+    
+    //Time spent in forum, indexed by userid
+    private $total_forum_time;
     
     public function __construct($course) {
         global $DB;
         $this->courseid = $course;
-        $this->course_clicks = null;
-        $this->clicks_per_session = null;
-        $this->average_session_times = null;
         $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
         $this->course = $DB->get_record('course', array('id' => $course));
-        $this->last_update = $this->course->timecreated;
-        $this->refresh();
+        $this->initialise_arrays();
+        $this->calculate_averages();
     }
     
-    //Updates the globals
-    public function refresh() {
+    private function initialise_arrays() {
+        $this->course_clicks = array();
+        $this->clicks_per_session = array();
+        $this->average_session_times = array();
+        $this->number_of_sessions = array();
+        $this->number_forum_posts = array();
+        $this->number_forum_posts_read = array();
+        $this->total_forum_time = array();               
+    }
+    
+    private function calculate_averages() {
         $this->calculate_average_course_clicks();
         $this->calculate_average_clicks_and_time_per_session();
-        $this->last_update = time();
+        $this->calculate_average_forum_posts_added();
+        $this->calculate_average_forum_posts_read();
+        $this->calculate_average_forum_time();        
     }
     
     //This function returns a risk rating between 0 and 100, given the action userid and value.
@@ -94,9 +111,6 @@ class risk_calculator {
             case 'LOW_AVERAGE_SESSION_DURATION':
                 $risk_rating = $this->average_session_duration_risk($user, $value);
                 break;
-            case 'EXAM_APPROACHING':
-                $risk_rating = $this->exam_approaching_risk($user, $value);
-                break;        
             default:
                 break;
         }
@@ -139,9 +153,9 @@ class risk_calculator {
 
         //Get the grade_grade instance, if it exists.
         if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id, 'userid' => $user->id))) {
-            $max_grade = $grade_grade->rawgrademax;
-            $final_grade = $grade_grade->rawgrade;
-            $percent = intval(($final_grade/$max_grade)*100);
+            $max_grade = $course_grade_item->grademax;
+            $current_grade = $grade_grade->finalgrade;
+            $percent = intval(($current_grade/$max_grade)*100);
             if($percent < $value) {
                 $risk_rating = 100;
             }
@@ -160,9 +174,9 @@ class risk_calculator {
 
         //Get the grade_grade instance, if it exists.
         if($grade_grade = $DB->get_record('grade_grades', array('itemid' => $course_grade_item->id, 'userid' => $user->id))) {
-            $max_grade = $grade_grade->rawgrademax;
-            $final_grade = $grade_grade->rawgrade;
-            $percent = intval(($final_grade/$max_grade)*100);
+            $max_grade = $course_grade_item->maxgrade;
+            $current_grade = $grade_grade->finalgrade;
+            $percent = intval(($current_grade/$max_grade)*100);
             if($percent > $value) {
                 $risk_rating = 100;
             }
@@ -182,42 +196,12 @@ class risk_calculator {
                 if (!$cm->uservisible or !$cm->has_view()) {
                     continue;
                 }        
-
-                switch($cm->modname) {
-                    case 'quiz':
-                        if(block_risk_monitor_missed_quiz_deadline($user->id, $cm)) {
-                            $missed_deadlines++;
-                        }
-                        break;
-                    case 'assignment':
-                        if(block_risk_monitor_missed_assignment_deadline($user->id, $cm)) {
-                            $missed_deadlines++;
-                        }
-                        break;
-                    case 'assign':
-                        if(block_risk_monitor_missed_assign_deadline($user->id, $cm)) {
-                            $missed_deadlines++;
-                        }
-                        break;                    
-                    default:
-                        break;
+                
+                $deadline_function = "block_risk_monitor_missed_".$cm->modname."_deadline";
+                if(function_exists($deadline_function) && $deadline_function($user->id, $cm)) {
+                    $missed_deadlines++;
                 }
         }
-        //Assignments.
-
-        /*$course = $DB->get_record('course', array('id' => $this->courseid));
-        $completion_info = new completion_info($course);
-
-        $completion_modules = $completion_info->get_activities();
-
-        foreach($completion_modules as $completion_module) {
-            echo "Got completion modules<br>";
-            $completion_data = $completion_info->get_data($completion_module, false, $userid);
-
-            if($cm->completionexpected != 0 && time() > $cm->completionexpected && $completion_data->completionstate == 0) {
-                $missed_deadlines++;
-            }
-        }*/
 
         if($missed_deadlines >= $value) {
             return 100;
@@ -229,22 +213,77 @@ class risk_calculator {
 
     //
     function activities_failed_risk($user, $value) {
-
+        
+        global $DB;
+        $activities_failed = 0;
+        $modinfo = get_fast_modinfo($this->courseid, $user->id);
+        
+        //Loop thru all the activities.
+        foreach($modinfo->cms as $cm) {
+            
+            //will return all grade items for this activity
+            $grades = grade_get_grades($this->courseid, 'mod', $cm->modname, $cm->instance, $user->id);
+            
+            //Only using numerical grades, not scales.
+            foreach($grades->items as $gradeitem) {
+                $gradepass = $gradeitem->gradepass;
+                $usergrade = $gradeitem->grades[$user->id]->grade;
+                if($usergrade < $gradepass) {
+                    $activities_failed++;
+                }
+            }
+        }
+        
+        if($activities_failed > $value) {
+            return 100;
+        }
+        return 0;
     }
 
     //
     function forum_posts_added_risk($user, $value) {
-
+        
+        $total_students = count($this->number_forum_posts);
+        
+        $student_position = array_search($user->id, array_keys($this->number_forum_posts));
+        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+            return 100;
+        }
+        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
+            return 50;
+        }
+        
+        return 0;
     }
 
     //
     function forum_posts_read_risk($user, $value) {
-
+        $total_students = count($this->number_forum_posts_read);
+        
+        $student_position = array_search($user->id, array_keys($this->number_forum_posts_read));
+        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+            return 100;
+        }
+        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
+            return 50;
+        }
+        
+        return 0;
     }
 
     //Clicking into forum, to clicking out. = one forum session, add these up.
     function total_forum_time_risk($user, $value) {
-
+        $total_students = count($this->total_forum_time);
+        
+        $student_position = array_search($user->id, array_keys($this->total_forum_time));
+        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+            return 100;
+        }
+        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
+            return 50;
+        }
+        
+        return 0;
     }
 
     //
@@ -265,15 +304,15 @@ class risk_calculator {
     //Session = clicking into course, to clicking out.
     function average_session_clicks_risk($user, $value) {
         $total_students = count($this->clicks_per_session);
-        
-        $student_position = array_search($user->id, array_keys($this->clicks_per_session));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
-            return 100;
+        if(array_key_exists($user->id, $this->clicks_per_session)) {
+            $student_position = array_search($user->id, array_keys($this->clicks_per_session));
+            if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+                return 100;
+            }
+            else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
+                return 50;
+            }
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;        
     }
 
@@ -281,47 +320,83 @@ class risk_calculator {
     function average_session_duration_risk($user, $value) {
         $total_students = count($this->average_session_times);
         
-        $student_position = array_search($user->id, array_keys($this->average_session_times));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
-            return 100;
+        if(array_key_exists($user->id, $this->average_session_times)) {
+            $student_position = array_search($user->id, array_keys($this->average_session_times));
+            if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+                return 100;
+            }
+            else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
+                return 50;
+            }
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;        
     }
-
-    function exam_approaching_risk($user, $value) {
-
-    }
-
 
     //// THE FOLLOWING METHODS CALCULATE THE CUTOFF FOR RELATIVE RISKS
 
 
     function calculate_average_forum_posts_added() {
-
+        foreach($this->enrolled_students as $student) {
+            $this->number_forum_posts[$student->id] = count(forum_get_posts_by_user($student, array($this->course)));
+        }
+        asort($this->number_forum_posts);
     }
 
     function calculate_average_forum_posts_read() {
-
+        
+        //Get the forums in this course
+        
+        foreach($this->enrolled_students as $student) {
+            $forums = forum_get_readable_forums($student->id, $this->courseid);
+            $total_forum_posts_read = 0;
+            foreach($forums as $forum) { 
+                $total_forum_posts_read += count(forum_tp_get_read_records($student->id, -1, -1, $forum->id));
+            }
+            $this->number_forum_posts_read[$student->id] = $total_forum_posts_read;
+        }
+        asort($this->number_forum_posts_read);
     }
 
     function calculate_average_forum_time() {
-
+        
+       foreach($this->enrolled_students as $student) {
+            $totalcount = 0;
+            $selector = "l.userid = ".$student->id;
+            $logrows = get_logs($selector, null, 'l.time DESC', '', '', $totalcount);
+            $found = false;
+            $total_forum_time = 0;
+            $session_start = 0;
+            $prev_log_row = null;
+            foreach($logrows as $logrow) {
+                if($logrow->module !== 'forum' || $logrow->course != $this->courseid) {
+                    if($found == true && $prev_log_row != null) {
+                        $total_forum_time += $session_start - $prev_log_row->time;
+                    }
+                    $found = false;
+                    continue;
+                }
+                
+                if($found == false) {
+                    $session_start = $logrow->time;
+                    $found = true;
+                }
+                $prev_log_row = $logrow;
+                
+            }
+                        
+            $this->total_forum_time[$student->id] = $total_forum_time;
+        }
+        
+        //Sort ascending
+        asort($this->total_forum_time);
     }
 
     function calculate_average_course_clicks() {
-
-        if($this->course_clicks == null) {
-            $this->course_clicks = array();
-        }
         
         //Total course clicks.
         foreach($this->enrolled_students as $student) {
             //Get avg clicks
-            $clicks = get_logs_usercourse($student->id, $this->courseid, $this->last_update);
+            $clicks = get_logs_usercourse($student->id, $this->courseid, $this->course->timecreated);
             if(array_key_exists($student->id, $this->course_clicks)) {
                 $this->course_clicks[$student->id] += $clicks;
             }
@@ -335,27 +410,21 @@ class risk_calculator {
     }
 
     function calculate_average_clicks_and_time_per_session() {
-        if($this->clicks_per_session == null) {
-            $this->clicks_per_session = array();
-            $this->number_of_sessions = array();
-            $this->average_session_times = array();
-        }
-        
-        //Get all logs for student from course creation time.
-        
+                
         foreach($this->enrolled_students as $student) {
-            
-            $selector = "l.userid = ".$student->id." AND l.time > ".$this->last_update;
+            $totalcount = 0;
+            $selector = "l.userid = ".$student->id;
             $logrows = get_logs($selector, null, 'l.time DESC', '', '', $totalcount);
             $found = false;
             $clicks = 0;
             $clicks_per_session = array();
             $time_per_session = array();
             $session_start = 0;
+            $prev_log_row = null;
             foreach($logrows as $logrow) {
                 if($logrow->course !== $this->courseid) {
-                    if($found == true) {
-                        $time_per_session[] = $session_start - $logrow->time;
+                    if($found == true && $prev_log_row != null) {
+                        $time_per_session[] = $session_start - $prev_log_row->time;
                         $clicks_per_session[] = $clicks;
                     }
                     $found = false;
@@ -368,30 +437,16 @@ class risk_calculator {
                     $found = true;
                 }
                 $clicks++;
+                $prev_log_row = $logrow;
+                
             }
             
-            $new_number_of_sessions = count($time_per_session);
-            if($new_number_of_sessions != 0) {
-                if(array_key_exists($student->id, $this->number_of_sessions)) {
-                    $prev_number_of_sessions = $this->number_of_sessions[$student->id];
-
-                    $prev_clicks = $this->clicks_per_session[$student->id]*$prev_number_of_sessions;
-                    $cur_clicks = array_sum($clicks_per_session);
-                    $new_clicks_per_session = ($prev_clicks + $cur_clicks)/($prev_number_of_sessions + $new_number_of_sessions);
-                    $this->clicks_per_session[$student->id] = $new_clicks_per_session;
-
-                    $prev_time = $this->average_session_times[$student->id]*$prev_number_of_sessions;
-                    $cur_time = array_sum($time_per_session);
-                    $new_time_per_session = ($prev_time + $cur_time)/($prev_number_of_sessions + $new_number_of_sessions);
-                    $this->average_session_times[$student->id] = $new_time_per_session;
-
-                    $this->number_of_sessions[$student->id] += $new_number_of_sessions;
-                }
-                else {
-                    $this->number_of_sessions[$student->id] = $new_number_of_sessions;
-                    $this->average_session_times[$student->id] = (array_sum($time_per_session) / $new_number_of_sessions);
-                    $this->clicks_per_session[$student->id] = (array_sum($clicks_per_session) / $new_number_of_sessions);
-                }
+            $number_of_sessions = count($time_per_session);
+            
+            $this->number_of_sessions[$student->id] = $number_of_sessions;
+            if($number_of_sessions != 0) {
+                $this->average_session_times[$student->id] = (array_sum($time_per_session) / $number_of_sessions);
+                $this->clicks_per_session[$student->id] = (array_sum($clicks_per_session) / $number_of_sessions);
             }
         }
         

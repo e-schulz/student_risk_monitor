@@ -23,9 +23,8 @@ abstract class DefaultRules {
                                          6 => "LOW_FORUM_MESSAGES_READ",
                                          7 => "LOW_TOTAL_FORUM_TIME",
                                          8 => "LOW_TOTAL_COURSE_CLICKS",
-                                         9 => "LOW_AVERAGE_CLICKS_PER_DAY",
-                                         10 => "LOW_AVERAGE_SESSION_DURATION",
-                                         11 => "EXAM_APPROACHING");
+                                         9 => "LOW_AVERAGE_CLICKS_PER_SESSION",
+                                         10 => "LOW_AVERAGE_SESSION_DURATION");
     
     public static $default_rule_names = array(0 => "Student not logged in for x days",
                                               1 => "Student has grade lower than x",
@@ -37,8 +36,7 @@ abstract class DefaultRules {
                                               7 => "Student has spent a low amount of time in the forum",
                                               8 => "Student has low total clicks within the course",
                                               9 => "Student has low average clicks per session",
-                                              10 => "Student has low average login session duration",
-                                              11 => "Student has an exam approaching");
+                                              10 => "Student has low average course session duration");
     
     public static $default_rule_descriptions = array(0 => "This rule is triggered when a student has not logged in for a specified number of days in a row.",
                                                      1 => "This rule is triggered when a student has a current grade lower than a specified percentage.",
@@ -50,8 +48,7 @@ abstract class DefaultRules {
                                                      7 => "This rule is triggered when a student has spent a low amount of time in the forum, relative to other students.",
                                                      8 => "This rule is triggered when a student has a low amount of total clicks within the course, relative to other students.",
                                                      9 => "This rule is triggered when a student has a low number of average clicks within the course per session, relative to other students.",
-                                                     10 => "This rule is triggered when a student has a low average login session duration, relative to other students.",
-                                                     11 => "This rule is triggered when a student has an exam approaching.");
+                                                     10 => "This rule is triggered when a student has a low average time spent within the course in a single session session, relative to other students.");
     
     public static $default_rule_value_required = array(0 => 1,
                                                1 => 1,
@@ -63,8 +60,7 @@ abstract class DefaultRules {
                                                7 => 0,
                                                8 => 0,
                                                9 => 0,
-                                               10 => 0,
-                                               11 => 0);
+                                               10 => 0);
     
     public static $default_rule_value_description = array(0 => "Days since last login",
                                                1 => "Grade cutoff",
@@ -76,8 +72,7 @@ abstract class DefaultRules {
                                                7 => "",
                                                8 => "",
                                                9 => "",
-                                               10 => "",
-                                               11 => "");
+                                               10 => "");
     
     public static function getDefaultRuleObjects() {
         

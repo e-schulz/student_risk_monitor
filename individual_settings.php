@@ -58,7 +58,7 @@ $PAGE->set_pagelayout('standard');
 
 //$DB->delete_records('block_risk_monitor_cat_risk');
 //block_risk_monitor_update_default_rules();
-//$DB->delete_records('block_risk_monitor_rule_inst_type');
+//$DB->delete_records('block_risk_monitor_cat_risk');
 //block_risk_monitor_update_default_rules();
 
 //Create the body

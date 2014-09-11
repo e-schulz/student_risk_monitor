@@ -72,7 +72,7 @@ else if ($ruleid !== -1) {
         $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);    
 
         if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id))) {
-            $DB->delete_records('block_risk_monitor_rule_inst', array('ruleid' => $rule_to_delete->id));        
+            $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id));        
         }          
     }
    

@@ -10,35 +10,25 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
+require_once("rulelib.php");
 
 define("HIGH_RISK", 75);
 define("MODERATE_RISK", 50);
 
-class risks_controller {
-    
-    public static $last_update;                 //last time the risks were updated.
-    
-    public static $risk_calculators = array();
+final class risks_controller {
     
     //This is the method run with the cron() function. Updates the student risks.
     public static function calculate_risks() {
 
         global $DB;
-
         //For each course this block is added on.
         $return = '';
 
         if($courses = $DB->get_records('block_risk_monitor_course')) {
 
             foreach($courses as $course) {
-                if(!array_key_exists($course->courseid, risks_controller::$risk_calculators)) {
-                    risks_controller::$risk_calculators[$course->courseid] = new risk_calculator($course->courseid);
-                }
-                else {
-                    risks_controller::$risk_calculators[$course->courseid]->refresh();
-                }
-                $risk_calculator = risks_controller::$risk_calculators[$course->courseid];
                 
+                $risk_calculator = new risk_calculator($course->courseid);                
                 $enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
                 foreach($enrolled_students as $enrolled_student) {
 
@@ -64,6 +54,7 @@ class risks_controller {
                                 }
 
                                 //Determine the risk rating (between 0 and 100)
+                                
                                 $risk_rating = $risk_calculator->calculate_risk_rating($action, $enrolled_student, $value);
                             }
 
@@ -149,6 +140,7 @@ class risks_controller {
 
                             //if risk instance already exists, update it or delete it
                             if($create_risk_instance && $risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
+                                    
                                     $edited_risk_instance = new object();
                                     $edited_risk_instance->id = $risk_instance->id;
                                     $edited_risk_instance->value = $risk_rating;
@@ -184,13 +176,11 @@ class risks_controller {
 
                         //Check if category risk already exists
                         if($create_cat_risk && $risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $enrolled_student->id))){
-                            if($category_risk_rating >= MODERATE_RISK) {
                                 $edited_category_risk = new object();
                                 $edited_category_risk->id = $risk_instance->id;
                                 $edited_category_risk->value = $category_risk_rating;
 
                                 $DB->update_record('block_risk_monitor_cat_risk', $edited_category_risk);
-                            }
                         }
 
                             //Else create new
@@ -215,7 +205,6 @@ class risks_controller {
 
         }
         //No courses exist.
-        risks_controller::$last_update = time();
         return $return;
     }
 
