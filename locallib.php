@@ -21,13 +21,22 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
     
     global $CFG, $USER, $COURSE, $DB;
     
-    $content = '';
-    if(count(block_risk_monitor_get_questions($userid, $courseid)) !== 0) {
-        $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questions.php', array('userid' => $USER->id, 'courseid' => $COURSE->id)), get_string('student_questions', 'block_risk_monitor'));
-        $content .= "<br>".get_string('student_questions_description', 'block_risk_monitor');
+    if(count($questionnaires = block_risk_monitor_get_questionnaires($userid, $courseid)) !== 0) {
+        $content = '<b>Questionnaires:</b><br>';
+        foreach($questionnaires as $questionnaire) {
+            if($questionnaire->title != null) {
+                $title = $questionnaire->title;
+            }
+            else {
+                $title = "Questionnaire";
+            }
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questions.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'questionnaireid' => $questionnaire->id)), $title."<br>");
+        }
+        $content .= "<br>";
     }
     
     if(count($interventions = block_risk_monitor_get_interventions($userid, $courseid)) !== 0) {
+        $content .= '<b>Helpful resources:</b><br>';
         foreach($interventions as $intervention) {
             $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid));
             $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_module.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
@@ -57,38 +66,55 @@ function block_risk_monitor_get_interventions($userid, $courseid) {
     return $interventions_to_return;
 }
 
-function block_risk_monitor_get_questions($userid, $courseid) {
+function block_risk_monitor_get_questionnaires($userid, $courseid) {
+    global $DB;
+    $questionnaires_to_return = array();
+    
+    //Get the categories for this course
+    if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+        foreach($categories as $category) {
+            
+            //Get the questionnaires for this category.
+            if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id, 'ruletype' => 2))) {
+                
+                //avoid doubles - in case same questionnaire is added to multiple categories
+                foreach($rules as $rule) {
+                    
+                    $add_questionnaire = false;
+                    if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $rule->custruleid))) {
+                        foreach($questions as $question) {
+
+                            if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid)))) {
+                                $add_questionnaire = true;
+                            }
+                        }
+                    }
+                    
+                    if(!array_key_exists($rule->custruleid, $questionnaires_to_return) && $add_questionnaire == true) {
+                        $questionnaires_to_return[$rule->custruleid] = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
+                    }
+                }
+            }
+        }
+    }
+    
+    return $questionnaires_to_return;
+}
+
+function block_risk_monitor_get_questions($questionnaireid, $userid) {
     
     global $DB;
     $questions_to_return = array();
     $question_total = 0;
     
-    //Get the categories of this course
-    if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
-        foreach($categories as $category) {
-            
-            if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id, 'ruletype' => 2))) {
-                
-                $added_cust_rules = array();
-                foreach($rules as $rule) {
-                    
-                    //If there is already an answer to this question
-                    if(!in_array($rule->custruleid, $added_cust_rules)) {
-                        $added_cust_rules[] = $rule->custruleid;
-                        
-                        if($cust_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid))) {
+    if($cust_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $questionnaireid))) {
                             
-                            if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $cust_rule->id))) {
-                                foreach($questions as $question) {
+        if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $cust_rule->id))) {
+            foreach($questions as $question) {
                                     
-                                    if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid))) && $question_total < MAX_STUDENT_QUESTIONS) {
-                                        $questions_to_return[] = $question;
-                                        $question_total++;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid))) && $question_total < MAX_STUDENT_QUESTIONS) {
+                    $questions_to_return[] = $question;
+                    $question_total++;
                 }
             }
         }
@@ -309,4 +335,19 @@ function block_risk_monitor_get_enrolled_students($courseid) {
     }
     
     return $enrolled_students;
+}
+
+function block_risk_monitor_clear_all_tables() {
+    global $DB;
+    $DB->delete_records('block_risk_monitor_course');
+    $DB->delete_records('block_risk_monitor_category');
+    $DB->delete_records('block_risk_monitor_rule_risk');
+    $DB->delete_records('block_risk_monitor_cat_risk');
+    $DB->delete_records('block_risk_monitor_rule_inst');
+    $DB->delete_records('block_risk_monitor_cust_rule');
+    $DB->delete_records('block_risk_monitor_question');
+    $DB->delete_records('block_risk_monitor_option');
+    $DB->delete_records('block_risk_monitor_answer');
+    $DB->delete_records('block_risk_monitor_int_inst');
+    $DB->delete_records('block_risk_monitor_int_tmp');
 }

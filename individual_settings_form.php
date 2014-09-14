@@ -128,48 +128,39 @@ class individual_settings_form_new_default_rule extends moodleform {
         $links = array();
 
         $categoryid = $this->_customdata['categoryid'];
+        $ruleid = $this->_customdata['ruleid'];
         
         //Weighting default: divide 100 by number of rules already registered+1;
         $total_rules = count(block_risk_monitor_get_rules(intval($categoryid)))+1;
         $weighting_default = 100/intval($total_rules);
         
         if($unregistered_rules = block_risk_monitor_get_unregistered_default_rule_names($categoryid)) {
-            //Name: select from default rules (for now)
-            $rulegroup = array();
-            $rulegroup[] =& $mform->createElement('select', 'rule_id', '', $unregistered_rules);
-            $rulegroup[] =& $mform->createElement('submit', 'submit_get_rule_description', "View rule description");
-            $mform->addGroup($rulegroup, 'rulegroup', "Rule", ' ', false);
            
-            //Description if required
-            if($this->_customdata['rule_id'] !== -1) {
-                //$default_rule = //$DB->get_record('block_risk_monitor_rule_inst_type', array('id' => $this->_customdata['rule_id']));                
-                $mform->setDefault('rule_id', $this->_customdata['rule_id']);
-                $mform->addElement('static', 'rule_description_text', "Description", DefaultRules::$default_rule_descriptions[$this->_customdata['rule_id']]);//$default_rule->description);
-
-                $mform->addElement('static', 'whitespace1', '', "<br><br>");
-            }    
-                //Value 
-                $mform->addElement('textarea', 'value_text', "Value for x", 'rows="1"');
-                
-                //Weighting        
-
-                $weightingroup=array();
-                $weightingroup[] =& $mform->createElement('textarea', 'weighting_text', '', 'rows="1"');
-                $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
-                $weightingroup[] =& $mform->createElement('submit', 'submit_get_weighting_description', "What is this?");
-                $mform->addGroup($weightingroup, 'weightingroup', "Weighting of this rule", ' ', false);
-                $mform->setDefault('weighting_text', round($weighting_default,2));
-
-                if($this->_customdata['weightingdesc'] !== -1) {
-                    $mform->addElement('static', 'weighting_description', '',get_string('weighting_description', 'block_risk_monitor'));
-                }        
-                $mform->addElement('static', 'whitespace2', '', "<br><br><br><br>");
-
-                $this->add_action_buttons(true, "Add rule");
-            
+            if($ruleid == -1) {
+                $array_keys = array_keys($unregistered_rules);
+                $ruleid = $array_keys[0];
+            }
+            $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
+            $mform->addElement('select', 'rule_id', "Rule: ", $unregistered_rules, $attributes);
+            $mform->addElement('submit', 'change_rule', 'Change rule', array('class' => 'hiddenifjs'));
+            $mform->setDefault('rule_id', $ruleid);
+        
+            //Description
+            $mform->addElement('static', 'description', "Description: ", DefaultRules::$default_rule_descriptions[$ruleid]."<br><br>");
             
             //Value
-           
+            if(DefaultRules::$default_rule_value_required[$ruleid]) {
+                $mform->addElement('textarea', 'value', DefaultRules::$default_rule_value_description[$ruleid].":", 'rows="1"');
+                $mform->setDefault('value', DefaultRules::$default_rule_value[$ruleid]);
+            }
+            
+            //Weighting
+            $weightingroup=array();
+            $weightingroup[] =& $mform->createElement('textarea', 'weighting', '', 'rows="1"');
+            $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
+            $mform->addGroup($weightingroup, 'weightingroup', "Weighting", ' ', false);
+            $mform->setDefault('weighting', round($weighting_default,2));
+            $this->add_action_buttons(true, "Add rule");
         }
         else {
             $mform->addElement('static', 'norules', "", "There are no rules left to add.");
@@ -476,12 +467,19 @@ class individual_settings_form_create_questionnaire_general_page extends moodlef
         global $DB, $USER;
         
         $mform =& $this->_form;
-                    $mform->addElement('textarea', 'rule_name_text', "Name", 'rows="1" cols="75"');    
-            $mform->addRule('rule_name_text', "Name required", 'required', '', 'client');
+        $mform->addElement('header', 'general', "General");
+                    $mform->addElement('textarea', 'name', "Name", 'rows="1"');    
+            $mform->addRule('name', "Name required", 'required', '', 'client');
 
             //Description
-            $mform->addElement('textarea', 'rule_description_text', "Description", 'rows="5" cols="75"');   
+            $mform->addElement('textarea', 'description', "Description", 'rows="3" cols="75"');   
             $mform->addElement('select', 'scoring_method', "Scoring method for each question", array("Risk level (High, Med, Low)", "Numeric"));  
+
+            $mform->addElement('header','students', 'To display to students');
+            $mform->addElement('textarea', 'title', "Title (will appear to student)", 'rows="1"'); 
+            $mform->addRule('title', "Title required", 'required', '', 'client');
+        $mform->addElement('editor', 'instructions_editor', "Instructions (will appear to student)");
+        $mform->setType('instructions_editor', PARAM_RAW);
             
             $this->add_action_buttons(true, "Add questions");
         /*$courseid = $this->_customdata['courseid'];
@@ -597,7 +595,6 @@ class individual_settings_form_create_questionnaire_question_page extends moodle
                 //Question
                 $mform->addElement('textarea', 'question_text', "Question", 'rows="2" cols="75"');   
                 $mform->addElement('static', 'whitespace', '', "<br>");
-                $mform->addRule('question_text', "Question is required", 'required', '', 'client');
 
                 //Options and values
                 $option_values = array();
@@ -615,8 +612,6 @@ class individual_settings_form_create_questionnaire_question_page extends moodle
                     $mform->setDefault('option_value'.$j, 0);        
 
                 }  
-                $mform->addRule('option_text0', "Option must have text", 'required', '', 'client');
-                $mform->addRule('option_text1', "Option must have text", 'required', '', 'client');
 
                 $buttons_group=array();   
                 $buttons_group[] =& $mform->createElement('submit', 'submit_another', "Add another question");    
@@ -823,9 +818,66 @@ class individual_settings_form_view_interventions extends moodleform {
                 }
                  
              }
+             else {
+                 $mform->addElement('static', 'nocategories', '', "No categories created yet. Go back to settings to add some.");
+             }
              
             
         }
+}
+
+class individual_settings_form_edit_intervention extends moodleform {
+    
+    public function definition() {
+
+        global $DB, $USER;
+        
+        $mform =& $this->_form;
+        
+        $intervention_template = $this->_customdata['template'];
+        $instructionsoptions = $this->_customdata['instructionsoptions'];
+        $filesoptions = $this->_customdata['filesoptions'];
+        
+        //Name
+        $mform->addElement('header', 'general', "General");
+        $mform->setExpanded('general');
+        $mform->addElement('textarea', 'name', "Intervention name", 'wrap="virtual" rows="1 cols="50"');
+        $mform->addRule('name', "Name required", 'required', '', 'client');
+        $mform->setDefault('name', $intervention_template->name);
+        
+        //Description:
+        $mform->addElement('textarea', 'description', "Intervention description", 'wrap="virtual" rows="2" cols="50"'); 
+        $mform->setDefault('description', $intervention_template->description);
+        
+        //Instructions to student
+        $mform->addElement('header', 'content', "Content");
+        $mform->addElement('textarea', 'title', "Title", 'wrap="virtual" rows="1" cols="50"'); 
+        $mform->addRule('title', "Title required", 'required', '', 'client');
+        $mform->setDefault('title', $intervention_template->title);
+       // $mform->addElement('textarea', 'instructions_text', "Message to student", 'wrap="virtual" rows="5" cols="50"'); 
+        $mform->addElement('editor', 'instructions_editor', "Message to student", null, $instructionsoptions);
+        $mform->setType('instructions_editor', PARAM_RAW);
+        $mform->addRule('instructions_editor', "Message required", 'required', '', 'client');
+        
+        //URL
+        $mform->addElement('url', 'externalurl', "External URL", array('size'=>'60'), array('usefilepicker'=>true));
+        $mform->setType('externalurl', PARAM_RAW_TRIMMED);
+        $mform->addElement('textarea', 'url_text', "Url name", 'wrap="virtual" rows="1" cols="50"'); 
+        $mform->setDefault('externalurl', $intervention_template->url);
+        $mform->setDefault('url_text', $intervention_template->urlname);
+        //Upload file
+        $filemanager_options = array();
+        $filemanager_options['accepted_types'] = '*';
+        $filemanager_options['maxbytes'] = 0;
+        $filemanager_options['maxfiles'] = -1;
+        $filemanager_options['mainfile'] = true;
+
+        $mform->addElement('filemanager', 'files_filemanager', "Upload files", null, $filesoptions);        
+
+        //Submit button
+        $this->add_action_buttons(true, "Save template");        
+        $this->set_data($intervention_template);
+    }
 }
 
 class individual_settings_form_new_intervention extends moodleform {
@@ -844,19 +896,21 @@ class individual_settings_form_new_intervention extends moodleform {
         //Name
         $mform->addElement('header', 'general', "General");
         $mform->setExpanded('general');
-        $mform->addElement('textarea', 'name_text', "Intervention name", 'wrap="virtual" rows="1 cols="50"');
-        $mform->addRule('name_text', "Name required", 'required', '', 'client');
+        $mform->addElement('textarea', 'name', "Intervention name", 'wrap="virtual" rows="1 cols="50"');
+        $mform->addRule('name', "Name required", 'required', '', 'client');
         
         //Description:
-        $mform->addElement('textarea', 'description_text', "Intervention description", 'wrap="virtual" rows="2" cols="50"'); 
+        $mform->addElement('textarea', 'description', "Intervention description", 'wrap="virtual" rows="2" cols="50"'); 
                 
         //Instructions to student
         $mform->addElement('header', 'content', "Content");
-        $mform->addElement('textarea', 'title_text', "Title", 'wrap="virtual" rows="1" cols="50"'); 
-        $mform->addRule('title_text', "Title required", 'required', '', 'client');
-        $mform->addElement('textarea', 'instructions_text', "Instructions to student", 'wrap="virtual" rows="5" cols="50"'); 
-        $mform->addRule('instructions_text', "Instructions required", 'required', '', 'client');
-
+        $mform->addElement('textarea', 'title', "Title", 'wrap="virtual" rows="1" cols="50"'); 
+        $mform->addRule('title', "Title required", 'required', '', 'client');
+       // $mform->addElement('textarea', 'instructions_text', "Message to student", 'wrap="virtual" rows="5" cols="50"'); 
+        $mform->addElement('editor', 'instructions_editor', "Message to student");
+        $mform->setType('instructions_editor', PARAM_RAW);
+        $mform->addRule('instructions_editor', "Message required", 'required', '', 'client');
+        
         //URL
         $mform->addElement('url', 'externalurl', "External URL", array('size'=>'60'), array('usefilepicker'=>true));
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
@@ -943,12 +997,87 @@ class individual_settings_form_view_intervention_instructions extends moodleform
         public function definition() {
         global $DB, $USER, $CFG, $OUTPUT;
         $mform =& $this->_form;
+        $studentid = $this->_customdata['studentid'];
         $intervention = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $this->_customdata['interventionid']));
         
         //Student instructions
         //$mform->addElement('header', 'description', "Description");
-        $mform->addElement('static', 'instructions', '', $intervention->instructions);        
+        $instructions = $intervention->instructions;
+        if($studentid != -1) {
+            $student = $DB->get_record('user', array('id' => $studentid));
+            $instructions = htmlspecialchars_decode($instructions);
+            $instructions = str_replace('<studentname>', $student->firstname, $instructions);
+        }
+        
+        $mform->addElement('static', 'instructions', '', $instructions);        
     }
+}
+
+class individual_settings_form_student_problem_areas extends moodleform {
+    public function definition() {
+            
+         global $DB, $USER;
+         $mform =& $this->_form;
+             
+         $studentid = $this->_customdata['studentid'];
+         $categoryid = $this->_customdata['categoryid'];
+         
+         //Print out rules broken.
+         if($rules_broken = $DB->get_records_sql("SELECT * FROM {block_risk_monitor_rule_risk} r WHERE r.value >= ".MODERATE_RISK." AND r.userid = ".$studentid)) {
+             foreach($rules_broken as $rule_broken) {
+                 $rule_inst = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $rule_broken->ruleid));
+                 if($rule_inst->categoryid == $categoryid) {
+                    $mform->addElement('static', 'rule'.$rule_broken->id, '', "<li>".$rule_inst->name."</li>");   
+                 }
+             }
+         }
+         
+    }
+                
+}
+
+class individual_settings_form_student_interventions extends moodleform {
+    
+     public function definition() {
+            
+         global $DB, $USER;
+         $mform =& $this->_form;
+             
+         $courseid = $this->_customdata['courseid'];
+         $studentid = $this->_customdata['studentid'];
+         $categoryid = $this->_customdata['categoryid'];
+         $category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
+                 
+         if($intervention_templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid' => $categoryid))) {
+                            
+             $non_generated_templates = array();    //templates that have not been generated
+             foreach($intervention_templates as $intervention_template) {
+                if(!$DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_template->id))) {
+                    $non_generated_templates[] = $intervention_template;
+                    continue;
+                }
+                //$intervention_instance = $DB->get_record('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_template->id));
+                $output = "<li>".
+                    html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id)), $intervention_template->name)."<br>&emsp;".
+                    $intervention_template->description."</li><br>";        
+                                        
+                $mform->addElement('static', 'template', '', $output);
+
+                $mform->addElement('header', 'interventions', "Templates");
+                 foreach($non_generated_templates as $non_generated_template) {
+                    $output = "<li>".
+                        html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id)), $intervention_template->name)."<br>&emsp;".
+                        $intervention_template->description."</li><br>";        
+
+                    $mform->addElement('static', 'template', '', $output);                 
+                 }
+             }
+             
+         }
+         else {
+             $mform->addElement('static', 'interventioncontent', '', 'No intervention templates for <i>'.$category->name."</i>"); 
+         }
+     }
 }
 
 class individual_settings_form_view_category extends moodleform {
@@ -971,15 +1100,40 @@ class individual_settings_form_view_category extends moodleform {
              foreach($rules_broken as $rule_broken) {
                  $rule_inst = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $rule_broken->ruleid));
                  if($rule_inst->categoryid == $categoryid) {
-                    $mform->addElement('static', 'rule'.$rule_broken->id, '', $rule_inst->name);   
+                    $mform->addElement('static', 'rule'.$rule_broken->id, '', "<li>".$rule_inst->name."</li>");   
                  }
              }
          }
-         $mform->addElement('header', 'intervention_templates', "Interventions");
+         $mform->addElement('header', 'interventions', "Interventions generated");
         
+         /*if($interventions_generated = $DB->get_records('block_risk_monitor_int_inst', array('studentid' => $studentid))) {
+             foreach($interventions_generated as $intervention_generated) {
+                 
+             }
+         }*/
+         
          if($intervention_templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid' => $categoryid))) {
                             
+             $non_generated_templates = array();    //templates that have not been generated
              foreach($intervention_templates as $intervention_template) {
+                if(!$DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_template->id))) {
+                    $non_generated_templates[] = $intervention_template;
+                    continue;
+                }
+                //$intervention_instance = $DB->get_record('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_template->id));
+                $output = "<li>".
+                    html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id)), $intervention_template->name)."<br>&emsp;".
+                    $intervention_template->description."</li><br>";        
+                                        
+                $mform->addElement('static', 'template', '', $output);
+                
+                
+                /*else {
+                    $mform->setDefault('intervention'.$intervention_template->id, 0);
+                }                 
+                 
+                 
+                 
                  if($intervention_template->description != '') {
                      $desc = $intervention_template->description;
                  }
@@ -1000,8 +1154,18 @@ class individual_settings_form_view_category extends moodleform {
                 }
                  //$mform->addElement('static', 'interventioncontent', '', "<li><b>".$intervention_template->name."</b></li>");   
                  $mform->addElement('static', 'interventioncontent', '', '&emsp;'.$desc);   
-                 $mform->addElement('static', 'interventioncontent', '', '&emsp;'.html_writer::link(new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id, 'categoryid' => $categoryid)), 'Preview..<br><br>'));  
+                 $mform->addElement('static', 'interventioncontent', '', '&emsp;'.html_writer::link(new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id, 'categoryid' => $categoryid)), 'Preview..<br><br>')); */ 
              }
+             
+            $mform->addElement('header', 'interventions', "Templates");
+             foreach($non_generated_templates as $non_generated_template) {
+                $output = "<li>".
+                    html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id)), $intervention_template->name)."<br>&emsp;".
+                    $intervention_template->description."</li><br>";        
+                                        
+                $mform->addElement('static', 'template', '', $output);                 
+             }
+             
              
              $mform->addElement('submit', 'update', 'Save');   
          }
@@ -1010,4 +1174,144 @@ class individual_settings_form_view_category extends moodleform {
          }
             
     }    
+}
+
+class individual_settings_form_rule_instance extends moodleform {
+    public function definition() {
+            
+         global $DB, $USER;
+         $mform =& $this->_form;
+         $editing = $this->_customdata['editing'];
+         $rule_instance = $this->_customdata['rule_instance'];
+         $rule_general = $this->_customdata['rule_type'];
+         
+         if($rule_instance->ruletype == 1) {
+             $ruletype = "Default rule";
+             $need_value = $rule_general->value_required;
+         }
+         else {
+             $ruletype = "Questionnaire";
+             $total_questions = 0;
+             if($DB->record_exists('block_risk_monitor_question', array('custruleid' => $rule_general->id))) {
+                 $total_questions = count($DB->get_records('block_risk_monitor_question', array('custruleid' => $rule_general->id)));
+             }
+             $need_value = 0;
+         }
+         
+         
+         ///RULE INSTANCE VALUES
+         if($editing == 0) {
+            $mform->addElement('static', 'ruletype', 'Rule type:', $ruletype); 
+
+            //Rule name
+            $mform->addElement('static', 'name', 'Name:', $rule_instance->name); 
+
+            //Rule description
+            $mform->addElement('static', 'description', 'Description:', $rule_instance->description); 
+
+            //Rule weighting
+            $mform->addElement('static', 'weighting', 'Weighting:', $rule_instance->weighting."%"); 
+
+            //Rule value, if required
+            /*if($need_value == 1) {
+                $mform->addElement('static', 'value', $rule_general->value_description.":", $rule_instance->value); 
+            }*/
+            
+            //Questionnaire values
+            if($rule_instance->ruletype == 2 && $rule_general->low_risk_ceiling != MODERATE_RISK-1 && $rule_general->med_risk_ceiling != HIGH_RISK-1) {
+
+                //Number of questions
+                $mform->addElement('static', 'totalquestions', 'Total questions:', $total_questions); 
+
+                //Min score
+                $mform->addElement('static', 'minscore', 'Minimum score:', $rule_general->min_score); 
+
+                //Max score
+                $mform->addElement('static', 'maxscore', 'Maximum score:', $rule_general->max_score); 
+
+                //Low range
+                $mform->addElement('static', 'lowrange', 'Low risk range:', $rule_general->low_risk_floor." to ".$rule_general->low_risk_ceiling); 
+
+                //Mid range
+                $mform->addElement('static', 'medrange', 'Moderate risk range:', $rule_general->med_risk_floor." to ".$rule_general->med_risk_ceiling); 
+
+                //High range
+                $mform->addElement('static', 'highrange', 'High risk range:', $rule_general->high_risk_floor." to ".$rule_general->high_risk_ceiling); 
+            }            
+         }
+         else {
+            $mform->addElement('static', 'ruletype', 'Rule type:', $ruletype); 
+
+            //Rule name
+            if($rule_instance->ruletype==1) {
+                $mform->addElement('static', 'name', 'Name:', $rule_instance->name); 
+                $mform->addElement('static', 'description', 'Description:', $rule_instance->description); 
+            }
+            else {
+                $mform->addElement('textarea', 'name', 'Name:'); 
+                $mform->addRule('name', "Name required", 'required', '', 'client');
+                $mform->addElement('textarea', 'description', 'Description: ');           
+                $mform->setDefault('name', $rule_general->name);
+                $mform->setDefault('description', $rule_general->description);
+                
+            }
+
+            //Rule weighting
+            $weightingroup=array();
+            $weightingroup[] =& $mform->createElement('textarea', 'weighting', '', 'rows="1"');
+            $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
+            $mform->addGroup($weightingroup, 'weightingroup', "Weighting", ' ', false);
+            $mform->setDefault('weighting', $rule_instance->weighting);
+
+            //Rule value, if required
+            if($need_value == 1) {
+                $mform->addElement('textarea', 'value', $rule_general->value_description.":"); 
+                $mform->setDefault('value', $rule_instance->value);
+            }         
+            
+            //Questionnaire values
+            if($rule_instance->ruletype == 2 && $rule_general->low_risk_ceiling != MODERATE_RISK-1 && $rule_general->med_risk_ceiling != HIGH_RISK-1) {
+
+                //Number of questions
+                $mform->addElement('static', 'totalquestions', 'Total questions:', $total_questions); 
+
+                //Min score
+                $mform->addElement('static', 'minscore', 'Minimum score:', $rule_general->min_score); 
+
+                //Max score
+                $mform->addElement('static', 'maxscore', 'Maximum score:', $rule_general->max_score); 
+
+                //Low range
+                $scoring_ranges = range($rule_general->min_score, $rule_general->max_score);
+                $buttons_group=array();   
+                $buttons_group[] =& $mform->createElement('select', 'lowrangebegin', '', $scoring_ranges);
+                $buttons_group[] =& $mform->createElement('static', 'lowrangetext', '', " to ");    
+                $buttons_group[] =& $mform->createElement('select', 'lowrangeend', '', $scoring_ranges);
+                $mform->addGroup($buttons_group, 'lowrange', "Low risk range: ", '&nbsp', false);       
+                $mform->setDefault('lowrangebegin', $rule_general->low_risk_floor);
+                $mform->setDefault('lowrangeend', $rule_general->low_risk_ceiling);
+                
+                //Med range
+                $buttons_group=array();   
+                $buttons_group[] =& $mform->createElement('select', 'medrangebegin', '', $scoring_ranges);
+                $buttons_group[] =& $mform->createElement('static', 'medrangetext','', " to ");    
+                $buttons_group[] =& $mform->createElement('select', 'medrangeend', '', $scoring_ranges);
+                $mform->addGroup($buttons_group, 'medrange', "Moderate risk range: ", '&nbsp', false);     
+                $mform->setDefault('medrangebegin', $rule_general->med_risk_floor);
+                $mform->setDefault('medrangeend', $rule_general->med_risk_ceiling);
+                
+                //High range
+                $buttons_group=array();  
+                $buttons_group[] =& $mform->createElement('select', 'highrangebegin', '', $scoring_ranges);
+                $buttons_group[] =& $mform->createElement('static', 'highrangetext', '', " to ");    
+                $buttons_group[] =& $mform->createElement('select', 'highrangeend', '', $scoring_ranges);
+                $mform->addGroup($buttons_group, 'highrange', "High risk range: ", '&nbsp', false);     
+                $mform->setDefault('highrangebegin', $rule_general->high_risk_floor);
+                $mform->setDefault('highrangeend', $rule_general->high_risk_ceiling);
+            }               
+            
+            $this->add_action_buttons(true, "Save changes");
+         }
+        
+    }
 }

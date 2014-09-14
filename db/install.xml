@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140907" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
+<XMLDB PATH="blocks/test_risk_monitor/db" VERSION="20140914" COMMENT="XMLDB file for Moodle blocks/test_risk_monitor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -93,8 +93,15 @@
         <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this rule type was created"/>
         <FIELD NAME="min_score" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Minimum raw score obtainable for this rule"/>
         <FIELD NAME="max_score" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="100" SEQUENCE="false" COMMENT="Maximum raw score obtainable for this rule"/>
-        <FIELD NAME="low_mod_risk_cutoff" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="50" SEQUENCE="false" COMMENT="The raw score at which the range reaches moderate risk"/>
-        <FIELD NAME="mod_high_risk_cutoff" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="75" SEQUENCE="false" COMMENT="The raw score at which the range reaches high risk"/>
+        <FIELD NAME="high_risk_floor" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="high_risk_ceiling" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="med_risk_floor" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="med_risk_ceiling" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="low_risk_floor" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="low_risk_ceiling" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="instructions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Instructions on how to complete the questionnaire."/>
+        <FIELD NAME="title" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="To appear to students"/>
+        <FIELD NAME="instructionsformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -154,6 +161,7 @@
         <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The title that will appear to students."/>
         <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The context id the files were added under, for accessing later"/>
         <FIELD NAME="urlname" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A name for the url, to be displayed in the intervention."/>
+        <FIELD NAME="instructionsformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -170,11 +178,16 @@
         <FIELD NAME="interventiontemplateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the intervention template being used"/>
         <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When this intervention was generated"/>
         <FIELD NAME="viewed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the intervention has been viewed by the student"/>
+        <FIELD NAME="instructions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Instructions to student. So that templates can be overridden and personalised."/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id" COMMENT="The student this intervention is generated for"/>
         <KEY NAME="interventiontemplateid" TYPE="foreign" FIELDS="interventiontemplateid" REFTABLE="block_risk_monitor_int_tmp" REFFIELDS="id" COMMENT="The id of the intervention template used"/>
+        <KEY NAME="categoryid" TYPE="foreign" FIELDS="categoryid" REFTABLE="block_risk_monitor_category" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

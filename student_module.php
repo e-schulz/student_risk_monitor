@@ -16,7 +16,6 @@ global $DB;
 
 require_login();
 
-//Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 $interventionid = required_param('interventionid', PARAM_INT);
@@ -57,10 +56,13 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 $back_to_course = html_writer::link (new moodle_url('/course/view.php?id='.$courseid), "Back to course page");
-
+$has_resources = false;
+if($intervention_template->has_files == 1 || ($intervention_template->url != '' && $intervention_template->url != 'http://')) {
+    $has_resources = true;
+}
 //Create the form
 $intervention_form = new individual_settings_form_view_intervention('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'courseid' => $courseid, 'userid' => $userid)); 
-$intervention_instructions = new individual_settings_form_view_intervention_instructions('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid)); 
+$intervention_instructions = new individual_settings_form_view_intervention_instructions('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'studentid' => $userid)); 
 
 //Render the HTML
 echo $OUTPUT->header();
@@ -68,10 +70,14 @@ echo $OUTPUT->heading($blockname);
 
 echo $OUTPUT->heading($intervention_template->title);
 echo $OUTPUT->box_start();
+echo "<b>Message</b>";
 $intervention_instructions->display();
 echo $OUTPUT->box_end();
-echo $OUTPUT->box_start();
-$intervention_form->display();
-echo $OUTPUT->box_end();
+if($has_resources == true) {
+    echo $OUTPUT->box_start();
+    echo "<b>Resources</b>";
+    $intervention_form->display();
+    echo $OUTPUT->box_end();
+}
 echo $back_to_course;
 echo $OUTPUT->footer();

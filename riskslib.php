@@ -68,10 +68,12 @@ final class risks_controller {
                                 //Get min score, max score, mod_risk_floor, high_risk_floor.
                                 $min_score = $custom_rule->min_score;
                                 $max_score = $custom_rule->max_score;
-                                $low_mod_risk_cutoff = $custom_rule->low_mod_risk_cutoff;
-                                $mod_high_risk_cutoff = $custom_rule->mod_high_risk_cutoff;
-
-
+                                $low_risk_floor = $custom_rule->low_risk_floor;
+                                $low_risk_ceiling = $custom_rule->low_risk_ceiling;
+                                $med_risk_floor = $custom_rule->med_risk_floor;
+                                $med_risk_ceiling = $custom_rule->med_risk_ceiling;
+                                $high_risk_floor = $custom_rule->high_risk_floor;
+                                $high_risk_ceiling = $custom_rule->high_risk_ceiling;
 
                                 //Get the questions
                                 if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $custom_rule->id))) {
@@ -91,47 +93,41 @@ final class risks_controller {
                                     //Normalise
                                     $default_low_range = MODERATE_RISK;
                                     $default_moderate_range = HIGH_RISK - MODERATE_RISK;
-                                    $default_high_range = 100 - HIGH_RISK;
-
-                                    if($low_mod_risk_cutoff > $mod_high_risk_cutoff) {
-                                        //Scoring is reversed - higher scores, lower risk.
-                                        //Invert the scores
-                                        //TODO!
-                                        $low_range = $max_score - $low_mod_risk_cutoff;
-                                        $med_range = $low_mod_risk_cutoff - $mod_high_risk_cutoff;
-                                        $high_range = $mod_high_risk_cutoff - $min_score;
-
+                                    $default_high_range = 101 - HIGH_RISK;
+                                    $low_range = abs($low_risk_floor - $low_risk_ceiling)+1;
+                                    $med_range = abs($med_risk_floor - $med_risk_ceiling)+1;
+                                    $high_range = abs($high_risk_floor - $high_risk_ceiling)+1;   
+                                    
+                                    if($med_risk_floor >= $high_risk_floor) {
+                                        
                                         //swap ranges.
-                                        if($total_score < $max_score && $total_score > $low_mod_risk_cutoff) {
+                                        if($total_score <= max($low_risk_floor, $low_risk_ceiling) && $total_score >= min($low_risk_floor, $low_risk_ceiling)) {
                                             //low risk
-                                            $risk_rating = MODERATE_RISK - (($default_low_range/$low_range)*($total_score - $low_mod_risk_cutoff));
+                                            $risk_rating = MODERATE_RISK - (($default_low_range/$low_range)*($total_score - min($low_risk_floor, $low_risk_ceiling)));
                                         }
-                                        else if ($total_score > $mod_high_risk_cutoff && $total_score < $low_mod_risk_cutoff) {
+                                        else if ($total_score >= min($med_risk_floor, $med_risk_ceiling) && $total_score <= max($med_risk_floor, $med_risk_ceiling)) {
                                             //med risk
-                                            $risk_rating = HIGH_RISK - (($default_moderate_range/$med_range)*($total_score - $mod_high_risk_cutoff));
+                                            $risk_rating = HIGH_RISK - (($default_moderate_range/$med_range)*($total_score - min($med_risk_floor, $med_risk_ceiling)));
                                         }
-                                        else if ($total_score > $min_score && $total_score < $mod_high_risk_cutoff) {
+                                        else if ($total_score >= min($high_risk_floor, $high_risk_ceiling) && $total_score <= max($high_risk_floor, $high_risk_ceiling)) {
                                             //high risk
-                                            $risk_rating = 100 - (($default_high_range/$high_range)*($total_score - $min_score));
+                                            $risk_rating = 100 - (($default_high_range/$high_range)*($total_score - min($high_risk_floor, $high_risk_ceiling)));
                                         }               
 
                                     }
                                     else {
-                                        $low_range = $low_mod_risk_cutoff - $min_score;
-                                        $med_range = $mod_high_risk_cutoff - $low_mod_risk_cutoff;
-                                        $high_range = $max_score - $mod_high_risk_cutoff;
 
-                                        if($total_score > $min_score && $total_score < $low_mod_risk_cutoff) {
+                                        if($total_score <= max($low_risk_floor, $low_risk_ceiling) && $total_score >= min($low_risk_floor, $low_risk_ceiling)) {
                                             //low risk
-                                            $risk_rating = ($default_low_range/$low_range)*($total_score - $min_score);
+                                            $risk_rating = ($default_low_range/$low_range)*($total_score - min($low_risk_floor, $low_risk_ceiling));
                                         }
-                                        else if ($total_score < $mod_high_risk_cutoff && $total_score > $low_mod_risk_cutoff) {
+                                        else if ($total_score >= min($med_risk_floor, $med_risk_ceiling) && $total_score <= max($med_risk_floor, $med_risk_ceiling)) {
                                             //med risk
-                                            $risk_rating = MODERATE_RISK + ($default_moderate_range/$med_range)*($total_score - $low_mod_risk_cutoff);
+                                            $risk_rating = MODERATE_RISK + ($default_moderate_range/$med_range)*($total_score - min($med_risk_floor, $med_risk_ceiling));
                                         }
-                                        else if ($total_score < $max_score && $total_score > $mod_high_risk_cutoff) {
+                                        else if ($total_score >= min($high_risk_floor, $high_risk_ceiling) && $total_score <= max($high_risk_floor, $high_risk_ceiling)) {
                                             //high risk
-                                            $risk_rating = HIGH_RISK + ($default_high_range/$high_range)*($total_score - $mod_high_risk_cutoff);
+                                            $risk_rating = HIGH_RISK + ($default_high_range/$high_range)*($total_score - min($high_risk_floor, $high_risk_ceiling));
                                         }                                    
                                     }
                                 }
@@ -205,6 +201,7 @@ final class risks_controller {
 
         }
         //No courses exist.
+        add_to_log(0, 'block_risk_monitor', 'update_risks');
         return $return;
     }
 
@@ -214,39 +211,41 @@ final class risks_controller {
 
         global $DB;
 
+        $last_update_log = $DB->get_records('log', array('module' => 'block_risk_monitor', 'action' => 'update_risks'), 'time DESC');
+        if(count($last_update_log) > 0) {
+            $last_update = reset($last_update_log)->time;
+        }
+        else {
+            $last_update = 0;
+        }
         //Rules have been updated
-        $updated_rules = risks_controller::get_updated_rules();
+        $updated_rules = risks_controller::get_updated_rules($last_update);
         foreach($updated_rules as $updated_rule) {
             $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $updated_rule->id));
         }
 
         //Categories have been updated
-        $updated_categories = risks_controller::get_updated_categories();
+        $updated_categories = risks_controller::get_updated_categories($last_update);
         foreach($updated_categories as $updated_category) {
             $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $updated_category->id));
         }
     }
 
     //Returns rules that have been updated since timestamp
-    private static function get_updated_rules() {
+    private static function get_updated_rules($timestamp) {
         global $DB;
 
-        if(isset(risks_controller::$last_update)) {
-            $updated_rules = $DB->get_records_select('block_risk_monitor_rule_inst','timestamp > '.$timestamp);
-            return $updated_rules;
-        }
-        return array();
+        $updated_rules = $DB->get_records_select('block_risk_monitor_rule_inst','timestamp > '.$timestamp);
+        return $updated_rules;
     }
 
     //Returns categories that have been updated since timestamp
-    private static function get_updated_categories() {
+    private static function get_updated_categories($timestamp) {
         global $DB;
         
-        if(isset(risks_controller::$last_update)) {
-            $updated_categories = $DB->get_records_select('block_risk_monitor_category','timestamp > '.$timestamp);
-            return $updated_categories;
-        }
-        return array();
+        $updated_categories = $DB->get_records_select('block_risk_monitor_category','timestamp > '.$timestamp);
+        return $updated_categories;
+      
     }
 
 }

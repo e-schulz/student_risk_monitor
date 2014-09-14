@@ -20,7 +20,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
-$interventionid = optional_param('interventionid', -1, PARAM_INT);
+$interventionid = optional_param('templateid', -1, PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {

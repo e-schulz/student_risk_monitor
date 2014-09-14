@@ -26,11 +26,11 @@ abstract class DefaultRules {
                                          9 => "LOW_AVERAGE_CLICKS_PER_SESSION",
                                          10 => "LOW_AVERAGE_SESSION_DURATION");
     
-    public static $default_rule_names = array(0 => "Student not logged in for x days",
-                                              1 => "Student has grade lower than x",
-                                              2 => "Student has grade higher than x",
-                                              3 => "Student has missed x activity deadlines",
-                                              4 => "Student has failed x activities",
+    public static $default_rule_names = array(0 => "Student not logged in for number of days",
+                                              1 => "Student has grade lower than certain cutoff",
+                                              2 => "Student has grade higher than certain cutoff",
+                                              3 => "Student has missed a number of activity deadlines",
+                                              4 => "Student has failed a number of activities",
                                               5 => "Student has posted a low number of messages in the forum",
                                               6 => "Student has read a low number of messages in the forum",
                                               7 => "Student has spent a low amount of time in the forum",
@@ -62,11 +62,23 @@ abstract class DefaultRules {
                                                9 => 0,
                                                10 => 0);
     
-    public static $default_rule_value_description = array(0 => "Days since last login",
-                                               1 => "Grade cutoff",
-                                               2 => "Grade cutoff",
-                                               3 => "Number of deadlines",
-                                               4 => "Number of activities failed",
+        public static $default_rule_value= array(0 => 5,
+                                               1 => 50,
+                                               2 => 50,
+                                               3 => 3,
+                                               4 => 3,
+                                               5 => 0,
+                                               6 => 0,
+                                               7 => 0,
+                                               8 => 0,
+                                               9 => 0,
+                                               10 => 0);
+        
+    public static $default_rule_value_description = array(0 => "Days without logging in to trigger rule",
+                                               1 => "Grade cutoff (between 0 and 100%)",
+                                               2 => "Grade cutoff (between 0 and 100%)",
+                                               3 => "Number of deadlines to miss",
+                                               4 => "Number of activities to fail",
                                                5 => "",
                                                6 => "",
                                                7 => "",
@@ -93,6 +105,21 @@ abstract class DefaultRules {
         }
         
         return $default_rules;
+    }
+    
+    public static function getDefaultRuleObject($default_rule_id) {
+        
+        $default_rule = new object();
+        $default_rule->id = $default_rule_id;
+        $default_rule->name = DefaultRules::$default_rule_names[$default_rule_id];
+        $default_rule->description = DefaultRules::$default_rule_descriptions[$default_rule_id];
+        $default_rule->value_required = DefaultRules::$default_rule_value_required[$default_rule_id];
+        if ($default_rule->value_required == 1) {
+            $default_rule->value_description = DefaultRules::$default_rule_value_description[$default_rule_id];
+        }
+        $default_rule->action = DefaultRules::$default_rule_actions[$default_rule_id];
+
+        return $default_rule;
     }
 
 }

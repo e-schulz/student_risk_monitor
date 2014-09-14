@@ -42,11 +42,13 @@ class block_risk_monitor extends block_base {
              //Add this course to the course table.
             if(!($DB->record_exists('block_risk_monitor_course', array('courseid' => $COURSE->id)))) {
                 $new_course = new object();
-                $new_course->$courseid = $COURSE->id;
+                $new_course->courseid = $COURSE->id;
                 $new_course->fullname = $COURSE->fullname;
                 $new_course->shortname = $COURSE->shortname;
                 $DB->insert_record('block_risk_monitor_course', $new_course);
             }
+            
+          
               
         }        
         
@@ -55,8 +57,10 @@ class block_risk_monitor extends block_base {
             global $DB, $COURSE;
             //Delete course
             if($DB->record_exists('block_risk_monitor_course', array('courseid' => $COURSE->id))) {
-                $DB->delete_record('block_risk_monitor_course', array('courseid' => $COURSE->id));
+                $DB->delete_records('block_risk_monitor_course', array('courseid' => $COURSE->id));
             }
+            require_once('locallib.php');
+            block_risk_monitor_clear_all_tables();
 
         }
         

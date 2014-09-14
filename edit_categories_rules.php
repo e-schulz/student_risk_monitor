@@ -23,8 +23,8 @@ $courseid = required_param('courseid', PARAM_INT);
 
 //$message = optional_param('message', 0, PARAM_INT);
 //$courseid = optional_param('courseid', 0, PARAM_INT);
-$categoryid = optional_param('categoryid', -1, PARAM_INT);
-$ruleid = optional_param('ruleid', -1, PARAM_INT);
+$deletecategoryid = optional_param('categoryid', -1, PARAM_INT);
+$deleteruleid = optional_param('ruleid', -1, PARAM_INT);
 
 $body = '';
 
@@ -39,23 +39,23 @@ if (!($USER->id == $userid)) {
 }
 
 //Delete things
-if($categoryid !== -1) {
+if($deletecategoryid !== -1) {
     
     //Delete category
-    if($DB->record_exists('block_risk_monitor_category', array('id' => $categoryid))) {
-        $DB->delete_records('block_risk_monitor_category', array('id' => $categoryid));
+    if($DB->record_exists('block_risk_monitor_category', array('id' => $deletecategoryid))) {
+        $DB->delete_records('block_risk_monitor_category', array('id' => $deletecategoryid));
     }    
     
     //Delete all rules associated with a category
-    if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $categoryid))) {
-        $rule_insts = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
+    if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid))) {
+        $rule_insts = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid));
         foreach($rule_insts as $rule_inst) {
             
            // if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id))) {
              //   $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id)); 
             //}
         }
-        $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
+        $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid));        
     }
     
     //Delete all cat risks assoc with this category
@@ -63,12 +63,17 @@ if($categoryid !== -1) {
       //  $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $categoryid));        
     //}    
 }
-else if ($ruleid !== -1) {
+else if ($deleteruleid !== -1) {
     
     //Delete record and readjust weightings.
-    if($rule_to_delete = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $ruleid))) {
-        $old_sum = 100 - intval($rule_to_delete->weighting);
-        $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $ruleid));
+    if($rule_to_delete = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $deleteruleid))) {
+        $rules = block_risk_monitor_get_rules($rule_to_delete->categoryid);
+        $old_sum = 0;
+        foreach($rules as $rule) {
+            $old_sum += $rule->weighting;
+        }
+        $old_sum = $old_sum - intval($rule_to_delete->weighting);
+        $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $deleteruleid));
         $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);    
 
         if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id))) {

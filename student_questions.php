@@ -19,6 +19,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
+$questionnaireid = required_param('questionnaireid', PARAM_INT);
        
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -29,7 +30,8 @@ if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
 if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
-        
+$questionnaire = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $questionnaireid));
+$student = $DB->get_record('user', array('id' => $userid));
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -50,8 +52,8 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Create the form
-$questions = block_risk_monitor_get_questions($userid, $courseid);
-$student_questions_form = new individual_settings_form_student_questions('student_questions.php?userid='.$USER->id.'&courseid='.$courseid, array('questions' => $questions)); 
+$questions = block_risk_monitor_get_questions($questionnaireid, $userid);
+$student_questions_form = new individual_settings_form_student_questions('student_questions.php?userid='.$USER->id.'&courseid='.$courseid.'&questionnaireid='.$questionnaireid, array('questions' => $questions)); 
 
 //On submit
 if($student_questions_form->is_cancelled()) {
@@ -83,8 +85,16 @@ else if ($fromform = $student_questions_form->get_data()) {
 //Render the HTML
 echo $OUTPUT->header();
 echo $OUTPUT->heading($blockname);
-
-echo $OUTPUT->heading("Questions");
+if($questionnaire->title != null) {
+    $title = $questionnaire->title;
+}
+else {
+    $title = "Questionnaire";
+}
+echo $OUTPUT->heading($title);
 echo $body;
+echo $OUTPUT->box_start();
+echo str_replace('<studentname>', $student->firstname, htmlspecialchars_decode($questionnaire->instructions));
 $student_questions_form->display();
+echo $OUTPUT->box_end();
 echo $OUTPUT->footer();

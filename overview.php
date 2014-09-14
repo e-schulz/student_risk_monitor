@@ -66,7 +66,9 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
             //Get all the risk instances
             if($category_risks = $DB->get_records('block_risk_monitor_cat_risk', array('categoryid' => $category->id))) {
                    foreach($category_risks as $category_risk) {
-                       array_push($students_at_risk, $category_risk->userid);
+                       if($category_risk->value >= 50) {
+                            array_push($students_at_risk, $category_risk->userid);
+                       }
                        //$students_at_risk[] = $category_risk->userid;
                    }
                    //make the array unique

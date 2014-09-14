@@ -80,22 +80,6 @@ else if($page == 3) {
 }
 $heading = "New questionnaire";
 
- /*       $new_rule = new object();
-        $new_rule->id = 4;
-        $new_rule->min_score = 0;
-        $new_rule->max_score = 30;
-        $new_rule->low_mod_risk_cutoff = 22;
-        $new_rule->mod_high_risk_cutoff = 11;
-        $DB->update_record('block_risk_monitor_cust_rule', $new_rule);
-
-if($num_questions !== -1) {
-    $heading = "Questions";
-}
-else {
-    $heading = "New custom rule";
-}*/
-//Get all the categories and courses.
-
 
 if($questionnaire_form->is_cancelled()) {
     if($questionnaireid != -1) {
@@ -117,36 +101,50 @@ if($questionnaire_form->is_cancelled()) {
 else if ($fromform = $questionnaire_form->get_data()) {
     
     if($page == -1 || $page == 1) {
-        $new_rule = new object();
+     $course_context = context_course::instance($courseid);
+       
+        /*$new_rule = new object();
         $new_rule->name = $fromform->rule_name_text;
-        $new_rule->description = $fromform->rule_description_text;
-        $new_rule->userid = $userid;        
-        $new_rule->min_score = 0;
-        $new_rule->max_score = 100;
-        $new_rule->low_mod_risk_cutoff = MODERATE_RISK;
-        $new_rule->mod_high_risk_cutoff = HIGH_RISK;       
-        $new_rule->timestamp = time();
-        $new_rule_id = $DB->insert_record('block_risk_monitor_cust_rule', $new_rule);       
+        $new_rule->description = $fromform->rule_description_text;*/
+        $scoring_method = $fromform->scoring_method;
+        unset($fromform->scoring_method);
+        $fromform->userid = $userid;        
+        $fromform->instructionsformat = FORMAT_HTML;
+        $fromform->min_score = 0;
+        $fromform->max_score = 100;
+        $fromform->low_risk_floor = 0;
+        $fromform->low_risk_ceiling = MODERATE_RISK-1;
+        $fromform->med_risk_floor = MODERATE_RISK;
+        $fromform->med_risk_ceiling = HIGH_RISK-1;
+        $fromform->high_risk_floor = HIGH_RISK;
+        $fromform->high_risk_ceiling = 100; 
+        $fromform->timestamp = time();
         
-        redirect(new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $new_rule_id, 'scoringmethod' => $fromform->scoring_method))); 
+                $fromform = file_postupdate_standard_editor($fromform, 'instructions', array(), $course_context,
+                                        'block_risk_monitor', 'intervention_instructions');   
+        $new_rule_id = $DB->insert_record('block_risk_monitor_cust_rule', $fromform);    
+             
+        redirect(new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $new_rule_id, 'scoringmethod' => $scoring_method))); 
     }
     else if($page == 2) {
             //Create the question
             $new_question = new object();
-            $new_question->question = $fromform->question_text;
-            $new_question->custruleid = $questionnaireid;
-            $new_question_id = $DB->insert_record('block_risk_monitor_question', $new_question);
+            if($fromform->question_text != '') {
+                $new_question->question = $fromform->question_text;
+                $new_question->custruleid = $questionnaireid;
+                $new_question_id = $DB->insert_record('block_risk_monitor_question', $new_question);
 
-            //Create the options
-            for($j=0; $j<5; $j++) {
-                $text_identifier = 'option_text'.$j;
-                $value_identifier = 'option_value'.$j;
-                if($fromform->$text_identifier != "") {
-                    $new_option1 = new object();
-                    $new_option1->label = $fromform->$text_identifier;
-                    $new_option1->value = $fromform->$value_identifier;
-                    $new_option1->questionid = $new_question_id;
-                    $DB->insert_record('block_risk_monitor_option', $new_option1);
+                //Create the options
+                for($j=0; $j<5; $j++) {
+                    $text_identifier = 'option_text'.$j;
+                    $value_identifier = 'option_value'.$j;
+                    if($fromform->$text_identifier != "") {
+                        $new_option1 = new object();
+                        $new_option1->label = $fromform->$text_identifier;
+                        $new_option1->value = $fromform->$value_identifier;
+                        $new_option1->questionid = $new_question_id;
+                        $DB->insert_record('block_risk_monitor_option', $new_option1);
+                    }
                 }
             }
             
@@ -177,8 +175,12 @@ else if ($fromform = $questionnaire_form->get_data()) {
     else if($page == 3) {
         $new_rule = new object();
         $new_rule->id = $questionnaireid;
-        $new_rule->low_mod_risk_cutoff = $fromform->medrangebegin;
-        $new_rule->mod_high_risk_cutoff = $fromform->highrangebegin;
+        $new_rule->low_risk_floor = $fromform->lowrangebegin;
+        $new_rule->low_risk_ceiling = $fromform->lowrangeend;
+        $new_rule->med_risk_floor = $fromform->medrangebegin;
+        $new_rule->med_risk_ceiling = $fromform->medrangeend;
+        $new_rule->high_risk_floor = $fromform->highrangebegin;
+        $new_rule->high_risk_ceiling = $fromform->highrangeend;
         $DB->update_record('block_risk_monitor_cust_rule', $new_rule);  
         $custom_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $questionnaireid));
         
