@@ -38,12 +38,13 @@ if (!($USER->id == $userid)) {
 $context = context_user::instance($userid);
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
+
 
 //Add new or existing links.
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid)));
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);

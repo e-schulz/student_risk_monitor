@@ -40,10 +40,10 @@ $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('overview', 'block_risk_monitor');
+$header = get_string('overview', 'block_risk_monitor'); $action = new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': ' . $header);
@@ -83,12 +83,15 @@ echo $OUTPUT->heading($blockname);
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 if($from_overview != -1) {
-    echo block_risk_monitor_get_top_tabs('overview', $courseid);    
+    echo block_risk_monitor_get_top_tabs('overview', $courseid); 
+    echo $OUTPUT->heading("Intervention preview: ".$intervention_template->title);
+
 }
 else {
     echo block_risk_monitor_get_top_tabs('settings', $courseid);
+    echo $OUTPUT->heading($intervention_template->title);
+
 }
-echo $OUTPUT->heading($intervention_template->title);
 echo $back_link."<br><br>";
 echo $OUTPUT->box_start();
 echo "<b>Message</b>";

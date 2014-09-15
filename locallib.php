@@ -147,12 +147,16 @@ function block_risk_monitor_get_rules($categoryid) {
 }
 
 //Get default rules for a given category.
-function block_risk_monitor_get_default_rules($categoryid) {
+function block_risk_monitor_get_default_rules($categoryid, $namesonly = false) {
     
     global $DB;
     $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid, 'ruletype' => 1));
-    return $rules;
+    
+    if($namesonly == false) {
+        return $rules;
+    }
 }
+
 
 //Get custom rules for a given category.
 function block_risk_monitor_get_custom_rules($categoryid) {

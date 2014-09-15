@@ -62,10 +62,10 @@ else if($intervention_id !== -1) {
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
@@ -126,11 +126,8 @@ if($rules_broken = $DB->get_records_sql("SELECT * FROM {block_risk_monitor_rule_
      foreach($rules_broken as $rule_broken) {
          $rule_inst = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $rule_broken->ruleid));
          if($rule_inst->categoryid == $categoryid) {
-             if($rule_broken->value >= HIGH_RISK) {
-                echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;";
-             }
-             else if($rule_broken->value >= MODERATE_RISK) {
-                 echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_spam.png"))."&nbsp;";
+             if($rule_broken->value >= MODERATE_RISK) {
+                 echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;";
              }
              echo $rule_inst->name."</td></tr>";
          }
@@ -185,10 +182,14 @@ if($templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid
 
             echo "<tr><td width=100px></td><td width=400px><li>".
                 html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $template->id, 'from_overview' => 1, 'from_studentid' => $studentid, 'from_categoryid' => $categoryid)), $template->name)."<br>&emsp;".
-            $template->description."</li></td><td>"
+            $template->description."</li></td><td width=100px></td><td>"
                     .html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-     html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $template->id, 'categoryid' => $category->id)), "Generate this intervention")
-                    ."</td></tr><br>";        
+     html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $template->id, 'categoryid' => $category->id)), "Use this template")."<br>"
+                    .html_writer::empty_tag('img', array('src' => get_string('edit_icon2', 'block_risk_monitor')))."&nbsp;&nbsp;".
+     html_writer::link (new moodle_url('edit_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $template->id, 'from_studentid' => $studentid, 'from_categoryid' => $category->id, 'from_overview' => 1)), "Edit before using")
+                    ."</td></tr><br>";     
+            
+      
         }                                  
     }
     echo "</table>";

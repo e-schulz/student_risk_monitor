@@ -44,10 +44,10 @@ $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
@@ -62,6 +62,9 @@ $body = '';
 //Create the form
 $edit_category_form = new individual_settings_form_edit_category('edit_category.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('categoryid' => $categoryid/*, 'coursename' => $getcourse->fullname*/)); 
 
+if($edit_category_form->is_cancelled()) {
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $getcategory->courseid*/)));        
+}
 //On submit
 if ($fromform = $edit_category_form->get_data()) {
     

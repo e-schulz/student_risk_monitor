@@ -22,8 +22,7 @@ require_login();
 //Get the ID of the teacher
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
-
-//$courseid = required_param('courseid', PARAM_INT);              
+$categoryid = required_param('categoryid', PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -34,10 +33,13 @@ if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
 if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
-        
-//Check that the course exists.
+
+if ($categoryid == -1) {
+    print_error('nothing_to_delete', 'block_risk_monitor', '', $userid);
+}
 
 $context = context_user::instance($userid);
+$getcategory = $DB->get_record('block_risk_monitor_category', array('id'=>$categoryid));
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
@@ -49,36 +51,37 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/delete_item.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//Create the body
-$body = '';
+$delete_form = new individual_settings_form_delete_item('delete_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid);     
 
-//Create the form
-$new_category_form = new individual_settings_form_new_category('new_category.php?userid='.$USER->id.'&courseid='.$courseid/*.'&courseid='.$courseid*/); 
-
-if($new_category_form->is_cancelled()) {
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $courseid*/)));    
+if($delete_form->is_cancelled()) {
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
 }
-//On submit
-if ($fromform = $new_category_form->get_data()) {
-    //Create the category
-    $new_category = new object();
-    $new_category->name = $fromform->name_text;
-    $new_category->description = $fromform->description_text;
-    $new_category->courseid = $courseid;
-    $new_category->timestamp = time();
+
+if ($fromform = $delete_form->get_data()) {
     
-    //add to DB
-    if (!$DB->insert_record('block_risk_monitor_category', $new_category)) {
-        echo get_string('errorinsertcategory', 'block_risk_monitor');
-    }     
+    //Delete category
+    if($DB->record_exists('block_risk_monitor_category', array('id' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_category', array('id' => $categoryid));
+    }    
+    
+    //Delete all rules associated with a category
+    if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $categoryid))) {
+        $rule_insts = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));
+        foreach($rule_insts as $rule_inst) {
+            
+           if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id))) {
+                $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id)); 
+            }
+        }
+        $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
+    }
     
     //Redirect to categories+rules
-    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $courseid*/)));
-
+    redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));
 }
 
 //Render the HTML
@@ -91,7 +94,10 @@ echo $OUTPUT->heading($blockname);
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
-echo $OUTPUT->heading("New Category");
-echo $body;
-$new_category_form->display();
+echo $OUTPUT->heading("Delete ".$getcategory->name);
+echo $OUTPUT->box_start();
+echo "<b>Are you sure you want to delete this category?</b><br><br>";
+echo "All student risk data and intervention templates for this category will also be erased.";
+$delete_form->display();
+echo $OUTPUT->box_end();
 echo $OUTPUT->footer();

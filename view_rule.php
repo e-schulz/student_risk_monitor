@@ -82,10 +82,10 @@ $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
@@ -100,7 +100,7 @@ $PAGE->set_pagelayout('standard');
 /////CREATE LINKS AND FORMS
 //////////
 $edit_link = html_writer::link (new moodle_url('edit_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $ruleid)), "Edit");
-$delete_link = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $ruleid)), "Delete rule");
+$delete_link = html_writer::link (new moodle_url('delete_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $ruleid)), "Delete rule");
 $back_to_categories = html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to categories");
 
 $links = $delete_link." | ".$back_to_categories."<br><br>";

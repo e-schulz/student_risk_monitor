@@ -34,13 +34,13 @@ require_once(dirname(__FILE__).'/locallib.php');
 require_login();
 //PAGE PARAMS
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('overview', 'block_risk_monitor');
+$header = get_string('overview', 'block_risk_monitor'); $action = new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
 //need block id! get block instance - for now we will do user :-)
 $context = context_user::instance($USER->id);
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);

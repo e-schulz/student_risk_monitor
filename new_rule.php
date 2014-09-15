@@ -45,10 +45,10 @@ $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
@@ -95,7 +95,7 @@ else{
 $rule_type_links = $default_rule_link."&nbsp;|&nbsp;".$custom_rule_link."<br><br>";*/
 
 //On submit
-    $new_rule_form = new individual_settings_form_new_default_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('ruleid' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => -1));     
+    $new_rule_form = new individual_settings_form_new_default_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('ruleid' => $rule_id, 'categoryid' => $categoryid, 'courseid' => $courseid, 'userid' => $userid, 'weightingdesc' => -1));     
 
 if($new_rule_form->is_cancelled()) {
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $getcategory->courseid*/)));    
@@ -104,18 +104,17 @@ if($new_rule_form->is_cancelled()) {
 if ($fromform = $new_rule_form->get_data()) {
     
     if(!isset($fromform->add_rule)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
     }
-    
     $new_rule = new object();
     
     //Error checking
     //if weighting is not numeric, refresh with error
     if(!is_numeric($fromform->weighting)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 1, 'ruleid' => $fromform->rule_id, 'courseid' => $courseid)));
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 1, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
     }
     else if(intval($fromform->weighting < 0 || $fromform->weighting > 100)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2, 'ruleid' => $fromform->rule_id, 'courseid' => $courseid)));        
+        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
     }
     else {
         if(empty($fromform->weighting)) {
@@ -131,14 +130,14 @@ if ($fromform = $new_rule_form->get_data()) {
         
         if(!is_numeric($fromform->value)) {
             
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3, 'ruleid' => $fromform->rule_id, 'courseid' => $courseid)));
+            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
         }
         else if(intval($fromform->value < 0)) {
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 4, 'ruleid' => $fromform->rule_id, 'courseid' => $courseid)));        
+            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 4, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
         }
 
         if(empty($fromform->value)) {
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 5, 'ruleid' => $fromform->rule_id, 'courseid' => $courseid)));
+            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 5, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
         }
         $new_rule->value = $fromform->value;        
         $rule_name = DefaultRules::$default_rule_names[$fromform->rule_id];

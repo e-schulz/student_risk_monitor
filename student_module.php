@@ -42,7 +42,7 @@ $context = context_user::instance($userid);
 $blockname = get_string('studentpluginname', 'block_risk_monitor');
 $header = $intervention_template->title;
 
-$PAGE->navbar->add($blockname);
+$PAGE->navbar->add($blockname); 
 $PAGE->navbar->add($header);
 
 $PAGE->set_context($context);

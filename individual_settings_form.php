@@ -88,7 +88,7 @@ class individual_settings_form_new_category extends moodleform {
         
         //Description: text
         $mform->addElement('textarea', 'description_text', "A short description of the category", 'wrap="virtual" rows="5" cols="50"');
-        $this->add_action_buttons(false, "Save category");
+        $this->add_action_buttons(true, "Save category");
          
     }
 }
@@ -112,7 +112,7 @@ class individual_settings_form_edit_category extends moodleform {
         //Description: text
         $mform->addElement('textarea', 'description_text', "A short description of the category", 'wrap="virtual" rows="5" cols="50"');
         $mform->setDefault('description_text', $getcategory->description);
-        $this->add_action_buttons(false, "Save category");
+        $this->add_action_buttons(true, "Save category");
          
     }
 }
@@ -129,19 +129,20 @@ class individual_settings_form_new_default_rule extends moodleform {
 
         $categoryid = $this->_customdata['categoryid'];
         $ruleid = $this->_customdata['ruleid'];
+        $userid = $this->_customdata['userid'];
+        $courseid = $this->_customdata['courseid'];
         
         //Weighting default: divide 100 by number of rules already registered+1;
         $total_rules = count(block_risk_monitor_get_rules(intval($categoryid)))+1;
         $weighting_default = 100/intval($total_rules);
         
-        if($unregistered_rules = block_risk_monitor_get_unregistered_default_rule_names($categoryid)) {
+        if(count(DefaultRules::$default_rule_names) > 0) {
            
             if($ruleid == -1) {
-                $array_keys = array_keys($unregistered_rules);
-                $ruleid = $array_keys[0];
+                $ruleid = 0;
             }
             $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
-            $mform->addElement('select', 'rule_id', "Rule: ", $unregistered_rules, $attributes);
+            $mform->addElement('select', 'rule_id', "Rule: ", DefaultRules::$default_rule_names, $attributes);
             $mform->addElement('submit', 'change_rule', 'Change rule', array('class' => 'hiddenifjs'));
             $mform->setDefault('rule_id', $ruleid);
         
@@ -160,7 +161,11 @@ class individual_settings_form_new_default_rule extends moodleform {
             $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
             $mform->addGroup($weightingroup, 'weightingroup', "Weighting", ' ', false);
             $mform->setDefault('weighting', round($weighting_default,2));
-            $this->add_action_buttons(true, "Add rule");
+            
+            $submitgroup=array();
+            $submitgroup[] =& $mform->createElement('submit', 'add_rule', 'Add rule');
+            $submitgroup[] =& $mform->createElement('static', 'cancel', '', html_writer::link(new moodle_url('edit_categories_rules.php', array('userid' => $userid, 'courseid' => $courseid)), "Cancel"));
+            $mform->addGroup($submitgroup, 'submitgp', "", ' ', false);            
         }
         else {
             $mform->addElement('static', 'norules', "", "There are no rules left to add.");
@@ -838,17 +843,18 @@ class individual_settings_form_edit_intervention extends moodleform {
         $instructionsoptions = $this->_customdata['instructionsoptions'];
         $filesoptions = $this->_customdata['filesoptions'];
         
+        
         //Name
-        $mform->addElement('header', 'general', "General");
-        $mform->setExpanded('general');
-        $mform->addElement('textarea', 'name', "Intervention name", 'wrap="virtual" rows="1 cols="50"');
-        $mform->addRule('name', "Name required", 'required', '', 'client');
-        $mform->setDefault('name', $intervention_template->name);
-        
-        //Description:
-        $mform->addElement('textarea', 'description', "Intervention description", 'wrap="virtual" rows="2" cols="50"'); 
-        $mform->setDefault('description', $intervention_template->description);
-        
+            $mform->addElement('header', 'general', "General");
+            $mform->setExpanded('general');
+            $mform->addElement('textarea', 'name', "Intervention name", 'wrap="virtual" rows="1 cols="50"');
+            $mform->addRule('name', "Name required", 'required', '', 'client');
+            $mform->setDefault('name', $intervention_template->name);
+
+            //Description:
+            $mform->addElement('textarea', 'description', "Intervention description", 'wrap="virtual" rows="5" cols="75"'); 
+            $mform->setDefault('description', $intervention_template->description);
+
         //Instructions to student
         $mform->addElement('header', 'content', "Content");
         $mform->addElement('textarea', 'title', "Title", 'wrap="virtual" rows="1" cols="50"'); 
@@ -875,7 +881,12 @@ class individual_settings_form_edit_intervention extends moodleform {
         $mform->addElement('filemanager', 'files_filemanager', "Upload files", null, $filesoptions);        
 
         //Submit button
-        $this->add_action_buttons(true, "Save template");        
+        if($this->_customdata['generate_intervention'] == -1) {
+            $this->add_action_buttons(true, "Save template"); 
+        }
+        else {
+            $this->add_action_buttons(true, "Generate intervention");
+        }
         $this->set_data($intervention_template);
     }
 }
@@ -1314,4 +1325,16 @@ class individual_settings_form_rule_instance extends moodleform {
          }
         
     }
+}
+
+class individual_settings_form_delete_item extends moodleform {
+   
+    public function definition() {
+            
+        global $DB, $USER;
+        $mform =& $this->_form; 
+        
+        $this->add_action_buttons(true, "Yes");
+    
+    }    
 }

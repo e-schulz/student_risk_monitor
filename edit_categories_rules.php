@@ -21,11 +21,6 @@ require_login();
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 
-//$message = optional_param('message', 0, PARAM_INT);
-//$courseid = optional_param('courseid', 0, PARAM_INT);
-$deletecategoryid = optional_param('categoryid', -1, PARAM_INT);
-$deleteruleid = optional_param('ruleid', -1, PARAM_INT);
-
 $body = '';
 
 //Error- there is no user associated with the passed param
@@ -38,60 +33,16 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
 
-//Delete things
-if($deletecategoryid !== -1) {
-    
-    //Delete category
-    if($DB->record_exists('block_risk_monitor_category', array('id' => $deletecategoryid))) {
-        $DB->delete_records('block_risk_monitor_category', array('id' => $deletecategoryid));
-    }    
-    
-    //Delete all rules associated with a category
-    if($DB->record_exists('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid))) {
-        $rule_insts = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid));
-        foreach($rule_insts as $rule_inst) {
-            
-           // if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id))) {
-             //   $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_inst->id)); 
-            //}
-        }
-        $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $deletecategoryid));        
-    }
-    
-    //Delete all cat risks assoc with this category
-    //if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
-      //  $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $categoryid));        
-    //}    
-}
-else if ($deleteruleid !== -1) {
-    
-    //Delete record and readjust weightings.
-    if($rule_to_delete = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $deleteruleid))) {
-        $rules = block_risk_monitor_get_rules($rule_to_delete->categoryid);
-        $old_sum = 0;
-        foreach($rules as $rule) {
-            $old_sum += $rule->weighting;
-        }
-        $old_sum = $old_sum - intval($rule_to_delete->weighting);
-        $DB->delete_records('block_risk_monitor_rule_inst', array('id' => $deleteruleid));
-        $body .= block_risk_monitor_adjust_weightings_rule_deleted($rule_to_delete->categoryid, $old_sum);    
-
-        if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id))) {
-            $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id));        
-        }          
-    }
-   
-}
-
 $back_to_settings = html_writer::link (new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('back_to_settings','block_risk_monitor'));
 $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$header = get_string('settings', 'block_risk_monitor'); 
+$action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
-$PAGE->navbar->add($blockname);
-$PAGE->navbar->add($header);
+$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
@@ -133,6 +84,11 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
         echo html_writer::start_tag('a', array('href' => 'edit_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
                                 html_writer::empty_tag('img', array('src' => get_string('edit_icon', 'block_risk_monitor'), 'align' => 'middle')).
                                 html_writer::end_tag('a')."&nbsp;";
+        if($category->courseid != 0) {    //not a default category, can delete
+            echo html_writer::start_tag('a', array('href' => 'delete_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
+                                html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                html_writer::end_tag('a');
+        }
         
         //Rules
         if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id))) {
