@@ -151,7 +151,12 @@ class individual_settings_form_new_default_rule extends moodleform {
             
             //Value
             if(DefaultRules::$default_rule_value_required[$ruleid]) {
-                $mform->addElement('textarea', 'value', DefaultRules::$default_rule_value_description[$ruleid].":", 'rows="1"');
+                $valuegroup=array();
+                $valuegroup[] =& $mform->createElement('textarea', 'value', "", 'rows="1"');
+                if($ruleid > 4) {
+                    $valuegroup[] =& $mform->createElement('static', 'percent_text', '', "%");
+                }
+                $mform->addGroup($valuegroup, 'valuegroup', DefaultRules::$default_rule_value_description[$ruleid].":", ' ', false);
                 $mform->setDefault('value', DefaultRules::$default_rule_value[$ruleid]);
             }
             
@@ -159,7 +164,7 @@ class individual_settings_form_new_default_rule extends moodleform {
             $weightingroup=array();
             $weightingroup[] =& $mform->createElement('textarea', 'weighting', '', 'rows="1"');
             $weightingroup[] =& $mform->createElement('static', 'percent_text', '', "%");
-            $mform->addGroup($weightingroup, 'weightingroup', "Weighting", ' ', false);
+            $mform->addGroup($weightingroup, 'weightingroup', "Rule weighting", ' ', false);
             $mform->setDefault('weighting', round($weighting_default,2));
             
             $submitgroup=array();
@@ -1276,7 +1281,12 @@ class individual_settings_form_rule_instance extends moodleform {
 
             //Rule value, if required
             if($need_value == 1) {
-                $mform->addElement('textarea', 'value', $rule_general->value_description.":"); 
+                $valuegroup=array();
+                $valuegroup[] =& $mform->createElement('textarea', 'value', $rule_general->value_description.":"); 
+                if($rule_general->id > 4) {
+                    $valuegroup[] =& $mform->createElement('static', 'percent_text', '', "%");
+                }
+                $mform->addGroup($valuegroup, 'valuegroup', $rule_general->value_description.":", ' ', false);
                 $mform->setDefault('value', $rule_instance->value);
             }         
             

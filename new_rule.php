@@ -144,6 +144,7 @@ if ($fromform = $new_rule_form->get_data()) {
         $rule_name = str_replace("a number of", $fromform->value, $rule_name);
         $rule_name = str_replace("certain cutoff", $fromform->value."%", $rule_name);
         $rule_name = str_replace("number of", $fromform->value, $rule_name);
+        $rule_name = str_replace("below average", $fromform->value."% below average", $rule_name);
         $new_rule->name = $rule_name;
     }
     else {

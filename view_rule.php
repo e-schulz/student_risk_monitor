@@ -112,6 +112,11 @@ $general_form = new individual_settings_form_rule_instance('/blocks/risk_monitor
 ////////////////
 //////// GET FORM DATA
 ////////////    
+if($general_form->is_cancelled()) {
+    //Redirect to view rule
+    redirect(new moodle_url('view_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'courseid' => $courseid, 'editing' => 0)));
+}
+
 if($fromform = $general_form->get_data()) {
     
     $rule_to_update = new object();
@@ -149,6 +154,7 @@ if($fromform = $general_form->get_data()) {
         $rule_name = str_replace("a number of", $fromform->value, $rule_name);
         $rule_name = str_replace("certain cutoff", $fromform->value."%", $rule_name);
         $rule_name = str_replace("number of", $fromform->value, $rule_name);
+        $rule_name = str_replace("below average", $fromform->value."% below average", $rule_name);
         $rule_to_update->name = $rule_name;        
         $rule_to_update->value = $fromform->value;
     }

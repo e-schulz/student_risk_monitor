@@ -126,17 +126,22 @@ class risk_calculator {
         $risk_rating = 0;
 
         //Get the most recent login of the student.
-        $most_recent_login_time = $user->currentlogin;
+        if($user->currentlogin != 0) {
+            $most_recent_login_time = $user->currentlogin;
 
-        //Calculate how many days it has been since then (time is in seconds)
-        $seconds_since = time() - $most_recent_login_time;
+            //Calculate how many days it has been since then (time is in seconds)
+            $seconds_since = time() - $most_recent_login_time;
 
-        //convert to days
-        $days_since = $seconds_since/(60*60*24);
+            //convert to days
+            $days_since = $seconds_since/(60*60*24);
 
-        //If days >= $value, risk = 100 else risk = 0 
-        if ($days_since >= $value) {
-            $risk_rating = 100;
+            //If days >= $value, risk = 100 else risk = 0 
+            if ($days_since >= $value) {
+                $risk_rating = 100;
+            }
+        }
+        else {
+            $risk_rating = 0;
         }
 
         return $risk_rating;
@@ -245,14 +250,12 @@ class risk_calculator {
         
         $total_students = count($this->number_forum_posts);
         
-        $student_position = array_search($user->id, array_keys($this->number_forum_posts));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+        $average = array_sum($this->number_forum_posts)/count($this->number_forum_posts);
+        $student_value = array_search($user->id, $this->number_forum_posts);
+        
+        if($student_value < ($value/100)*$average) {    
             return 100;
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;
     }
 
@@ -260,14 +263,12 @@ class risk_calculator {
     function forum_posts_read_risk($user, $value) {
         $total_students = count($this->number_forum_posts_read);
         
-        $student_position = array_search($user->id, array_keys($this->number_forum_posts_read));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+        $average = array_sum($this->number_forum_posts_read)/count($this->number_forum_posts_read);
+        $student_value = array_search($user->id, $this->number_forum_posts_read);
+        
+        if($student_value < ($value/100)*$average) {    
             return 100;
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;
     }
 
@@ -275,14 +276,12 @@ class risk_calculator {
     function total_forum_time_risk($user, $value) {
         $total_students = count($this->total_forum_time);
         
-        $student_position = array_search($user->id, array_keys($this->total_forum_time));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+        $average = array_sum($this->total_forum_time)/count($this->total_forum_time);
+        $student_value = array_search($user->id, $this->total_forum_time);
+        
+        if($student_value < ($value/100)*$average) {    
             return 100;
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;
     }
 
@@ -290,14 +289,12 @@ class risk_calculator {
     function course_clicks_risk($user, $value) {
         $total_students = count($this->course_clicks);
         
-        $student_position = array_search($user->id, array_keys($this->course_clicks));
-        if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+        $average = array_sum($this->course_clicks)/count($this->course_clicks);
+        $student_value = array_search($user->id, $this->course_clicks);
+        
+        if($student_value < ($value/100)*$average) {    
             return 100;
         }
-        else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-            return 50;
-        }
-        
         return 0;
     }
 
@@ -305,12 +302,11 @@ class risk_calculator {
     function average_session_clicks_risk($user, $value) {
         $total_students = count($this->clicks_per_session);
         if(array_key_exists($user->id, $this->clicks_per_session)) {
-            $student_position = array_search($user->id, array_keys($this->clicks_per_session));
-            if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+            $average = array_sum($this->clicks_per_session)/count($this->clicks_per_session);
+            $student_value = array_search($user->id, $this->clicks_per_session);
+
+            if($student_value < ($value/100)*$average) {    
                 return 100;
-            }
-            else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-                return 50;
             }
         }
         return 0;        
@@ -321,12 +317,11 @@ class risk_calculator {
         $total_students = count($this->average_session_times);
         
         if(array_key_exists($user->id, $this->average_session_times)) {
-            $student_position = array_search($user->id, array_keys($this->average_session_times));
-            if($student_position < round($total_students/4)) {     //High risk - bottom quartile
+            $average = array_sum($this->average_session_times)/count($this->average_session_times);
+            $student_value = array_search($user->id, $this->average_session_times);
+
+            if($student_value < ($value/100)*$average) {    
                 return 100;
-            }
-            else if($student_position < round($total_students/2)) {    //Moderate risk- second from bottom quartile.
-                return 50;
             }
         }
         return 0;        

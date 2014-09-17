@@ -31,60 +31,60 @@ abstract class DefaultRules {
                                               2 => "Student has grade higher than certain cutoff",
                                               3 => "Student has missed a number of activity deadlines",
                                               4 => "Student has failed a number of activities",
-                                              5 => "Student has posted a low number of messages in the forum",
-                                              6 => "Student has read a low number of messages in the forum",
-                                              7 => "Student has spent a low amount of time in the forum",
-                                              8 => "Student has low total clicks within the course",
-                                              9 => "Student has low average clicks per session",
-                                              10 => "Student has low average course session duration");
+                                              5 => "Student has posted below average messages in the forum",
+                                              6 => "Student has read below average of messages in the forum",
+                                              7 => "Student has spent below average time in the forum",
+                                              8 => "Student has below average total clicks within the course",
+                                              9 => "Student has below average clicks per session",
+                                              10 => "Student has below average course session duration");
     
     public static $default_rule_descriptions = array(0 => "This rule is triggered when a student has not logged in for a specified number of days in a row.",
                                                      1 => "This rule is triggered when a student has a current grade lower than a specified percentage.",
                                                      2 => "This rule is triggered when a student has a current grade higher than a specified percentage.",
                                                      3 => "This rule is triggered when a student has missed a specified number of deadlines within Moodle.",
                                                      4 => "This rule is triggered when a student has failed a specified number of activities within the course.",
-                                                     5 => "This rule is triggered when a student has posted a low number of messages in the forum, relative to other students.",
-                                                     6 => "This rule is triggered when a student has read a low number of messages in the forum, relative to other students.",
-                                                     7 => "This rule is triggered when a student has spent a low amount of time in the forum, relative to other students.",
-                                                     8 => "This rule is triggered when a student has a low amount of total clicks within the course, relative to other students.",
-                                                     9 => "This rule is triggered when a student has a low number of average clicks within the course per session, relative to other students.",
-                                                     10 => "This rule is triggered when a student has a low average time spent within the course in a single session session, relative to other students.");
+                                                     5 => "This rule is triggered when a student has posted a below average number of messages in the forum, relative to other students.",
+                                                     6 => "This rule is triggered when a student has read a below average number of messages in the forum, relative to other students.",
+                                                     7 => "This rule is triggered when a student has spent a below average amount of time in the forum, relative to other students.",
+                                                     8 => "This rule is triggered when a student has a below average amount of total clicks within the course, relative to other students.",
+                                                     9 => "This rule is triggered when a student has a below average number of average clicks within the course per session, relative to other students.",
+                                                     10 => "This rule is triggered when a student has a below average time spent within the course in a single session session, relative to other students.");
     
     public static $default_rule_value_required = array(0 => 1,
                                                1 => 1,
                                                2 => 1,
                                                3 => 1,
                                                4 => 1,
-                                               5 => 0,
-                                               6 => 0,
-                                               7 => 0,
-                                               8 => 0,
-                                               9 => 0,
-                                               10 => 0);
+                                               5 => 1,
+                                               6 => 1,
+                                               7 => 1,
+                                               8 => 1,
+                                               9 => 1,
+                                               10 => 1);
     
         public static $default_rule_value= array(0 => 5,
                                                1 => 50,
                                                2 => 50,
                                                3 => 3,
                                                4 => 3,
-                                               5 => 0,
-                                               6 => 0,
-                                               7 => 0,
-                                               8 => 0,
-                                               9 => 0,
-                                               10 => 0);
+                                               5 => 50,
+                                               6 => 50,
+                                               7 => 50,
+                                               8 => 50,
+                                               9 => 50,
+                                               10 => 50);
         
     public static $default_rule_value_description = array(0 => "Days without logging in to trigger rule",
                                                1 => "Grade cutoff (between 0 and 100%)",
                                                2 => "Grade cutoff (between 0 and 100%)",
                                                3 => "Number of deadlines to miss",
                                                4 => "Number of activities to fail",
-                                               5 => "",
-                                               6 => "",
-                                               7 => "",
-                                               8 => "",
-                                               9 => "",
-                                               10 => "");
+                                               5 => "Percent below average",
+                                               6 => "Percent below average",
+                                               7 => "Percent below average",
+                                               8 => "Percent below average",
+                                               9 => "Percent below average",
+                                               10 => "Percent below average");
     
     public static function getDefaultRuleObjects() {
         

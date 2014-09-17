@@ -135,14 +135,14 @@ if($rules_broken = $DB->get_records_sql("SELECT * FROM {block_risk_monitor_rule_
 }
 echo "</table>";
 echo $OUTPUT->box_end();
-
+echo "<br><br>";
 ////////
 //// INTERVENTIONS
 //////////
 echo $OUTPUT->box_start();
 echo "<b>Interventions generated</b>";
 if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('categoryid' => $categoryid, 'studentid' => $studentid))) {
-    echo "<table><tr><td width=100px></td><td width=400px></td><td width=150px><b>Date generated</b></td><td width=150px><b>Viewed by student?</b></td><td></td></tr>";       
+    echo "<table><tr><td width=100px></td><td width=250px></td><td width=150px><b>Date generated</b></td><td width=150px><b>Viewed by student?</b></td><td></td></tr>";       
     foreach($interventions as $intervention) { 
         if($DB->record_exists('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid))) {
             $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid));
@@ -166,7 +166,7 @@ else {
 }
 
 echo $OUTPUT->box_end();
-
+echo "<br><br>";
 
 //////////////
 ///////////TEMPLATES
