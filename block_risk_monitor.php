@@ -83,6 +83,7 @@ class block_risk_monitor extends block_base {
                 $context = context_course::instance($COURSE->id);
                 $teacher_view = has_capability('block/risk_monitor:teacherview', $context);
                 $student_view = has_capability('block/risk_monitor:studentview', $context);
+                $icon_class = array('class' => 'icon');
                 
                 if($teacher_view) {
                     //Create the Overview URL 
@@ -91,8 +92,8 @@ class block_risk_monitor extends block_base {
                         new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id, 'courseid' => $COURSE->id)),
                         $overview_str
                     );
-                    $this->content->items[] = $overview;
-                    $this->content->icons[] = $OUTPUT->pix_icon('i/preview', 'settings_icon', 'moodle');
+                    $this->content->text = $overview."<br>";
+                    //$this->content->icons[] = $OUTPUT->pix_icon('i/preview', 'preview_icon', 'moodle', $icon_class);
 
                     //Settings URL
                     $settings_str = get_string('settings','block_risk_monitor');
@@ -101,8 +102,8 @@ class block_risk_monitor extends block_base {
                         $settings_str
                     );
 
-                    $this->content->items[] = $settings;
-                    $this->content->icons[] = $OUTPUT->pix_icon('i/settings', 'settings_icon', 'moodle');                    
+                    $this->content->text .= $settings;
+                    //$this->content->icons[] = $OUTPUT->pix_icon('i/settings', 'settings_icon', 'moodle', $icon_class);                    
                 }
                 
                 if($student_view) {

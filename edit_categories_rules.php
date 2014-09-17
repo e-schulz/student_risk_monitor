@@ -55,7 +55,7 @@ $add_category = html_writer::link (new moodle_url('new_category.php', array('use
 
 $links = $add_category." | ".$back_to_settings."<br><br>";
 //Get all the categories and courses.
-$categories_rules_form = new individual_settings_form_edit_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
+$categories_rules_form = new individual_settings_form_view_categories_rules('edit_categories_rules.php?userid='.$USER->id.'&courseid='.$courseid, array('courseid' => $courseid)/*.'&courseid='.$courseid, array('courseid' => $courseid)*/); 
        
 
 
@@ -127,5 +127,5 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
         echo $OUTPUT->box_end();
     }
 }
-
+//$categories_rules_form->display();
 echo $OUTPUT->footer();

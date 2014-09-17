@@ -1343,6 +1343,9 @@ class individual_settings_form_view_categories_rules extends moodleform {
         public function definition() {
             
              global $DB, $USER;
+             $mform =& $this->_form; 
+             $courseid = $this->_customdata['courseid'];
+             
             if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
 
                 foreach($categories as $category) {
