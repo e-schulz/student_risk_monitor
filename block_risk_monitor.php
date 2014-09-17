@@ -68,7 +68,7 @@ class block_risk_monitor extends block_base {
 	
             
                 //check that we are definitely logged in.. and that the user is a teacher..
-                global $USER, $COURSE;
+                global $USER, $COURSE, $OUTPUT;
                 require_once('locallib.php');
 		//if content is already set, return content
 		if ($this->content !== NULL) {
@@ -91,8 +91,8 @@ class block_risk_monitor extends block_base {
                         new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id, 'courseid' => $COURSE->id)),
                         $overview_str
                     );
-                    $this->content->text .= $overview;
-                    $this->content->text .= "<br>";
+                    $this->content->items[] = $overview;
+                    $this->content->icons[] = $OUTPUT->pix_icon('i/preview', 'settings_icon', 'moodle');
 
                     //Settings URL
                     $settings_str = get_string('settings','block_risk_monitor');
@@ -101,7 +101,8 @@ class block_risk_monitor extends block_base {
                         $settings_str
                     );
 
-                    $this->content->text .= $settings;
+                    $this->content->items[] = $settings;
+                    $this->content->icons[] = $OUTPUT->pix_icon('i/settings', 'settings_icon', 'moodle');                    
                 }
                 
                 if($student_view) {

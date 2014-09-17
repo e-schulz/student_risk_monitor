@@ -1338,3 +1338,75 @@ class individual_settings_form_delete_item extends moodleform {
     
     }    
 }
+
+class individual_settings_form_view_categories_rules extends moodleform {
+        public function definition() {
+            
+             global $DB, $USER;
+            if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
+
+                foreach($categories as $category) {
+                    $mform->addElement('header', 'category'.$category->id, $category->name);        
+
+                    $desc = "";
+                    if($category->description != "") {
+                        $desc .= "<div align='left'><table><tr><td>".$category->description."<br>";
+                    }
+                    
+                    //Add questionnaire
+                     $desc .= html_writer::start_tag('a', array('href' => 'edit_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
+                                            html_writer::empty_tag('img', array('src' => get_string('edit_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                            html_writer::end_tag('a')."&nbsp;";
+                     
+                    if($category->courseid != 0) {    //not a default category, can delete
+                        $desc .= html_writer::start_tag('a', array('href' => 'delete_category.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
+                                            html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor'), 'align' => 'middle')).
+                                            html_writer::end_tag('a');       
+                    }
+                            $desc .= "</td></tr></table></div>";       
+                     
+                    $mform->addElement('static', 'desc', '', $desc);
+
+                    //Rules
+                    $table = '';
+                    if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id))) {
+                        $table .= "<table><tr><td width=500px></td><td><b>Weighting</b></td></tr>";
+                        foreach($rules as $rule) {
+
+                            if(intval($rule->ruletype) == 1) {
+                                $custom = -1;
+                            }
+                            else if(intval($rule->ruletype) == 2) {
+                                $custom = 1;
+                            }
+
+                            //Rule name
+                            $table .= "<tr><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;".
+                                    html_writer::link (new moodle_url('view_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $rule->id)), $rule->name)."<br>&emsp;".
+                                    $rule->description."</td><td>".$rule->weighting."%</td></tr>";
+
+                        }                        
+                    }
+                    else {
+                        $table .= "<table><tr><td width=500px>No rules</td><td><b></b></td></tr>";
+                    }
+
+                    $table .= "</table>";
+                    $mform->addElement('static', 'interventions', '', $table);
+
+                    //Add rule
+                    $add_stuff = "<div align='right'><table><tr><td>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
+                            html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
+
+                    //Add questionnaire
+                     $add_stuff .= html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
+                            html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
+                            "</td></tr></table></div>";       
+                    $mform->addElement('static', 'add_stuff', '', $add_stuff);
+                }
+            }             
+
+             
+            
+    }
+}
