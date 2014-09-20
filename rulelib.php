@@ -47,24 +47,40 @@ class risk_calculator {
     //Average time to complete activities: 2D array, each key corresponds to module instance id
     private $activity_completion_times;
     
+    private $course_modules;
     
     public function __construct($course) {
         global $DB;
         $this->courseid = $course;
         $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
         $this->course = $DB->get_record('course', array('id' => $course));
-        $this->initialise_arrays();
+        $this->initialise();
         $this->calculate_averages();
     }
     
-    private function initialise_arrays() {
+    private function initialise() {
+        global $DB;
         $this->course_clicks = array();
         $this->clicks_per_session = array();
         $this->average_session_times = array();
         $this->number_of_sessions = array();
         $this->number_forum_posts = array();
         $this->number_forum_posts_read = array();
-        $this->total_forum_time = array();               
+        $this->total_forum_time = array();           
+        $this->course_modules = array();
+        $fast_mod_info = get_fast_modinfo($this->courseid);
+        $module_names = array_keys($fast_mod_info->instances);
+        //$this->course_modules = get_fast_modinfo($this->courseid)->instances;
+        foreach($module_names as $modname) {
+            $module_type = array();
+            $module = $DB->get_record('modules', array('name' => $modname));
+            $module_instance_ids = array_keys($fast_mod_info->instances[$modname]);
+            foreach($module_instance_ids as $mod_instance_id) {
+                $module_type[$mod_instance_id] = $DB->get_record($modname, array('id' => $mod_instance_id));
+                $module_type[$mod_instance_id]->cm = $DB->get_record('course_modules', array('course' => $this->courseid, 'instance' => $mod_instance_id, 'module' => $module->id), '*', MUST_EXIST);
+            }
+            $this->course_modules[$modname] = $module_type;
+        }
     }
     
     private function calculate_averages() {
@@ -211,17 +227,18 @@ class risk_calculator {
 
         global $DB;
         $missed_deadlines = 0;
-        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
 
         //Quizzes.
-        foreach($cms as $cm) {
-            $module = $DB->get_record('modules', array('id' => $cm->module));
+            foreach(array_keys($this->course_modules) as $modname) {
                 
-                $deadline_function = "block_risk_monitor_missed_".$module->name."_deadline";
-                if(function_exists($deadline_function) && $deadline_function($user->id, $cm)) {
-                    $missed_deadlines++;
+                foreach($this->course_modules[$modname] as $mod_inst) {
+                
+                    $deadline_function = "block_risk_monitor_missed_".$modname."_deadline";
+                    if(function_exists($deadline_function) && $deadline_function($user->id, $mod_inst)) {
+                        $missed_deadlines++;
+                    }
                 }
-        }
+            }
 
         if($missed_deadlines >= $value) {
             return 100;
@@ -236,23 +253,23 @@ class risk_calculator {
         
         global $DB;
         $activities_failed = 0;
-        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
         
         //Loop thru all the activities.
-        foreach($cms as $cm) {
-            $module = $DB->get_record('modules', array('id' => $cm->module));
-            //will return all grade items for this activity
-            $grades = grade_get_grades($this->courseid, 'mod', $module->name, $cm->instance, $user->id);
-            
-            //Only using numerical grades, not scales.
-            foreach($grades->items as $gradeitem) {
-                $gradepass = $gradeitem->gradepass;
-                $usergrade = $gradeitem->grades[$user->id]->grade;
-                if($usergrade < $gradepass) {
-                    $activities_failed++;
+            foreach(array_keys($this->course_modules) as $modname) {
+                
+                foreach($this->course_modules[$modname] as $mod_inst) {
+                    $grades = grade_get_grades($this->courseid, 'mod', $modname, $mod_inst->id, $user->id);
+
+                    //Only using numerical grades, not scales.
+                    foreach($grades->items as $gradeitem) {
+                        $gradepass = $gradeitem->gradepass;
+                        $usergrade = $gradeitem->grades[$user->id]->grade;
+                        if($usergrade < $gradepass) {
+                            $activities_failed++;
+                        }
+                    }
                 }
             }
-        }
         
         if($activities_failed > $value) {
             return 100;
@@ -366,13 +383,14 @@ class risk_calculator {
     
     function multiple_submissions_risk($user, $value) {
         global $DB;
-        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
-        foreach($cms as $cm) {
-            $module = $DB->get_record('modules', array('id' => $cm->module));
-            $multiple_submissions_function = "block_risk_monitor_multiple_submissions_".$module->name;
-            if(function_exists($multiple_submissions_function)) {
-                if($ret_value = $multiple_submissions_function($user->id, $cm, $value)) {
-                    return $ret_value;
+        foreach(array_keys($this->course_modules) as $modname) {
+                
+            foreach($this->course_modules[$modname] as $mod_inst) {
+                $multiple_submissions_function = "block_risk_monitor_multiple_submissions_".$modname;
+                if(function_exists($multiple_submissions_function)) {
+                    if($ret_value = $multiple_submissions_function($user->id, $mod_inst, $value)) {
+                        return $ret_value;
+                    }
                 }
             }
         }
@@ -409,14 +427,15 @@ class risk_calculator {
     function time_to_submit_activity_risk($user, $value) {
         
         global $DB;
-        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
-
-        foreach($cms as $cm) {
-            $module = $DB->get_record('modules', array('id' => $cm->module));
+        foreach(array_keys($this->course_modules) as $modname) {
                 
-            $get_deadline_function = "block_risk_monitor_time_before_deadline_".$module->name;
-            if(function_exists($get_deadline_function)) {
-                return $get_deadline_function($user->id, $cm, $value);
+            foreach($this->course_modules[$modname] as $mod_inst) {
+                
+           
+                $get_deadline_function = "block_risk_monitor_time_before_deadline_".$module->name;
+                if(function_exists($get_deadline_function)) {
+                    return $get_deadline_function($user->id, $mod_inst, $value);
+                }
             }
         }
         return 0;
@@ -425,23 +444,22 @@ class risk_calculator {
     function time_to_view_activity_risk($user, $value) {
         
         global $DB;
-        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
-
-        foreach($cms as $cm) {
-            $module = $DB->get_record('modules', array('id' => $cm->module));
-       
+        foreach(array_keys($this->course_modules) as $modname) {
+                
+            foreach($this->course_modules[$modname] as $mod_inst) {
             
-            $get_deadline_function = "block_risk_monitor_get_deadline_".$module->name;
-            if(function_exists($get_deadline_function) && $deadline = $get_deadline_function($user->id, $cm) != 0) {
+                $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
+                if(function_exists($get_deadline_function) && $deadline = $get_deadline_function($user->id, $mod_inst) != 0) {
 
-                $params = array();
-                $selector = "l.cmid = ".$cm->id." AND l.userid = ".$user->id." AND l.action='view'";
-                $totalcount = 0;
-                $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);        
-                if(count($logs)) {
-                    $first_view = reset($logs)->time;
-                    if($deadline - $value*60*60*24 < $first_view) {
-                        return 100;
+                    $params = array();
+                    $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
+                    $totalcount = 0;
+                    $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);        
+                    if(count($logs)) {
+                        $first_view = reset($logs)->time;
+                        if($deadline - $value*60*60*24 < $first_view) {
+                            return 100;
+                        }
                     }
                 }
             }
@@ -570,21 +588,21 @@ class risk_calculator {
         global $DB;
         foreach($this->enrolled_students as $student) {
 
-            $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
-
-            foreach($cms as $cm) {
-                $module = $DB->get_record('modules', array('id' => $cm->module));    
-
-                $time_function = "block_risk_monitor_time_to_finish_".$module->name;
-                if(function_exists($time_function)) {
-                    $time_to_finish = $time_function($student->id, $cm);
-                    if($time_to_finish != 0) {
-                        $this->activity_completion_times[$cm->id][$student->id] = $time_to_finish;
+            foreach(array_keys($this->course_modules) as $modname) {
+                
+                foreach($this->course_modules[$modname] as $mod_inst) {
+                
+                    $time_function = "block_risk_monitor_time_to_finish_".$modname;
+                    if(function_exists($time_function)) {
+                        $time_to_finish = $time_function($student->id, $mod_inst, $mod_inst->cm);
+                        if($time_to_finish != 0) {
+                            $this->activity_completion_times[$mod_inst->cm->id][$student->id] = $time_to_finish;
+                        }
                     }
                 }
             }
-        }
                
+        }
     }
 
 

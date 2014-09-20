@@ -40,18 +40,24 @@ final class risks_controller {
                     break;
                 }
                 
+                
                 $risk_calculator = new risk_calculator($course->courseid);                
                 $enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
+                $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
+                $category_rules = array();
                 foreach($enrolled_students as $enrolled_student) {
 
-                    $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
                     foreach($categories as $category) {
 
                         if($categoryid != 0 && $category->id != $categoryid) {
                             break;
                         }
-                        $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
-                        foreach($rules as $rule) {
+                        
+                        if(!isset($category_rules[$category->id])) {
+                            $category_rules[$category->id] = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
+                        }
+                        
+                        foreach($category_rules[$category->id] as $rule) {
 
                             $create_risk_instance = false;
                             $risk_rating = 0;
@@ -150,24 +156,23 @@ final class risks_controller {
                             }
 
                             //if risk instance already exists, update it or delete it
-                            if($create_risk_instance && $risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
-                                    
+                            if($create_risk_instance) {
+                                if($risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {                                  
                                     $edited_risk_instance = new object();
                                     $edited_risk_instance->id = $risk_instance->id;
                                     $edited_risk_instance->value = $risk_rating;
 
                                     $DB->update_record('block_risk_monitor_rule_risk', $edited_risk_instance);
-                            }
+                                }
+                                else {
+                                    $new_risk_instance = new object();
+                                    $new_risk_instance->userid = $enrolled_student->id;
+                                    $new_risk_instance->ruleid = $rule->id;
+                                    $new_risk_instance->value = $risk_rating;
+                                    $new_risk_instance->timestamp = time();
 
-                            //Otherwise create a new one.
-                            else if ($create_risk_instance) {
-                                $new_risk_instance = new object();
-                                $new_risk_instance->userid = $enrolled_student->id;
-                                $new_risk_instance->ruleid = $rule->id;
-                                $new_risk_instance->value = $risk_rating;
-                                $new_risk_instance->timestamp = time();
-
-                                $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
+                                    $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
+                                }
                             }
 
                         }
@@ -177,7 +182,7 @@ final class risks_controller {
                         //Loop thru each rule in the category.
                         $category_risk_rating = 0;
                         $create_cat_risk = false;
-                        foreach($rules as $rule) {
+                        foreach($category_rules[$category->id] as $rule) {
                             $weighting = $rule->weighting;
                             if($rule_risk = $DB->get_record('block_risk_monitor_rule_risk', array('ruleid' => $rule->id, 'userid' => $enrolled_student->id))){
                                 $category_risk_rating += ($weighting/100)*floatval($rule_risk->value);
@@ -186,23 +191,23 @@ final class risks_controller {
                         }
 
                         //Check if category risk already exists
-                        if($create_cat_risk && $risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $enrolled_student->id))){
+                        if($create_cat_risk){
+                            if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $enrolled_student->id))) {
                                 $edited_category_risk = new object();
                                 $edited_category_risk->id = $risk_instance->id;
                                 $edited_category_risk->value = $category_risk_rating;
 
                                 $DB->update_record('block_risk_monitor_cat_risk', $edited_category_risk);
-                        }
+                            }
+                            else {
+                                $new_category_risk = new object();
+                                $new_category_risk->userid = $enrolled_student->id;
+                                $new_category_risk->categoryid = $category->id;
+                                $new_category_risk->value = intval($category_risk_rating);
+                                $new_category_risk->timestamp = time();
 
-                            //Else create new
-                        else if ($create_cat_risk) {
-                            $new_category_risk = new object();
-                            $new_category_risk->userid = $enrolled_student->id;
-                            $new_category_risk->categoryid = $category->id;
-                            $new_category_risk->value = intval($category_risk_rating);
-                            $new_category_risk->timestamp = time();
-
-                            $DB->insert_record('block_risk_monitor_cat_risk', $new_category_risk);
+                                $DB->insert_record('block_risk_monitor_cat_risk', $new_category_risk);                                
+                            }
                         }
 
                     }
