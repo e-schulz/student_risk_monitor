@@ -153,7 +153,7 @@ class individual_settings_form_new_default_rule extends moodleform {
             if(DefaultRules::$default_rule_value_required[$ruleid]) {
                 $valuegroup=array();
                 $valuegroup[] =& $mform->createElement('textarea', 'value', "", 'rows="1"');
-                if($ruleid > 4) {
+                if($ruleid > 4 && $ruleid < 12) {
                     $valuegroup[] =& $mform->createElement('static', 'percent_text', '', "%");
                 }
                 $mform->addGroup($valuegroup, 'valuegroup', DefaultRules::$default_rule_value_description[$ruleid].":", ' ', false);
@@ -905,9 +905,7 @@ class individual_settings_form_new_intervention extends moodleform {
         
         $links = array();
 
-        $categoryid = $this->_customdata['categoryid'];
-        $userid = $this->_customdata['userid'];
-        $courseid = $this->_customdata['courseid'];
+        $from_overview = $this->_customdata['from_overview'];
         
         //Name
         $mform->addElement('header', 'general', "General");
@@ -942,7 +940,12 @@ class individual_settings_form_new_intervention extends moodleform {
         $mform->addElement('filemanager', 'files', "Upload files", null, $filemanager_options);        
 
         //Submit button
-        $this->add_action_buttons(true, "Save template");       
+        if($from_overview != -1) {
+            $this->add_action_buttons(true, "Generate intervention");  
+        }
+        else {
+            $this->add_action_buttons(true, "Save template");  
+        }
     }
     
     
@@ -1283,7 +1286,7 @@ class individual_settings_form_rule_instance extends moodleform {
             if($need_value == 1) {
                 $valuegroup=array();
                 $valuegroup[] =& $mform->createElement('textarea', 'value', $rule_general->value_description.":"); 
-                if($rule_general->id > 4) {
+                if($rule_general->id > 4 && $rule_general->id < 12) {
                     $valuegroup[] =& $mform->createElement('static', 'percent_text', '', "%");
                 }
                 $mform->addGroup($valuegroup, 'valuegroup', $rule_general->value_description.":", ' ', false);

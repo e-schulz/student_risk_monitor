@@ -145,6 +145,7 @@ if ($fromform = $new_rule_form->get_data()) {
         $rule_name = str_replace("certain cutoff", $fromform->value."%", $rule_name);
         $rule_name = str_replace("number of", $fromform->value, $rule_name);
         $rule_name = str_replace("below average", $fromform->value."% below average", $rule_name);
+        $rule_name = str_replace("above average", $fromform->value."% above average", $rule_name);
         $new_rule->name = $rule_name;
     }
     else {
@@ -162,11 +163,18 @@ if ($fromform = $new_rule_form->get_data()) {
         echo get_string('errorinsertrule', 'block_risk_monitor');
     }     
     
-    //Edit the category timestamp, to show a new rule has been added.
-    $edited_category = new object();
+    //Delete all risks for this category
+    if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $categoryid));
+    }
+    
+    /*$edited_category = new object();
     $edited_category->id = $categoryid;
     $edited_category->timestamp = time();
-    $DB->update_record('block_risk_monitor_category', $edited_category);
+    $DB->update_record('block_risk_monitor_category', $edited_category);*/
+    
+    //Recalculate the risks for this category.
+    risks_controller::calculate_risks($categoryid);
         
     //Redirect to categories+rules
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));

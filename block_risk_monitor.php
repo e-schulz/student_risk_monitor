@@ -13,12 +13,9 @@ class block_risk_monitor extends block_base {
             }
 	}
         
-        //Regularly check and make sure the default rules are updated in the database.
+        //Regularly update the risks.
         public function cron() {
-            
-            //Update the risks
-            block_risk_monitor_clear_risks();
-            block_risk_monitor_calculate_risks();
+            risks_controller::calculate_risks();
         }
         
         //Where this block is allowed to appear? (Only on the my home page!)

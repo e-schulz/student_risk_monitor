@@ -23,7 +23,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014260860;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2014260861;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013111801.03;        // Requires this Moodle version
 $plugin->component = 'block_risk_monitor';  // Full name of the plugin (used for diagnostics)
 

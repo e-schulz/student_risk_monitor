@@ -24,7 +24,11 @@ abstract class DefaultRules {
                                          7 => "LOW_TOTAL_FORUM_TIME",
                                          8 => "LOW_TOTAL_COURSE_CLICKS",
                                          9 => "LOW_AVERAGE_CLICKS_PER_SESSION",
-                                         10 => "LOW_AVERAGE_SESSION_DURATION");
+                                         10 => "LOW_AVERAGE_SESSION_DURATION",
+                                         11 => "TIME_TO_FINISH_ACTIVITY",
+                                         12 => "MULTIPLE_SUBMISSIONS",
+                                         13 => "EXAM_COMING_UP",
+                                         14 => "TIME_TO_START_ACTIVITY");
     
     public static $default_rule_names = array(0 => "Student not logged in for number of days",
                                               1 => "Student has grade lower than certain cutoff",
@@ -36,7 +40,11 @@ abstract class DefaultRules {
                                               7 => "Student has spent below average time in the forum",
                                               8 => "Student has below average total clicks within the course",
                                               9 => "Student has below average clicks per session",
-                                              10 => "Student has below average course session duration");
+                                              10 => "Student has below average course session duration",
+                                              11 => "Student has taken above average time to finish or submit an activity",
+                                              12 => "Student has submitted a number of submissions for a single activity",
+                                              13 => "Student has exam or test within a number of days",
+                                              14 => "Student has viewed an activity for the first time less than a number of days before due date");
     
     public static $default_rule_descriptions = array(0 => "This rule is triggered when a student has not logged in for a specified number of days in a row.",
                                                      1 => "This rule is triggered when a student has a current grade lower than a specified percentage.",
@@ -48,7 +56,11 @@ abstract class DefaultRules {
                                                      7 => "This rule is triggered when a student has spent a below average amount of time in the forum, relative to other students.",
                                                      8 => "This rule is triggered when a student has a below average amount of total clicks within the course, relative to other students.",
                                                      9 => "This rule is triggered when a student has a below average number of average clicks within the course per session, relative to other students.",
-                                                     10 => "This rule is triggered when a student has a below average time spent within the course in a single session session, relative to other students.");
+                                                     10 => "This rule is triggered when a student has a below average time spent within the course in a single session session, relative to other students.",
+                                                     11 => "This rule is triggered when a student has spent a large amount of time between first viewing and submitting an activity, relative to other students.",
+                                                     12 => "This rule is triggered when a student has submitted a certain number of times for one activity",
+                                                     13 => "This rule is triggered when a student has an exam or test approaching within a number of days",
+                                                     14 => "This rule is triggered when a student has waitied to view an activity until within a number of days before the due date");
     
     public static $default_rule_value_required = array(0 => 1,
                                                1 => 1,
@@ -60,7 +72,11 @@ abstract class DefaultRules {
                                                7 => 1,
                                                8 => 1,
                                                9 => 1,
-                                               10 => 1);
+                                               10 => 1,
+                                               11 => 1,
+                                               12 => 1,
+                                               13 => 1,
+                                               14 => 1);
     
         public static $default_rule_value= array(0 => 5,
                                                1 => 50,
@@ -72,7 +88,11 @@ abstract class DefaultRules {
                                                7 => 50,
                                                8 => 50,
                                                9 => 50,
-                                               10 => 50);
+                                               10 => 50,
+                                               11 => 50,
+                                               12 => 3,
+                                               13 => 7,
+                                               14 => 3);
         
     public static $default_rule_value_description = array(0 => "Days without logging in to trigger rule",
                                                1 => "Grade cutoff (between 0 and 100%)",
@@ -84,7 +104,11 @@ abstract class DefaultRules {
                                                7 => "Percent below average",
                                                8 => "Percent below average",
                                                9 => "Percent below average",
-                                               10 => "Percent below average");
+                                               10 => "Percent below average",
+                                               11 => "Percent below average",
+                                               12 => "Number of submissions",
+                                               13 => "Number of days within an exam/test is approaching",
+                                               14 => "Number of days before due date");
     
     public static function getDefaultRuleObjects() {
         

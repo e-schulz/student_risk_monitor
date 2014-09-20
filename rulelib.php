@@ -12,7 +12,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
 require_once($CFG->libdir . '/gradelib.php');
 require_once ($CFG->libdir.'/completionlib.php');
-require_once("moduledeadlineslib.php");
+require_once("modulefunctionslib.php");
 require_once($CFG->dirroot."/mod/forum/lib.php");
 
 
@@ -44,6 +44,10 @@ class risk_calculator {
     //Time spent in forum, indexed by userid
     private $total_forum_time;
     
+    //Average time to complete activities: 2D array, each key corresponds to module instance id
+    private $activity_completion_times;
+    
+    
     public function __construct($course) {
         global $DB;
         $this->courseid = $course;
@@ -68,7 +72,8 @@ class risk_calculator {
         $this->calculate_average_clicks_and_time_per_session();
         $this->calculate_average_forum_posts_added();
         $this->calculate_average_forum_posts_read();
-        $this->calculate_average_forum_time();        
+        $this->calculate_average_forum_time();    
+        $this->calculate_average_time_to_finish_activities();
     }
     
     //This function returns a risk rating between 0 and 100, given the action userid and value.
@@ -111,6 +116,18 @@ class risk_calculator {
             case 'LOW_AVERAGE_SESSION_DURATION':
                 $risk_rating = $this->average_session_duration_risk($user, $value);
                 break;
+            case 'EXAM_COMING_UP':
+                $risk_rating = $this->exam_approaching_risk($user, $value);
+                break;   
+            case 'MULTIPLE_SUBMISSIONS':
+                $risk_rating = $this->multiple_submissions_risk($user, $value);
+                break;            
+            case 'TIME_TO_FINISH_ACTIVITY':
+                $risk_rating = $this->time_to_finish_activity_risk($user, $value);
+                break;            
+            case 'TIME_TO_START_ACTIVITY':
+                $risk_rating = $this->time_to_view_activity_risk($user, $value);
+                break;             
             default:
                 break;
         }
@@ -194,15 +211,13 @@ class risk_calculator {
 
         global $DB;
         $missed_deadlines = 0;
-        $modinfo = get_fast_modinfo($this->courseid, $user->id);
+        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
 
         //Quizzes.
-        foreach($modinfo->cms as $cm) {
-                if (!$cm->uservisible or !$cm->has_view()) {
-                    continue;
-                }        
+        foreach($cms as $cm) {
+            $module = $DB->get_record('modules', array('id' => $cm->module));
                 
-                $deadline_function = "block_risk_monitor_missed_".$cm->modname."_deadline";
+                $deadline_function = "block_risk_monitor_missed_".$module->name."_deadline";
                 if(function_exists($deadline_function) && $deadline_function($user->id, $cm)) {
                     $missed_deadlines++;
                 }
@@ -221,13 +236,13 @@ class risk_calculator {
         
         global $DB;
         $activities_failed = 0;
-        $modinfo = get_fast_modinfo($this->courseid, $user->id);
+        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
         
         //Loop thru all the activities.
-        foreach($modinfo->cms as $cm) {
-            
+        foreach($cms as $cm) {
+            $module = $DB->get_record('modules', array('id' => $cm->module));
             //will return all grade items for this activity
-            $grades = grade_get_grades($this->courseid, 'mod', $cm->modname, $cm->instance, $user->id);
+            $grades = grade_get_grades($this->courseid, 'mod', $module->name, $cm->instance, $user->id);
             
             //Only using numerical grades, not scales.
             foreach($grades->items as $gradeitem) {
@@ -326,13 +341,119 @@ class risk_calculator {
         }
         return 0;        
     }
+    
+    function exam_approaching_risk($user, $value) {
+        $time_from_now = time() + ($value*24*60*60);
+        
+        //Get the upcoming events for this course
+       $events = calendar_get_events(time(), $time_from_now, false, false, $this->courseid);
 
+       //parse the events and search for "exam" or "test"
+       foreach ($events as $event) {
+
+           //get the name
+           $name = $event->name;
+
+           //parse for exam or test
+           if ((stripos($name,'exam') !== false) || (stripos($name,'test') !== false)) {
+               //found an exam!
+               return 100;
+           }
+       }
+       
+       return 0;
+    }
+    
+    function multiple_submissions_risk($user, $value) {
+        global $DB;
+        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
+        foreach($cms as $cm) {
+            $module = $DB->get_record('modules', array('id' => $cm->module));
+            $multiple_submissions_function = "block_risk_monitor_multiple_submissions_".$module->name;
+            if(function_exists($multiple_submissions_function)) {
+                if($ret_value = $multiple_submissions_function($user->id, $cm, $value)) {
+                    return $ret_value;
+                }
+            }
+        }
+        return 0;        
+    }
+    
+    function time_to_finish_activity_risk($user, $value) {
+        
+        $total_activities_above_average = 0;
+        foreach($this->activity_completion_times as $cm_activity_completion_times) {
+            $total_students = count($cm_activity_completion_times);
+
+            if($total_students < 10) {
+                break;
+            }
+            
+            if(array_key_exists($user->id, $cm_activity_completion_times)) {
+                $average = array_sum($cm_activity_completion_times)/$total_students;
+                $student_value = array_search($user->id, $cm_activity_completion_times);
+
+                if($student_value > ($value/100)*$average) {    
+                    $total_activities_above_average++;
+                }
+            }
+        }
+        
+        if($total_activities_above_average > 0) {
+            return 100;
+        }
+        return 0;          
+        
+    }
+    
+    function time_to_submit_activity_risk($user, $value) {
+        
+        global $DB;
+        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
+
+        foreach($cms as $cm) {
+            $module = $DB->get_record('modules', array('id' => $cm->module));
+                
+            $get_deadline_function = "block_risk_monitor_time_before_deadline_".$module->name;
+            if(function_exists($get_deadline_function)) {
+                return $get_deadline_function($user->id, $cm, $value);
+            }
+        }
+        return 0;
+    }
+    
+    function time_to_view_activity_risk($user, $value) {
+        
+        global $DB;
+        $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
+
+        foreach($cms as $cm) {
+            $module = $DB->get_record('modules', array('id' => $cm->module));
+       
+            
+            $get_deadline_function = "block_risk_monitor_get_deadline_".$module->name;
+            if(function_exists($get_deadline_function) && $deadline = $get_deadline_function($user->id, $cm) != 0) {
+
+                $params = array();
+                $selector = "l.cmid = ".$cm->id." AND l.userid = ".$user->id." AND l.action='view'";
+                $totalcount = 0;
+                $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);        
+                if(count($logs)) {
+                    $first_view = reset($logs)->time;
+                    if($deadline - $value*60*60*24 < $first_view) {
+                        return 100;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
     //// THE FOLLOWING METHODS CALCULATE THE CUTOFF FOR RELATIVE RISKS
 
 
     function calculate_average_forum_posts_added() {
         foreach($this->enrolled_students as $student) {
-            $this->number_forum_posts[$student->id] = count(forum_get_posts_by_user($student, array($this->course)));
+            $this->number_forum_posts[$student->id] = count(forum_get_posts_by_user($student, array($this->course))->posts);
         }
         asort($this->number_forum_posts);
     }
@@ -392,16 +513,9 @@ class risk_calculator {
         foreach($this->enrolled_students as $student) {
             //Get avg clicks
             $clicks = get_logs_usercourse($student->id, $this->courseid, $this->course->timecreated);
-            if(array_key_exists($student->id, $this->course_clicks)) {
-                $this->course_clicks[$student->id] += $clicks;
-            }
-            else {
-                $this->course_clicks[$student->id] = $clicks;
-            }
+            $this->course_clicks[$student->id] = count($clicks);
         }
         
-        //Sort ascending
-        asort($this->course_clicks);
     }
 
     function calculate_average_clicks_and_time_per_session() {
@@ -449,6 +563,28 @@ class risk_calculator {
         asort($this->number_of_sessions);
         asort($this->average_session_times);
         asort($this->clicks_per_session);
+    }
+    
+    function calculate_average_time_to_finish_activities() {
+ 
+        global $DB;
+        foreach($this->enrolled_students as $student) {
+
+            $cms = $DB->get_records('course_modules', array('course' => $this->courseid));
+
+            foreach($cms as $cm) {
+                $module = $DB->get_record('modules', array('id' => $cm->module));    
+
+                $time_function = "block_risk_monitor_time_to_finish_".$module->name;
+                if(function_exists($time_function)) {
+                    $time_to_finish = $time_function($student->id, $cm);
+                    if($time_to_finish != 0) {
+                        $this->activity_completion_times[$cm->id][$student->id] = $time_to_finish;
+                    }
+                }
+            }
+        }
+               
     }
 
 

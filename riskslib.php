@@ -14,19 +14,31 @@ require_once("rulelib.php");
 
 define("HIGH_RISK", 75);
 define("MODERATE_RISK", 50);
+define("QUESTIONNAIRE_RISK", 25);       ///the risk level at which questionnaires are generated
 
 final class risks_controller {
     
     //This is the method run with the cron() function. Updates the student risks.
-    public static function calculate_risks() {
+    //If category is specified, updates only that category.
+    public static function calculate_risks($categoryid = 0) {
 
         global $DB;
         //For each course this block is added on.
         $return = '';
 
+        if($categoryid != 0) {
+           $category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
+           $course_id = $category->courseid;
+        }
+        
+
         if($courses = $DB->get_records('block_risk_monitor_course')) {
 
             foreach($courses as $course) {
+                
+                if($categoryid != 0 && $course_id != $course->courseid) {
+                    break;
+                }
                 
                 $risk_calculator = new risk_calculator($course->courseid);                
                 $enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
@@ -35,6 +47,9 @@ final class risks_controller {
                     $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
                     foreach($categories as $category) {
 
+                        if($categoryid != 0 && $category->id != $categoryid) {
+                            break;
+                        }
                         $rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
                         foreach($rules as $rule) {
 
@@ -201,33 +216,43 @@ final class risks_controller {
 
         }
         //No courses exist.
-        add_to_log(0, 'block_risk_monitor', 'update_risks');
+        if($categoryid == 0) {
+            add_to_log(0, 'block_risk_monitor', 'update_risks');
+        }
+        else {
+            add_to_log(0, 'block_risk_monitor', 'update_category_risks');
+        }
         return $return;
     }
 
 
     //clears out any redundant risk ratings (rule type has been changed, rule has been changed, category has been changed)
-    public static function clear_risks() {
+    /*public static function clear_risks($categoryid = 0) {
 
         global $DB;
 
-        $last_update_log = $DB->get_records('log', array('module' => 'block_risk_monitor', 'action' => 'update_risks'), 'time DESC');
-        if(count($last_update_log) > 0) {
-            $last_update = reset($last_update_log)->time;
+        if($categoryid != 0) {
+            
         }
         else {
-            $last_update = 0;
-        }
-        //Rules have been updated
-        $updated_rules = risks_controller::get_updated_rules($last_update);
-        foreach($updated_rules as $updated_rule) {
-            $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $updated_rule->id));
-        }
+            $last_update_log = $DB->get_records('log', array('module' => 'block_risk_monitor', 'action' => 'update_risks'), 'time DESC');
+            if(count($last_update_log) > 0) {
+                $last_update = reset($last_update_log)->time;
+            }
+            else {
+                $last_update = 0;
+            }
+            //Rules have been updated
+            $updated_rules = risks_controller::get_updated_rules($last_update);
+            foreach($updated_rules as $updated_rule) {
+                $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $updated_rule->id));
+            }
 
-        //Categories have been updated
-        $updated_categories = risks_controller::get_updated_categories($last_update);
-        foreach($updated_categories as $updated_category) {
-            $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $updated_category->id));
+            //Categories have been updated
+            $updated_categories = risks_controller::get_updated_categories($last_update);
+            foreach($updated_categories as $updated_category) {
+                $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $updated_category->id));
+            }
         }
     }
 
@@ -246,6 +271,6 @@ final class risks_controller {
         $updated_categories = $DB->get_records_select('block_risk_monitor_category','timestamp > '.$timestamp);
         return $updated_categories;
       
-    }
+    }*/
 
 }

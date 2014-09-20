@@ -21,6 +21,8 @@ require_login();
 $userid = required_param('userid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 $categoryid = required_param('categoryid', PARAM_INT);
+$from_overview = optional_param('from_overview', -1, PARAM_INT);
+$from_studentid = optional_param('from_studentid', -1, PARAM_INT);
 
 //Error- there is no user associated with the passed param
 if (!$getuser = $DB->get_record('user', array('id' => $userid))) {
@@ -32,7 +34,9 @@ if (!($USER->id == $userid)) {
     print_error('wrong_user', 'block_risk_monitor', '', $userid);
 }
 
-$category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
+if($from_overview == -1) {
+    $category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
+}
 $context = context_user::instance($userid);
 
 //Set the page parameters
@@ -50,11 +54,15 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$new_intervention_form = new individual_settings_form_new_intervention('/blocks/risk_monitor/new_intervention.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid, array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $categoryid));
+$new_intervention_form = new individual_settings_form_new_intervention('/blocks/risk_monitor/new_intervention.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid.'&from_overview='.$from_overview."&from_studentid=".$from_studentid, array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $categoryid, 'from_overview' => $from_overview));
 
 if($new_intervention_form->is_cancelled()) {
-    //Redirect to view_interventions
-    redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+    if($from_overview != -1) {
+        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
+    }
+    else {
+        redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+    }
 }
 else if ($fromform = $new_intervention_form->get_data()) {
     
@@ -67,7 +75,12 @@ else if ($fromform = $new_intervention_form->get_data()) {
     //$intervention_template->instructions = $fromform->instructions_text;
     $fromform->userid = $USER->id;
     $fromform->courseid = $courseid;
-    $fromform->categoryid = $categoryid;
+    if($from_overview == -1) {
+        $fromform->categoryid = $categoryid;
+    }
+    else {
+        $fromform->categoryid = 0;
+    }
     $fromform->timestamp = time();
     $fromform->url = block_risk_monitor_fix_url($fromform->externalurl);
     $fromform->urlname = $fromform->url_text;
@@ -94,8 +107,23 @@ else if ($fromform = $new_intervention_form->get_data()) {
     file_save_draft_area_files($fromform->files, $course_context->id, 'block_risk_monitor', 'intervention_files',
                    $intervention_template_id, array('subdirs' => 0, 'maxfiles' => 50));    
     
-    
-    redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+    if($from_overview == -1) {
+        redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+    }
+    else {
+        $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention_template_id));
+       //Create the intervention instance
+        $intervention_instance = new object();
+        $intervention_instance->studentid = $from_studentid;
+        $intervention_instance->timestamp = time();
+        $intervention_instance->interventiontemplateid = $intervention_template_id;
+        $intervention_instance->viewed = 0;
+        $intervention_instance->instructions = $intervention_template->instructions;
+        $intervention_instance->courseid = $courseid;
+        $intervention_instance->categoryid = $categoryid;
+        $DB->insert_record('block_risk_monitor_int_inst', $intervention_instance); 
+        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
+    }
 }
 
 //Render the HTML
@@ -108,6 +136,11 @@ echo $OUTPUT->heading($blockname);
 //display the settings form
 //echo block_risk_monitor_get_tabs_html($userid, true);
 echo block_risk_monitor_get_top_tabs('settings', $courseid);
-echo $OUTPUT->heading("New intervention: ".$category->name);
+if($from_overview == -1) {
+    echo $OUTPUT->heading("New intervention: ".$category->name);
+}
+else {
+    echo $OUTPUT->heading("New intervention");
+}
 $new_intervention_form->display();
 echo $OUTPUT->footer();

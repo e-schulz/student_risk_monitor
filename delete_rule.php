@@ -77,6 +77,15 @@ if ($fromform = $delete_form->get_data()) {
         if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id))) {
             $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $rule_to_delete->id));        
         }          
+        
+        //Delete all risks for this category
+        if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $rule_to_delete->categoryid))) {
+            $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $rule_to_delete->categoryid));
+        }       
+        
+        //update risks
+        risks_controller::calculate_risks($rule_to_delete->categoryid);
+        
     }
     
     //Redirect to categories+rules

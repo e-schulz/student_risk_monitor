@@ -42,10 +42,13 @@ $context = context_user::instance($userid);
 if($intervention_id !== -1 && $do_delete == -1) {
     if(!$DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_id))) {
         $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention_id));
+        $intervention_template->categoryid = 0;
+        unset($intervention_template->id);
+        $new_template_id = $DB->insert_record('block_risk_monitor_int_tmp', $intervention_template);
         $intervention_instance = new object();
         $intervention_instance->studentid = $studentid;
         $intervention_instance->timestamp = time();
-        $intervention_instance->interventiontemplateid = $intervention_id;
+        $intervention_instance->interventiontemplateid = $new_template_id;
         $intervention_instance->viewed = 0;
         $intervention_instance->instructions = $intervention_template->instructions;
         $intervention_instance->courseid = $courseid;
@@ -55,14 +58,21 @@ if($intervention_id !== -1 && $do_delete == -1) {
     
 }
 else if($intervention_id !== -1) {
-    if($DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_id))) {
-            $DB->delete_records('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_id));
+    
+    //Remove an intervention
+    if($DB->record_exists('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_id))) {    
+       
+        if($DB->record_exists('block_risk_monitor_int_tmp', array('id' => $intervention_id))) {
+            $DB->delete_records('block_risk_monitor_int_tmp', array('id' => $intervention_id));
+       }               
+       $DB->delete_records('block_risk_monitor_int_inst', array('studentid' => $studentid, 'interventiontemplateid' => $intervention_id));
     }    
+    
 }
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
+$header = get_string('overview', 'block_risk_monitor'); $action = new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid));
 
 $PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
 $PAGE->navbar->add($header, $action); 
@@ -154,16 +164,21 @@ if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('categ
                 html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id, 'from_overview' => 1, 'from_studentid' => $studentid, 'from_categoryid' => $categoryid)), $intervention_template->name)."<br>&emsp;".
             $intervention_template->description."</li></td><td>".date("F j, Y", $intervention->timestamp)."</td><td>".$viewed."</td><td>".
               html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-            html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $intervention_template->id, 'do_delete' => 1, 'categoryid' => $category->id)), "Remove this intervention")
+            html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $intervention_template->id, 'do_delete' => 1, 'categoryid' => $categoryid)), "Remove this intervention")
                     ."</td></tr><br>";           
         }                                  
     }
+    
     echo "</table>";
-             
+    
 }
 else {
     echo "<table><tr><td width=100px></td><td><br>No interventions generated.</td></tr></table>";
 }
+        ///create new intervention
+        echo "<div align='right'><table><tr><td>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
+                html_writer::link (new moodle_url('new_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $categoryid, 'from_overview' => 1, 'from_studentid' => $studentid)), "Create a new intervention")
+               ."</td></tr></table></div>";
 
 echo $OUTPUT->box_end();
 echo "<br><br>";

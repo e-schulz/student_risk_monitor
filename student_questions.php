@@ -35,8 +35,11 @@ $student = $DB->get_record('user', array('id' => $userid));
 $context = context_user::instance($userid);
 
 //Set the page parameters
-$blockname = get_string('student_pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor');
+$blockname = get_string('studentpluginname', 'block_risk_monitor');
+$header = "Questionnaire";
+if($questionnaire->title != "") {
+  $header = $questionnaire->title;  
+}
 
 $PAGE->navbar->add($blockname); 
 $PAGE->navbar->add($header);

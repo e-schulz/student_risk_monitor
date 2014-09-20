@@ -79,6 +79,11 @@ if ($fromform = $delete_form->get_data()) {
         }
         $DB->delete_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));        
     }
+
+    //Delete all risks for this category
+    if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $categoryid))) {
+        $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $categoryid)); 
+    }       
     
     //Redirect to categories+rules
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));

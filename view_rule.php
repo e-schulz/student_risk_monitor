@@ -155,6 +155,7 @@ if($fromform = $general_form->get_data()) {
         $rule_name = str_replace("certain cutoff", $fromform->value."%", $rule_name);
         $rule_name = str_replace("number of", $fromform->value, $rule_name);
         $rule_name = str_replace("below average", $fromform->value."% below average", $rule_name);
+        $rule_name = str_replace("above average", $fromform->value."% above average", $rule_name);
         $rule_to_update->name = $rule_name;        
         $rule_to_update->value = $fromform->value;
     }
@@ -182,6 +183,19 @@ if($fromform = $general_form->get_data()) {
         $questionnaire_to_update->timestamp = time();
         $DB->update_record('block_risk_monitor_cust_rule', $questionnaire_to_update);    
     }
+    
+    //Delete all risks for this rule
+    if($DB->record_exists('block_risk_monitor_rule_risk', array('ruleid' => $getrule->id))) {
+        $DB->delete_records('block_risk_monitor_rule_risk', array('ruleid' => $getrule->id));
+    }  
+    
+    //Delete all risks for this category
+    if($DB->record_exists('block_risk_monitor_cat_risk', array('categoryid' => $getcategory->id))) {
+        $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $getcategory->id));
+    }   
+    
+    //Recalculate risks for this category
+    risks_controller::calculate_risks($getcategory->id);
     
     redirect(new moodle_url('view_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'courseid' => $courseid, 'editing' => 0)));
 
