@@ -92,7 +92,7 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
         
         //Rules
         if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id))) {
-            echo "<table><tr><td width=100px></td><td width=500px></td><td><b>Weighting</b></td></tr>";
+            echo "<table><tr><td width=100px></td><td width=500px></td><td width=30px></td><td><b>Weighting</b></td></tr>";
             foreach($rules as $rule) {
 
                 if(intval($rule->ruletype) == 1) {
@@ -105,12 +105,12 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
                 //Rule name
                 echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;".
                         html_writer::link (new moodle_url('view_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'ruleid' => $rule->id)), $rule->name)."<br>&emsp;".
-                        $rule->description."</td><td>".$rule->weighting."%</td></tr>";
+                        $rule->description."</td><td></td><td>".$rule->weighting."%</td></tr>";
                              
             }                        
         }
         else {
-            echo "<table><tr><td width=100px></td><td width=500px>No rules</td><td><b></b></td></tr>";
+            echo "<table><tr><td width=100px></td><td width=500px>No rules</td><td></td><td><b></b></td></tr>";
         }
         
         echo "</table>";
