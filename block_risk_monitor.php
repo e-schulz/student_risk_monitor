@@ -16,7 +16,8 @@ class block_risk_monitor extends block_base {
         //Regularly update the risks.
         public function cron() {
             require_once("locallib.php");
-            risks_controller::calculate_risks();
+            $return = risks_controller::calculate_risks();
+            mtrace($return);
             return true;
         }
         

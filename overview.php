@@ -52,7 +52,7 @@ $PAGE->set_pagelayout('standard');
 $body = '';
 
 //Here for now.
-//$body .= risks_controller::calculate_risks();
+$body .= risks_controller::calculate_risks();
 
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {

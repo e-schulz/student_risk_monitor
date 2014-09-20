@@ -46,7 +46,7 @@ final class risks_controller {
                 $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
                 $category_rules = array();
                 foreach($enrolled_students as $enrolled_student) {
-
+                      
                     foreach($categories as $category) {
 
                         if($categoryid != 0 && $category->id != $categoryid) {
@@ -58,7 +58,6 @@ final class risks_controller {
                         }
                         
                         foreach($category_rules[$category->id] as $rule) {
-
                             $create_risk_instance = false;
                             $risk_rating = 0;
                             if($rule->ruletype == 1) {
