@@ -54,7 +54,7 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 if($page == -1 || $page == 1) {
-   $questionnaire_form =  new individual_settings_form_create_questionnaire_general_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid);
+   $questionnaire_form =  new individual_settings_form_create_questionnaire_general_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&page=".$page."&questionnaireid=".$questionnaireid."&scoring_method=".$scoring_method);
 }
 else if($page == 2) {
     $questionnaire_form =  new individual_settings_form_create_questionnaire_question_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&scoringmethod=".$scoring_method."&questionnaireid=".$questionnaireid."&page=".$page, array('scoringmethod' => $scoring_method));

@@ -83,6 +83,26 @@ if ($fromform = $delete_form->get_data()) {
             $DB->delete_records('block_risk_monitor_cat_risk', array('categoryid' => $rule_to_delete->categoryid));
         }       
         
+        //Delete the questionnaire if required
+        if($rule_to_delete->ruletype == 2 && $questionnaire = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule_to_delete->custruleid))) {
+            //Delete all questions and options
+            if($questionnaire->userid != 0 && $questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $questionnaire->id))) {
+                foreach($questions as $question) {
+                    if($DB->record_exists('block_risk_monitor_option', array('questionid' => $question->id))) {
+                        $DB->delete_records('block_risk_monitor_option', array('questionid' => $question->id));
+                    }
+                    
+                    if($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id))) {
+                        $DB->delete_records('block_risk_monitor_option', array('questionid' => $question->id));
+                    }
+                    
+                    $DB->delete_records('block_risk_monitor_question', array('id' => $question->id));
+                }
+            }
+            
+            $DB->delete_records('block_risk_monitor_cust_rule', array('id' => $questionnaire->id));
+        }
+        
         //update risks
         risks_controller::calculate_risks($rule_to_delete->categoryid);
         

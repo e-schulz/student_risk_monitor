@@ -50,8 +50,6 @@ $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 
-$DB->delete_records('block_risk_monitor_cust_rule');
-
 $body = '';
  
 //Pretest
