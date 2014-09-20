@@ -15,7 +15,9 @@ class block_risk_monitor extends block_base {
         
         //Regularly update the risks.
         public function cron() {
+            require_once("locallib.php");
             risks_controller::calculate_risks();
+            return true;
         }
         
         //Where this block is allowed to appear? (Only on the my home page!)
