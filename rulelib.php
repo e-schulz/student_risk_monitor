@@ -452,7 +452,7 @@ class risk_calculator {
             
                 $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
                 if(function_exists($get_deadline_function) && ($deadline = $get_deadline_function($user->id, $mod_inst)) != 0) {
-                    $selector = "l.cmid = ".$mod_inst->cm->id;/*." AND l.userid = ".$user->id." AND l.action='view'"*/;
+                    $selector = 'l.action="view"';/*"l.cmid = ".$mod_inst->cm->id;/*." AND l.userid = ".$user->id." AND l.action='view'"*/;
                     $totalcount = 0;
                     $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);
                     //$logs = $DB->get_records('log', array('cmid' => $mod_inst->cm->id, 'userid' => $user->id, 'action' => 'view'), 'time ASC');
