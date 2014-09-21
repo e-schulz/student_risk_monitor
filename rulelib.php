@@ -459,7 +459,7 @@ class risk_calculator {
                     $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
                     $totalcount = 0;
                     $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);        
-                    if(count($logs)) {
+                    if(count($logs) > 0) {
                         $first_view = reset($logs)->time;
                         if($deadline - $value*60*60*24 < $first_view) {
                             return 100;
