@@ -448,17 +448,14 @@ class risk_calculator {
         
         global $DB;
         foreach(array_keys($this->course_modules) as $modname) {
-                mtrace("Modname: ".$modname."<br>"."Username: ".$user->firstname."<br>");
             foreach($this->course_modules[$modname] as $mod_inst) {
             
                 $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
                 if(function_exists($get_deadline_function) && ($deadline = $get_deadline_function($user->id, $mod_inst)) != 0) {
-                    mtrace("Function exists. Deadline ".$deadline."<br>");
-                    mtrace("Cm id:".$mod_inst->cm->id." Cm module: ".$mod_inst->cm->module." Instance id: ".$mod_inst->cm->instance." Actual instance id: ".$mod_inst->id);
-                    $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
+                    $selector = "l.cmid = ".$mod_inst->cm->id;/*." AND l.userid = ".$user->id." AND l.action='view'"*/;
                     $totalcount = 0;
-                    //$logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);
-                    $logs = $DB->get_records('log', array('cmid' => $mod_inst->cm->id, 'userid' => $user->id, 'action' => 'view'), 'time ASC');
+                    $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);
+                    //$logs = $DB->get_records('log', array('cmid' => $mod_inst->cm->id, 'userid' => $user->id, 'action' => 'view'), 'time ASC');
                     if(count($logs) > 0) {
                         $first_view = reset($logs)->time;
                         if($deadline - $value*60*60*24 < $first_view) {
