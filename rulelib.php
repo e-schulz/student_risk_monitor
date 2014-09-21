@@ -448,12 +448,12 @@ class risk_calculator {
         
         global $DB;
         foreach(array_keys($this->course_modules) as $modname) {
-                
+                mtrace("Modname: ".$modname."<br>"."Username: ".$user->firstname."<br>");
             foreach($this->course_modules[$modname] as $mod_inst) {
             
                 $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
                 if(function_exists($get_deadline_function) && $deadline = $get_deadline_function($user->id, $mod_inst) != 0) {
-
+                    mtrace("Function exists. Deadline ".$deadline."<br>");
                     $params = array();
                     $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
                     $totalcount = 0;
@@ -463,6 +463,9 @@ class risk_calculator {
                         if($deadline - $value*60*60*24 < $first_view) {
                             return 100;
                         }
+                    }
+                    else {
+                        mtrace("No logs found - not viewed<br>");
                     }
                 }
             }
