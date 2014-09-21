@@ -213,6 +213,7 @@ $questionnaire_form->display();
 
 if($page == 2 || $page == 3) {
     //Display a preview.
+    echo $OUTPUT->heading("Questionnaire preview");
     if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $questionnaireid))) {
         foreach($questions as $question) {
             echo $OUTPUT->box_start();
@@ -221,6 +222,7 @@ if($page == 2 || $page == 3) {
             foreach($options as $option) {
                 echo "<li>".$option->label."</li>";
             }
+            echo "<br>";
             echo $OUTPUT->box_end();
         }
     }

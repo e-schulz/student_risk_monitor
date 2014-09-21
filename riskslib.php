@@ -173,6 +173,11 @@ final class risks_controller {
                                     $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
                                 }
                             }
+                            /*else {
+                                if($DB->record_exists('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
+                                    $DB->delete_records('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id));
+                                }
+                            }*/
 
                         }
 

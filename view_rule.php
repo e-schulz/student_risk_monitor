@@ -251,6 +251,7 @@ if($getrule->ruletype == 2) {
             foreach($options as $option) {
                 echo "<li>".$option->label."</li>";
             }
+            echo "<br>";
             echo $OUTPUT->box_end();
         }
     }    

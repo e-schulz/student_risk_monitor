@@ -15,7 +15,6 @@ require_once ($CFG->libdir.'/completionlib.php');
 require_once("modulefunctionslib.php");
 require_once($CFG->dirroot."/mod/forum/lib.php");
 
-
 class risk_calculator {
         
     public $courseid;
@@ -259,12 +258,16 @@ class risk_calculator {
                 
                 foreach($this->course_modules[$modname] as $mod_inst) {
                     $grades = grade_get_grades($this->courseid, 'mod', $modname, $mod_inst->id, $user->id);
-
+                    $due_date_function = 'block_risk_monitor_check_due_date';
+                    if(function_exists($due_date_function)) {
+                        $due_date = $due_date_function($modname, $mod_inst);
+                    }
+                    
                     //Only using numerical grades, not scales.
                     foreach($grades->items as $gradeitem) {
                         $gradepass = $gradeitem->gradepass;
                         $usergrade = $gradeitem->grades[$user->id]->grade;
-                        if($usergrade < $gradepass) {
+                        if($usergrade < $gradepass && $due_date != 0 && time() > $due_date) {
                             $activities_failed++;
                         }
                     }

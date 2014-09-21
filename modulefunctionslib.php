@@ -7,6 +7,22 @@
  */
 
 //Check the deadlines depending on the module
+function block_risk_monitor_check_due_date($modname, $mod_inst) {
+    switch($modname) {
+        case assignment:
+            return $mod_inst->timedue;
+        case quiz:
+            return $mod_inst->timeclose;
+        case assign:
+            return $mod_inst->duedate;
+        case lesson:
+            return $mod_inst->deadline;
+        case workshop:
+            return $mod_inst->submissionend;
+        default:
+            return 0;
+    }
+}
 
 function block_risk_monitor_missed_assignment_deadline($userid, $mod_inst) {
     //Get the assignment.
@@ -279,8 +295,8 @@ function block_risk_monitor_multiple_submissions_assign($userid, $mod_inst, $val
     global $DB;
     
     if($DB->record_exists('assign_submission', array('userid' => $userid, 'assignment' => $mod_inst->id))) {
-        $submission = $DB->get_record('assign_submission', array('userid' => $userid, 'assignment' => $mod_inst->id));
-        if($submission->attemptnumber >= $value-1) {
+        $submissions = $DB->get_records('assign_submission', array('userid' => $userid, 'assignment' => $mod_inst->id));
+        if(count($submissions) >= $value) {
             return 100;
         }    
      
