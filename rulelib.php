@@ -454,7 +454,7 @@ class risk_calculator {
                 $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
                 if(function_exists($get_deadline_function) && $deadline = $get_deadline_function($user->id, $mod_inst) != 0) {
                     mtrace("Function exists. Deadline ".$deadline."<br>");
-                    mtrace(print_object($this->course_modules));
+                    mtrace("Cm id:".$mod_inst->cm->id." Cm module: ".$mod_inst->cm->module." Instance id: ".$mod_inst->cm->instance." Actual instance id: ".$mod_inst->id);
                     $params = array();
                     $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
                     $totalcount = 0;
