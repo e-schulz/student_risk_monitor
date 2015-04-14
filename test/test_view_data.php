@@ -15,16 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Prints a page of the survey
- *
- * You can have a rather longer description of the file as well,
- * if you like, and it can span multiple lines.
- *
- * @package    mod_honourssurvey
- * @copyright  2011 Your Name
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
@@ -34,13 +24,9 @@ require_once(dirname(__FILE__).'/locallib.php');
 require_login();
 //PAGE PARAMS
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('overview', 'block_risk_monitor'); $action = new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid));
-
+$header = get_string('overview', 'block_risk_monitor');
 //need block id! get block instance - for now we will do user :-)
 $context = context_user::instance($USER->id);
-
-$PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
-$PAGE->navbar->add($header, $action); 
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
