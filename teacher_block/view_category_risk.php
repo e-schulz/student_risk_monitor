@@ -8,9 +8,9 @@
 
 ///REQUIRES AND ERROR MESSAGES
 
-require_once("../../config.php");
-require_once("locallib.php");
-require_once("student_risk_monitor_forms.php");
+require_once("../../../config.php");
+require_once("../locallib.php");
+require_once("../student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -137,7 +137,7 @@ if($rules_broken = $DB->get_records_sql("SELECT * FROM {block_risk_monitor_rule_
          $rule_inst = $DB->get_record('block_risk_monitor_rule_inst', array('id' => $rule_broken->ruleid));
          if($rule_inst->categoryid == $categoryid) {
              if($rule_broken->value >= MODERATE_RISK) {
-                 echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../pix/i/risk_xss.png"))."&nbsp;";
+                 echo "<tr><td></td><td>".html_writer::empty_tag('img', array('src' => "../../../pix/i/risk_xss.png"))."&nbsp;";
              }
              echo $rule_inst->name."</td></tr>";
          }

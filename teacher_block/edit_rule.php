@@ -8,9 +8,9 @@
 
 ///REQUIRES AND ERROR MESSAGES
 
-require_once("../../config.php");
-require_once("locallib.php");
-require_once("student_risk_monitor_forms.php");
+require_once("../../../config.php");
+require_once("../locallib.php");
+require_once("../student_risk_monitor_forms.php");
 
 global $DB;
 

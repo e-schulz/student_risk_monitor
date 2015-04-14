@@ -8,9 +8,9 @@
 
 ///REQUIRES AND ERROR MESSAGES
 
-require_once("../../config.php");
-require_once("locallib.php");
-require_once("student_risk_monitor_forms.php");
+require_once("../../../config.php");
+require_once("../locallib.php");
+require_once("../student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -90,7 +90,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_rule.php?userid='.$userid.'&ruleid='.$ruleid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/view_rule.php?userid='.$userid.'&ruleid='.$ruleid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -105,7 +105,7 @@ $back_to_categories = html_writer::link (new moodle_url('edit_categories_rules.p
 
 $links = $delete_link." | ".$back_to_categories."<br><br>";
 
-$general_form = new individual_settings_form_rule_instance('/blocks/risk_monitor/view_rule.php?userid='.$userid.'&ruleid='.$ruleid.'&courseid='.$courseid.'&editing='.$editing, array('editing' => $editing, 'rule_instance' => $getrule, 'rule_type' => $rule_type));
+$general_form = new individual_settings_form_rule_instance('/blocks/risk_monitor/teacher_block/view_rule.php?userid='.$userid.'&ruleid='.$ruleid.'&courseid='.$courseid.'&editing='.$editing, array('editing' => $editing, 'rule_instance' => $getrule, 'rule_type' => $rule_type));
 
 
 

@@ -8,9 +8,9 @@
 
 ///REQUIRES AND ERROR MESSAGES
 
-require_once("../../config.php");
-require_once("locallib.php");
-require_once("student_risk_monitor_forms.php");
+require_once("../../../config.php");
+require_once("../locallib.php");
+require_once("../student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -38,15 +38,15 @@ $context = context_user::instance($userid);
 
 //Set the page parameters
 $blockname = get_string('pluginname', 'block_risk_monitor');
-$header = get_string('settings', 'block_risk_monitor'); $action = new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid));
+$header = get_string('settings', 'block_risk_monitor');
 
 $PAGE->navbar->add($blockname, new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
-$PAGE->navbar->add($header, $action); 
+$PAGE->navbar->add($header);
 
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -54,7 +54,7 @@ $back_to_overview = html_writer::link (new moodle_url('overview.php', array('use
 
 $body = '';
 
-$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
+$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
 
 
 //Render the HTML

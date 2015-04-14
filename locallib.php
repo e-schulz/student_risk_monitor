@@ -30,7 +30,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
             else {
                 $title = "Questionnaire";
             }
-            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questionnaire.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'questionnaireid' => $questionnaire->id)), $title."<br>");
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_block/student_questionnaire.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'questionnaireid' => $questionnaire->id)), $title."<br>");
         }
         $content .= "<br>";
     }
@@ -39,7 +39,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
         $content .= '<b>Helpful resources:</b><br>';
         foreach($interventions as $intervention) {
             $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid));
-            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_help.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_block/student_help.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
         }
     }
     
@@ -149,11 +149,11 @@ function block_risk_monitor_get_top_tabs($currenttoptab, $courseid) {
     
     $row = array();
     $row[] = new tabobject('overview',
-                           new moodle_url('/blocks/risk_monitor/overview.php', array('userid' => $USER->id, 'courseid' => $courseid)),
+                           new moodle_url('/blocks/risk_monitor/teacher_block/overview.php', array('userid' => $USER->id, 'courseid' => $courseid)),
                             get_string('overview', 'block_risk_monitor'));
 
     $row[] = new tabobject('settings',
-                           new moodle_url('/blocks/risk_monitor/individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)),
+                           new moodle_url('/blocks/risk_monitor/teacher_block/individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)),
                            get_string('settings', 'block_risk_monitor'));
 
     return '<div class="topdisplay">'.$OUTPUT->tabtree($row, $currenttoptab).'</div>';

@@ -8,9 +8,9 @@
 
 ///REQUIRES AND ERROR MESSAGES
 
-require_once("../../config.php");
-require_once("locallib.php");
-require_once("student_risk_monitor_forms.php");
+require_once("../../../config.php");
+require_once("../locallib.php");
+require_once("../student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -53,7 +53,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/new_moodle_rule.php?userid='.$userid.'&categoryid='.$categoryid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/new_moodle_rule.php?userid='.$userid.'&categoryid='.$categoryid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
