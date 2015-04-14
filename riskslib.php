@@ -10,10 +10,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
-require_once("rulelib.php");
+require_once("risk_calculator.php");
 
 define("HIGH_RISK", 75);
-define("MODERATE_RISK", 50);
+define("MODERATE_RISK", 40);
 define("QUESTIONNAIRE_RISK", 25);       ///the risk level at which questionnaires are generated
 
 final class risks_controller {
@@ -22,6 +22,7 @@ final class risks_controller {
     //If category is specified, updates only that category.
     public static function calculate_risks($categoryid = 0) {
 
+        
         global $DB;
         //For each course this block is added on.
         $return = '';
@@ -41,8 +42,12 @@ final class risks_controller {
                 }
                 
                 
-                $risk_calculator = new risk_calculator($course->courseid);                
-                $enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
+                /////FOLLOWING SHOULD BE IN RISK CALCULATOR.
+                $risk_calculator = new risk_calculator($course->courseid);    
+                $risk_calculator->calculate_risks($categoryid);
+                
+                
+                /*$enrolled_students = block_risk_monitor_get_enrolled_students($course->courseid);
                 $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course->courseid));
                 $category_rules = array();
                 foreach($enrolled_students as $enrolled_student) {
@@ -86,8 +91,7 @@ final class risks_controller {
                                 $custom_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
 
                                 //Get min score, max score, mod_risk_floor, high_risk_floor.
-                                $min_score = $custom_rule->min_score;
-                                $max_score = $custom_rule->max_score;
+
                                 $low_risk_floor = $custom_rule->low_risk_floor;
                                 $low_risk_ceiling = $custom_rule->low_risk_ceiling;
                                 $med_risk_floor = $custom_rule->med_risk_floor;
@@ -98,7 +102,6 @@ final class risks_controller {
                                 //Get the questions
                                 if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $custom_rule->id))) {
                                     $total_questions = count($questions);
-
                                     foreach($questions as $question) {
 
                                         //Check if an answer has been submitted
@@ -173,11 +176,6 @@ final class risks_controller {
                                     $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
                                 }
                             }
-                            /*else {
-                                if($DB->record_exists('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {
-                                    $DB->delete_records('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id));
-                                }
-                            }*/
 
                         }
 
@@ -217,7 +215,7 @@ final class risks_controller {
                     }
                     //finished looping thru categories.
 
-                }
+                }*/
                 //finished looping thru students
 
             }

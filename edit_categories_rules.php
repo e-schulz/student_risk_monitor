@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -117,11 +117,11 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
         
         //Add rule
         echo "<div align='right'><table><tr><td>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-                html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
+                html_writer::link (new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
         
         //Add questionnaire
          echo html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-                html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
+                html_writer::link (new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
                 "</td></tr></table></div>";       
         
         echo $OUTPUT->box_end();

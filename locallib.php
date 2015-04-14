@@ -9,9 +9,9 @@
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot."/config.php");
-require_once("rules.php");
+require_once("moodle_rules.php");
 require_once("riskslib.php");
-require_once("rulelib.php");
+require_once("risk_calculator.php");
 
 global $DB, $USER, $COURSE;
 
@@ -20,6 +20,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
     
     global $CFG, $USER, $COURSE, $DB;
     
+    $content = '';
     if(count($questionnaires = block_risk_monitor_get_questionnaires($userid, $courseid)) !== 0) {
         $content = '<b>Questionnaires:</b><br>';
         foreach($questionnaires as $questionnaire) {
@@ -29,7 +30,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
             else {
                 $title = "Questionnaire";
             }
-            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questions.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'questionnaireid' => $questionnaire->id)), $title."<br>");
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_questionnaire.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'questionnaireid' => $questionnaire->id)), $title."<br>");
         }
         $content .= "<br>";
     }
@@ -38,7 +39,7 @@ function block_risk_monitor_generate_student_view($userid, $courseid) {
         $content .= '<b>Helpful resources:</b><br>';
         foreach($interventions as $intervention) {
             $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid));
-            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_module.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
+            $content .= html_writer::link(new moodle_url('/blocks/risk_monitor/student_help.php', array('userid' => $USER->id, 'courseid' => $COURSE->id, 'interventionid' => $intervention_template->id)), $intervention_template->title."<br>");
         }
     }
     
@@ -52,10 +53,10 @@ function block_risk_monitor_get_interventions($userid, $courseid) {
     if($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
         foreach($categories as $category) {
             
-            if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('studentid' => $userid))) {
+            if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('studentid' => $userid, 'categoryid' => $category->id))) {
                 
                 foreach($interventions as $intervention) {
-                    if($DB->record_exists('block_risk_monitor_int_tmp', array('categoryid' => $category->id, 'id' => $intervention->interventiontemplateid))) {
+                    if($DB->record_exists('block_risk_monitor_int_tmp', array('id' => $intervention->interventiontemplateid))) {
                         $interventions_to_return[] = $intervention;
                     }
                 }
@@ -271,8 +272,8 @@ function block_risk_monitor_adjust_weightings_rule_added($categoryid, $newsum, $
             
         if(!($registered_rule->id == $ruleid)) {
             array_push($rules_to_change, $registered_rule);
+            $previous_sum += $registered_rule->weighting;
         }
-        $previous_sum += $registered_rule->weighting;
     }
  
     

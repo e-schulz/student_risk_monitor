@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -48,7 +48,7 @@ $PAGE->navbar->add($header);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/student_module.php?userid='.$userid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/student_help.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -61,8 +61,8 @@ if($intervention_template->has_files == 1 || ($intervention_template->url != '' 
     $has_resources = true;
 }
 //Create the form
-$intervention_form = new individual_settings_form_view_intervention('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'courseid' => $courseid, 'userid' => $userid)); 
-$intervention_instructions = new individual_settings_form_view_intervention_instructions('student_module.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'studentid' => $userid)); 
+$intervention_form = new individual_settings_form_view_intervention('student_help.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'courseid' => $courseid, 'userid' => $userid)); 
+$intervention_instructions = new individual_settings_form_view_intervention_instructions('student_help.php?userid='.$USER->id.'&courseid='.$courseid.'&interventionid='.$interventionid, array('interventionid' => $interventionid, 'studentid' => $userid)); 
 
 //Render the HTML
 echo $OUTPUT->header();

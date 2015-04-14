@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -80,14 +80,14 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_category.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid);
+$PAGE->set_url('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 $back_to_overview = html_writer::link (new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to overview");
 
-$problem_areas = new individual_settings_form_student_problem_areas('/blocks/risk_monitor/view_category.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('studentid' => $studentid, 'categoryid' => $categoryid));
-$interventions = new individual_settings_form_student_interventions('/blocks/risk_monitor/view_category.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid, 'categoryid' => $categoryid));
+$problem_areas = new individual_settings_form_student_problem_areas('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('studentid' => $studentid, 'categoryid' => $categoryid));
+$interventions = new individual_settings_form_student_interventions('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid, 'categoryid' => $categoryid));
 
 /*if($fromform = $category_profile->get_data()) {
     //Get which checkboxes are checked
@@ -164,7 +164,7 @@ if($interventions = $DB->get_records('block_risk_monitor_int_inst', array('categ
                 html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $intervention_template->id, 'from_overview' => 1, 'from_studentid' => $studentid, 'from_categoryid' => $categoryid)), $intervention_template->name)."<br>&emsp;".
             $intervention_template->description."</li></td><td>".date("F j, Y", $intervention->timestamp)."</td><td>".$viewed."</td><td>".
               html_writer::empty_tag('img', array('src' => get_string('delete_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-            html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $intervention_template->id, 'do_delete' => 1, 'categoryid' => $categoryid)), "Remove this intervention")
+            html_writer::link (new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $intervention_template->id, 'do_delete' => 1, 'categoryid' => $categoryid)), "Remove this intervention")
                     ."</td></tr><br>";           
         }                                  
     }
@@ -199,7 +199,7 @@ if($templates = $DB->get_records('block_risk_monitor_int_tmp', array('categoryid
                 html_writer::link (new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $template->id, 'from_overview' => 1, 'from_studentid' => $studentid, 'from_categoryid' => $categoryid)), $template->name)."<br>&emsp;".
             $template->description."</li></td><td width=100px></td><td>"
                     .html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-     html_writer::link (new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $template->id, 'categoryid' => $category->id)), "Use this template")."<br>"
+     html_writer::link (new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $studentid, 'interventionid' => $template->id, 'categoryid' => $category->id)), "Use this template")."<br>"
                     .html_writer::empty_tag('img', array('src' => get_string('edit_icon2', 'block_risk_monitor')))."&nbsp;&nbsp;".
      html_writer::link (new moodle_url('edit_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $template->id, 'from_studentid' => $studentid, 'from_categoryid' => $category->id, 'from_overview' => 1)), "Edit before using")
                     ."</td></tr><br>";     

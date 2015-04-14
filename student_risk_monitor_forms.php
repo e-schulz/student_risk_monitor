@@ -22,7 +22,7 @@ class individual_settings_form_edit_categories_rules extends moodleform {
                     //Header 
                     $mform->addElement('header', 'category'.$category->id, $category->name);
                     
-                    $add_icon = html_writer::start_tag('a', array('href' => 'new_rule.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
+                    $add_icon = html_writer::start_tag('a', array('href' => 'new_moodle_rule.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$category->id)).
                                 html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor'), 'align' => 'middle')).
                                 html_writer::end_tag('a')."&nbsp;";
                     //List the rules. Dot points. Each with edit and delete icons
@@ -340,7 +340,7 @@ class individual_settings_form_view_custom_rules extends moodleform {
         
            $mform =& $this->_form;
         $courseid = $this->_customdata['courseid'];
-            $add_custom_rule = html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_custom','block_risk_monitor')).'<br><br>';
+            $add_custom_rule = html_writer::link (new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('new_custom','block_risk_monitor')).'<br><br>';
             $mform->addElement('static', 'newcustom', '', $add_custom_rule);        
             
             if($custom_rules = $DB->get_records('block_risk_monitor_cust_rule', array('userid' => $USER->id))) {
@@ -609,7 +609,7 @@ class individual_settings_form_create_questionnaire_question_page extends moodle
                 //Options and values
                 $option_values = array();
                 if($this->_customdata['scoringmethod'] == 0) {
-                    $option_values = array(0 => get_string('low_risk','block_risk_monitor'), 50 => get_string('moderate_risk','block_risk_monitor'), 100 => get_string('high_risk','block_risk_monitor'));
+                    $option_values = array(get_string('low_risk','block_risk_monitor'), get_string('moderate_risk','block_risk_monitor'), get_string('high_risk','block_risk_monitor'));
                 }
                 else if ($this->_customdata['scoringmethod'] == 1) {
                     $option_values = range(0, 5);
@@ -1412,11 +1412,11 @@ class individual_settings_form_view_categories_rules extends moodleform {
 
                     //Add rule
                     $add_stuff = "<div align='right'><table><tr><td>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-                            html_writer::link (new moodle_url('new_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
+                            html_writer::link (new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a rule")."<br>";
 
                     //Add questionnaire
                      $add_stuff .= html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-                            html_writer::link (new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
+                            html_writer::link (new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add a questionnaire").
                             "</td></tr></table></div>";       
                     $mform->addElement('static', 'add_stuff', '', $add_stuff);
                 }

@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -53,13 +53,14 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/new_rule.php?userid='.$userid.'&categoryid='.$categoryid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/new_moodle_rule.php?userid='.$userid.'&categoryid='.$categoryid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 //Create the body
 $body = '';
 if($message != -1) {
+    $body .= "<font color='red'>";
     switch($message){
         CASE 1:
             $body .= get_string('errweightingnotnumeric','block_risk_monitor');
@@ -68,7 +69,7 @@ if($message != -1) {
             $body .= get_string('errweightingnotinrange','block_risk_monitor');
             break;
         CASE 3:
-            $body .= "Error: value must be numeric";
+            $body .= "Error! Value must be a number";
             break;
         CASE 4: 
             $body .= "Error: value must be a positive number.";
@@ -79,23 +80,24 @@ if($message != -1) {
         default:
             break;
     }
+    $body .= "</font>";
 }
 
 /*if(intval($custom_rule) == -1) {
     $default_rule_link = get_string('default_rule', 'block_risk_monitor');
-    $custom_rule_link = html_writer::link(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'custom' => 1, 'courseid' => $courseid)), get_string('custom_rule', 'block_risk_monitor'));
-    $new_rule_form = new individual_settings_form_new_default_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
+    $custom_rule_link = html_writer::link(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'custom' => 1, 'courseid' => $courseid)), get_string('custom_rule', 'block_risk_monitor'));
+    $new_rule_form = new individual_settings_form_new_default_rule('new_moodle_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
 }
 else{
-    $default_rule_link = html_writer::link(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'courseid' => $courseid)), get_string('default_rule', 'block_risk_monitor'));
+    $default_rule_link = html_writer::link(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'courseid' => $courseid)), get_string('default_rule', 'block_risk_monitor'));
     $custom_rule_link = get_string('custom_rule', 'block_risk_monitor');
-    $new_rule_form = new individual_settings_form_new_custom_rule('new_rule.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid.'&custom=1', array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
+    $new_rule_form = new individual_settings_form_new_custom_rule('new_moodle_rule.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid.'&custom=1', array('rule_id' => $rule_id, 'categoryid' => $categoryid, 'weightingdesc' => $weighting_description));     
 }
 
 $rule_type_links = $default_rule_link."&nbsp;|&nbsp;".$custom_rule_link."<br><br>";*/
 
 //On submit
-    $new_rule_form = new individual_settings_form_new_default_rule('new_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('ruleid' => $rule_id, 'categoryid' => $categoryid, 'courseid' => $courseid, 'userid' => $userid, 'weightingdesc' => -1));     
+    $new_rule_form = new individual_settings_form_new_default_rule('new_moodle_rule.php?userid='.$USER->id.'&categoryid='.$categoryid.'&courseid='.$courseid, array('ruleid' => $rule_id, 'categoryid' => $categoryid, 'courseid' => $courseid, 'userid' => $userid, 'weightingdesc' => -1));     
 
 if($new_rule_form->is_cancelled()) {
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid/*, 'courseid' => $getcategory->courseid*/)));    
@@ -104,17 +106,17 @@ if($new_rule_form->is_cancelled()) {
 if ($fromform = $new_rule_form->get_data()) {
     
     if(!isset($fromform->add_rule)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
+        redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
     }
     $new_rule = new object();
     
     //Error checking
     //if weighting is not numeric, refresh with error
     if(!is_numeric($fromform->weighting)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 1, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
+        redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 1, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
     }
     else if(intval($fromform->weighting < 0 || $fromform->weighting > 100)) {
-        redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
+        redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 2, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
     }
     else {
         if(empty($fromform->weighting)) {
@@ -130,14 +132,14 @@ if ($fromform = $new_rule_form->get_data()) {
         
         if(!is_numeric($fromform->value)) {
             
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
+            redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 3, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
         }
         else if(intval($fromform->value < 0)) {
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 4, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
+            redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 4, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));        
         }
 
         if(empty($fromform->value)) {
-            redirect(new moodle_url('new_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 5, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
+            redirect(new moodle_url('new_moodle_rule.php', array('userid' => $USER->id, 'categoryid' => $categoryid, 'message' => 5, 'rule_id' => $fromform->rule_id, 'courseid' => $courseid)));
         }
         $new_rule->value = $fromform->value;        
         $rule_name = DefaultRules::$default_rule_names[$fromform->rule_id];

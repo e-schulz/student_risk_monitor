@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -58,10 +58,10 @@ $new_intervention_form = new individual_settings_form_new_intervention('/blocks/
 
 if($new_intervention_form->is_cancelled()) {
     if($from_overview != -1) {
-        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
+        redirect(new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
     }
     else {
-        redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+        redirect(new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
     }
 }
 else if ($fromform = $new_intervention_form->get_data()) {
@@ -108,7 +108,7 @@ else if ($fromform = $new_intervention_form->get_data()) {
                    $intervention_template_id, array('subdirs' => 0, 'maxfiles' => 50));    
     
     if($from_overview == -1) {
-        redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
+        redirect(new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)));    
     }
     else {
         $intervention_template = $DB->get_record('block_risk_monitor_int_tmp', array('id' => $intervention_template_id));
@@ -122,7 +122,7 @@ else if ($fromform = $new_intervention_form->get_data()) {
         $intervention_instance->courseid = $courseid;
         $intervention_instance->categoryid = $categoryid;
         $DB->insert_record('block_risk_monitor_int_inst', $intervention_instance); 
-        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
+        redirect(new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $categoryid)));
     }
 }
 

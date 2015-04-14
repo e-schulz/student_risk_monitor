@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -58,12 +58,12 @@ if($intervention_template->has_files == 1 || ($intervention_template->url != '' 
 }
 
 if($from_overview != -1) {
-    $back_link = html_writer::link(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)), "Back to student overview");
+    $back_link = html_writer::link(new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)), "Back to student overview");
 }
 else {
-    $back_link = html_writer::link(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to interventions")." | ".
+    $back_link = html_writer::link(new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to interventions")." | ".
             html_writer::link(new moodle_url('edit_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $interventionid)), "Edit template")." | ".
-            html_writer::link(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid, 'templateid' => $interventionid)), "Delete template");
+            html_writer::link(new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid, 'templateid' => $interventionid)), "Delete template");
     
     
 }

@@ -10,7 +10,6 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-
 //Teacher must be logged in
 require_login();
 
@@ -29,7 +28,6 @@ if (!($USER->id == $userid)) {
 }
 //CRON IS HERE FOR NOW - TO DO - GET RID OF IT
 //block_risk_monitor_cron();
-
 //PAGE PARAMS
 $blockname = get_string('pluginname', 'block_risk_monitor');
 $header = get_string('overview', 'block_risk_monitor'); 
@@ -51,8 +49,10 @@ $PAGE->set_pagelayout('standard');
 //$body = get_string('overview_body', 'block_risk_monitor');
 $body = '';
 
+//$DB->delete_records('block_risk_monitor_cat_risk');
+//$DB->delete_records('block_risk_monitor_rule_risk');
 //Here for now.
-//$body .= risks_controller::calculate_risks();
+$body .= risks_controller::calculate_risks();
 
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
@@ -138,12 +138,12 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                             //Get the risk
                             $rating = $student_risk->value;
                             if($rating >= MODERATE_RISK && $rating < HIGH_RISK) {
-                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category_risk.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
                                      .html_writer::empty_tag('img', array('src' => get_string('moderate_risk_icon', 'block_risk_monitor'),'align' => 'middle'))
                                      .html_writer::end_tag('a');  
                             }
                             else if($rating >= HIGH_RISK) {
-                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category_risk.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
                                       .html_writer::empty_tag('img', array('src' => get_string('high_risk_icon', 'block_risk_monitor'),'align' => 'middle'))
                                      .html_writer::end_tag('a');                                  
                             }
@@ -194,12 +194,12 @@ if ($categories = $DB->get_records('block_risk_monitor_category', array('coursei
                             //Get the risk
                             $rating = $student_risk->value;
                             if($rating >= MODERATE_RISK && $rating < HIGH_RISK) {
-                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category_risk.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
                                      .html_writer::empty_tag('img', array('src' => get_string('moderate_risk_intervention_generated', 'block_risk_monitor'),'align' => 'middle'))
                                      .html_writer::end_tag('a');  
                             }
                             else if($rating >= HIGH_RISK) {
-                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
+                                $category_cell->text = html_writer::start_tag('a', array('href' => 'view_category_risk.php?userid='.$USER->id.'&categoryid='.$category->id."&courseid=".$courseid.'&studentid='.$student->id.'&categoryid='.$category->id))
                                       .html_writer::empty_tag('img', array('src' => get_string('high_risk_intervention_generated', 'block_risk_monitor'),'align' => 'middle'))
                                      .html_writer::end_tag('a');                                  
                             }

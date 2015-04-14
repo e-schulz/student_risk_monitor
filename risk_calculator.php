@@ -21,18 +21,19 @@ class risk_calculator {
     
     private $enrolled_students;
     private $course;
+    private $categories;
     
     //Array of total course clicks, indexed by userid
     private $course_clicks;
     
     //Array of clicks per session, indexed by userid
-    private $clicks_per_session;
+    //private $clicks_per_session;
     
     //Array of average session times, indexed by userid
-    private $average_session_times;
+    //private $average_session_times;
     
     //Number of sessions, indexed by userid
-    private $number_of_sessions;
+    //private $number_of_sessions;
     
     //Number of forum posts, indexed by userid
     private $number_forum_posts;
@@ -40,19 +41,18 @@ class risk_calculator {
     //Number of forum posts read, indexed by userid
     private $number_forum_posts_read;
     
-    //Time spent in forum, indexed by userid
-    private $total_forum_time;
-    
     //Average time to complete activities: 2D array, each key corresponds to module instance id
-    private $activity_completion_times;
+    //private $activity_completion_times;
     
     private $course_modules;
+    
     
     public function __construct($course) {
         global $DB;
         $this->courseid = $course;
         $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
         $this->course = $DB->get_record('course', array('id' => $course));
+        $this->categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course));
         $this->initialise();
         $this->calculate_averages();
     }
@@ -65,7 +65,6 @@ class risk_calculator {
         $this->number_of_sessions = array();
         $this->number_forum_posts = array();
         $this->number_forum_posts_read = array();
-        $this->total_forum_time = array();           
         $this->course_modules = array();
         $fast_mod_info = get_fast_modinfo($this->courseid);
         $module_names = array_keys($fast_mod_info->instances);
@@ -87,67 +86,254 @@ class risk_calculator {
         $this->calculate_average_clicks_and_time_per_session();
         $this->calculate_average_forum_posts_added();
         $this->calculate_average_forum_posts_read();
-        $this->calculate_average_forum_time();    
         $this->calculate_average_time_to_finish_activities();
     }
     
-    //This function returns a risk rating between 0 and 100, given the action userid and value.
-    function calculate_risk_rating($action, $user, $value) {
+    function calculate_risks($categoryid = 0) {
+        
+        global $DB;
+        $category_rules = array();            
+                
+       foreach($this->categories as $category) {
 
-        $risk_rating = 0;
+            if($categoryid != 0 && $category->id != $categoryid) {
+                break;
+            }
+                        
+            if(!isset($category_rules[$category->id])) {
+                 $category_rules[$category->id] = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
+            }
+                        
+            foreach($category_rules[$category->id] as $rule) {
 
-        //These actions must match actions specified in rules.php
-        switch($action){
-            CASE 'NOT_LOGGED_IN':
-                $risk_rating = $this->not_logged_in_risk($user, $value);
-                break;
-            case 'GRADE_LESS_THAN':
-                $risk_rating = $this->grade_less_than_risk($user, $value);
-                break;
-            case 'GRADE_GREATER_THAN':
-                $risk_rating = $this->grade_greater_than_risk($user, $value);
-                break;
-            case 'MISSED_DEADLINES':
-                $risk_rating = $this->missed_deadlines_risk($user, $value);
-                break;
-            CASE 'ACTIVITIES_FAILED':
-                $risk_rating = $this->activities_failed_risk($user, $value);
-                break;
-            case 'LOW_FORUM_MESSAGES_POSTED':
-                $risk_rating =$this->forum_posts_added_risk($user, $value);
-                break;
-            case 'LOW_FORUM_MESSAGES_READ':
-                $risk_rating = $this->forum_posts_read_risk($user, $value);
-                break;
-            case 'LOW_TOTAL_FORUM_TIME':
-                $risk_rating = $this->total_forum_time_risk($user, $value);
-                break;
-            CASE 'LOW_TOTAL_COURSE_CLICKS':
-                $risk_rating = $this->course_clicks_risk($user, $value);
-                break;
-            case 'LOW_AVERAGE_CLICKS_PER_SESSION':
-                $risk_rating = $this->average_session_clicks_risk($user, $value);
-                break;
-            case 'LOW_AVERAGE_SESSION_DURATION':
-                $risk_rating = $this->average_session_duration_risk($user, $value);
-                break;
-            case 'EXAM_COMING_UP':
-                $risk_rating = $this->exam_approaching_risk($user, $value);
-                break;   
-            case 'MULTIPLE_SUBMISSIONS':
-                $risk_rating = $this->multiple_submissions_risk($user, $value);
-                break;            
-            case 'TIME_TO_FINISH_ACTIVITY':
-                $risk_rating = $this->time_to_finish_activity_risk($user, $value);
-                break;            
-            case 'TIME_TO_START_ACTIVITY':
-                $risk_rating = $this->time_to_view_activity_risk($user, $value);
-                break;             
-            default:
-                break;
+                if($rule->ruletype == 1) {
+                      $this->calculate_risk_ratings($rule);
+                }
+
+                //Custom rule
+                 else if ($rule->ruletype == 2) {
+                      $this->calculate_questionnaire_risks($rule);
+                 }
+
+            }
+
+            $this->calculate_category_risks($category, $category_rules);
         }
+    }
+    
+    function calculate_category_risks($category, $category_rules) {
+        
+        global $DB;
+        foreach($this->enrolled_students as $enrolled_student) {
+            
+            $category_risk_rating = 0;
+            $create_cat_risk = false;
+            
+            //Add up the individual rule risks
+            foreach($category_rules[$category->id] as $rule) {
+                $weighting = $rule->weighting;
+                if($rule_risk = $DB->get_record('block_risk_monitor_rule_risk', array('ruleid' => $rule->id, 'userid' => $enrolled_student->id))){
+                     $category_risk_rating += ($weighting/100)*floatval($rule_risk->value);
+                     $create_cat_risk = true;
+                 }
+            }
 
-        return $risk_rating;
+            //Update or create the category risk
+            if($create_cat_risk){
+                 if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $enrolled_student->id))) {
+                      $edited_category_risk = new object();
+                      $edited_category_risk->id = $risk_instance->id;
+                      $edited_category_risk->value = $category_risk_rating;
+
+                      $DB->update_record('block_risk_monitor_cat_risk', $edited_category_risk);
+                  }
+                  else {
+                       $new_category_risk = new object();
+                       $new_category_risk->userid = $enrolled_student->id;
+                       $new_category_risk->categoryid = $category->id;
+                       $new_category_risk->value = intval($category_risk_rating);
+                       $new_category_risk->timestamp = time();
+
+                       $DB->insert_record('block_risk_monitor_cat_risk', $new_category_risk);                                
+                  }
+            }        
+        }
+    }
+    
+    function calculate_questionnaire_risks($rule) {
+        global $DB;
+        foreach($this->enrolled_students as $enrolled_student) {
+
+             $total_score = 0;
+             $create_risk_instance = false;
+             $custom_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
+
+             $low_risk_floor = $custom_rule->low_risk_floor;
+             $low_risk_ceiling = $custom_rule->low_risk_ceiling;
+             $med_risk_floor = $custom_rule->med_risk_floor;
+             $med_risk_ceiling = $custom_rule->med_risk_ceiling;
+             $high_risk_floor = $custom_rule->high_risk_floor;
+             $high_risk_ceiling = $custom_rule->high_risk_ceiling;
+
+             //Get the questions
+             if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $custom_rule->id))) {
+             $total_questions = count($questions);
+             foreach($questions as $question) {
+
+                 //Check if an answer has been submitted
+                 if($answer = $DB->get_record('block_risk_monitor_answer', array('userid' => $enrolled_student->id, 'questionid' => $question->id))) {
+                       //Get the value.
+                       if($option = $DB->get_record('block_risk_monitor_option', array('id' => $answer->optionid))) {
+                              $total_score += $option->value;
+                       }
+                       $create_risk_instance = true;
+                 }
+             }
+             //Normalise
+             $default_low_range = MODERATE_RISK;
+             $default_moderate_range = HIGH_RISK - MODERATE_RISK;
+             $default_high_range = 101 - HIGH_RISK;
+             $low_range = abs($low_risk_floor - $low_risk_ceiling)+1;
+             $med_range = abs($med_risk_floor - $med_risk_ceiling)+1;
+             $high_range = abs($high_risk_floor - $high_risk_ceiling)+1;   
+                                    
+             if($med_risk_floor >= $high_risk_floor) {
+                                        
+                    //swap ranges.
+                    if($total_score <= max($low_risk_floor, $low_risk_ceiling) && $total_score >= min($low_risk_floor, $low_risk_ceiling)) {
+                          //low risk
+                          $risk_rating = MODERATE_RISK - (($default_low_range/$low_range)*($total_score - min($low_risk_floor, $low_risk_ceiling)));
+                    }
+                    else if ($total_score >= min($med_risk_floor, $med_risk_ceiling) && $total_score <= max($med_risk_floor, $med_risk_ceiling)) {
+                          //med risk
+                          $risk_rating = HIGH_RISK - (($default_moderate_range/$med_range)*($total_score - min($med_risk_floor, $med_risk_ceiling)));
+                    }
+                    else if ($total_score >= min($high_risk_floor, $high_risk_ceiling) && $total_score <= max($high_risk_floor, $high_risk_ceiling)) {
+                          //high risk
+                          $risk_rating = 100 - (($default_high_range/$high_range)*($total_score - min($high_risk_floor, $high_risk_ceiling)));
+                    }               
+
+             }
+             else {
+
+                    if($total_score <= max($low_risk_floor, $low_risk_ceiling) && $total_score >= min($low_risk_floor, $low_risk_ceiling)) {
+                          //low risk
+                           $risk_rating = ($default_low_range/$low_range)*($total_score - min($low_risk_floor, $low_risk_ceiling));
+                     }
+                     else if ($total_score >= min($med_risk_floor, $med_risk_ceiling) && $total_score <= max($med_risk_floor, $med_risk_ceiling)) {
+                           //med risk
+                           $risk_rating = MODERATE_RISK + ($default_moderate_range/$med_range)*($total_score - min($med_risk_floor, $med_risk_ceiling));
+                     }
+                     else if ($total_score >= min($high_risk_floor, $high_risk_ceiling) && $total_score <= max($high_risk_floor, $high_risk_ceiling)) {
+                            //high risk
+                            $risk_rating = HIGH_RISK + ($default_high_range/$high_range)*($total_score - min($high_risk_floor, $high_risk_ceiling));
+                     }                                    
+               }
+        }        
+                                
+        if($create_risk_instance) {
+               if($risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {                                  
+                      $edited_risk_instance = new object();
+                      $edited_risk_instance->id = $risk_instance->id;
+                      $edited_risk_instance->value = $risk_rating;
+
+                      $DB->update_record('block_risk_monitor_rule_risk', $edited_risk_instance);
+               }
+               else {
+                      $new_risk_instance = new object();
+                      $new_risk_instance->userid = $enrolled_student->id;
+                      $new_risk_instance->ruleid = $rule->id;
+                      $new_risk_instance->value = $risk_rating;
+                      $new_risk_instance->timestamp = time();
+
+                      $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
+                }     
+         }
+      }
+    }
+    
+    //This function returns a risk rating between 0 and 100, given the action userid and value.
+    function calculate_risk_ratings($rule) {
+        global $DB;
+        foreach($this->enrolled_students as $enrolled_student) {
+        
+            $risk_rating = 0;
+
+            $default_rule_id = $rule->defaultruleid;
+            $action = DefaultRules::$default_rule_actions[$default_rule_id];
+
+            if(DefaultRules::$default_rule_value_required[$default_rule_id]) {
+                  $value = $rule->value;
+            }
+            else {
+                  $value = -1;
+            }
+
+            //These actions must match actions specified in rules.php
+            switch($action){
+                CASE 'NOT_LOGGED_IN':
+                    $risk_rating = $this->not_logged_in_risk($enrolled_student, $value);
+                    break;
+                case 'GRADE_LESS_THAN':
+                    $risk_rating = $this->grade_less_than_risk($enrolled_student, $value);
+                    break;
+                case 'GRADE_GREATER_THAN':
+                    $risk_rating = $this->grade_greater_than_risk($enrolled_student, $value);
+                    break;
+                case 'MISSED_DEADLINES':
+                    $risk_rating = $this->missed_deadlines_risk($enrolled_student, $value);
+                    break;
+                CASE 'ACTIVITIES_FAILED':
+                    $risk_rating = $this->activities_failed_risk($enrolled_student, $value);
+                    break;
+                case 'LOW_FORUM_MESSAGES_POSTED':
+                    $risk_rating =$this->forum_posts_added_risk($enrolled_student, $value);
+                    break;
+                case 'LOW_FORUM_MESSAGES_READ':
+                    $risk_rating = $this->forum_posts_read_risk($enrolled_student, $value);
+                    break;
+                CASE 'LOW_TOTAL_COURSE_CLICKS':
+                    $risk_rating = $this->course_clicks_risk($enrolled_student, $value);
+                    break;
+                case 'LOW_AVERAGE_CLICKS_PER_SESSION':
+                    $risk_rating = $this->average_session_clicks_risk($enrolled_student, $value);
+                    break;
+                case 'LOW_AVERAGE_SESSION_DURATION':
+                    $risk_rating = $this->average_session_duration_risk($enrolled_student, $value);
+                    break;
+                case 'EXAM_COMING_UP':
+                    $risk_rating = $this->exam_approaching_risk($enrolled_student, $value);
+                    break;   
+                case 'MULTIPLE_SUBMISSIONS':
+                    $risk_rating = $this->multiple_submissions_risk($enrolled_student, $value);
+                    break;            
+                case 'TIME_TO_FINISH_ACTIVITY':
+                    $risk_rating = $this->time_to_finish_activity_risk($enrolled_student, $value);
+                    break;            
+                case 'TIME_TO_START_ACTIVITY':
+                    $risk_rating = $this->time_to_view_activity_risk($enrolled_student, $value);
+                    break;             
+                default:
+                    break;
+            }
+
+            if($risk_instance = $DB->get_record('block_risk_monitor_rule_risk', array('userid' => $enrolled_student->id, 'ruleid' => $rule->id))) {                                  
+                 $edited_risk_instance = new object();
+                 $edited_risk_instance->id = $risk_instance->id;
+                 $edited_risk_instance->value = $risk_rating;
+
+                 $DB->update_record('block_risk_monitor_rule_risk', $edited_risk_instance);
+            }
+            else {
+                 $new_risk_instance = new object();
+                 $new_risk_instance->userid = $enrolled_student->id;
+                 $new_risk_instance->ruleid = $rule->id;
+                 $new_risk_instance->value = $risk_rating;
+                 $new_risk_instance->timestamp = time();
+
+                 $DB->insert_record('block_risk_monitor_rule_risk', $new_risk_instance);
+             }        
+         }
     }
 
     ///THE FOLLOWING METHODS CALCULATE THE RISK RATING FOR EACH RULE, RETURNING A VALUE BETWEN 0 (LOW RISK) AND 100 (HIGH RISK)
@@ -307,19 +493,6 @@ class risk_calculator {
         return 0;
     }
 
-    //Clicking into forum, to clicking out. = one forum session, add these up.
-    function total_forum_time_risk($user, $value) {
-        $total_students = count($this->total_forum_time);
-        
-        $average = array_sum($this->total_forum_time)/count($this->total_forum_time);
-        $student_value = array_search($user->id, $this->total_forum_time);
-        
-        if($student_value < ($value/100)*$average) {    
-            return 100;
-        }
-        return 0;
-    }
-
     //
     function course_clicks_risk($user, $value) {
         $total_students = count($this->course_clicks);
@@ -391,7 +564,7 @@ class risk_calculator {
             foreach($this->course_modules[$modname] as $mod_inst) {
                 $multiple_submissions_function = "block_risk_monitor_multiple_submissions_".$modname;
                 if(function_exists($multiple_submissions_function)) {
-                    if($ret_value = $multiple_submissions_function($user->id, $mod_inst, $value)) {
+                    if($ret_value = $multiple_submissions_function($user->id, $mod_inst, $value) == 100) {
                         return $ret_value;
                     }
                 }
@@ -452,7 +625,7 @@ class risk_calculator {
             
                 $get_deadline_function = "block_risk_monitor_get_deadline_".$modname;
                 if(function_exists($get_deadline_function) && ($deadline = $get_deadline_function($user->id, $mod_inst)) != 0) {
-                    $selector = 'l.action="view"';/*"l.cmid = ".$mod_inst->cm->id;/*." AND l.userid = ".$user->id." AND l.action='view'"*/;
+                    $selector = "l.cmid = ".$mod_inst->cm->id." AND l.userid = ".$user->id." AND l.action='view'";
                     $totalcount = 0;
                     $logs = get_logs($selector, null, 'l.time ASC', '', '', $totalcount);
                     //$logs = $DB->get_records('log', array('cmid' => $mod_inst->cm->id, 'userid' => $user->id, 'action' => 'view'), 'time ASC');
@@ -461,9 +634,6 @@ class risk_calculator {
                         if($deadline - $value*60*60*24 < $first_view) {
                             return 100;
                         }
-                    }
-                    else {
-                        mtrace("No logs found - not viewed<br>");
                     }
                 }
             }
@@ -493,40 +663,6 @@ class risk_calculator {
             $this->number_forum_posts_read[$student->id] = $total_forum_posts_read;
         }
         asort($this->number_forum_posts_read);
-    }
-
-    function calculate_average_forum_time() {
-        
-       foreach($this->enrolled_students as $student) {
-            $totalcount = 0;
-            $selector = "l.userid = ".$student->id;
-            $logrows = get_logs($selector, null, 'l.time DESC', '', '', $totalcount);
-            $found = false;
-            $total_forum_time = 0;
-            $session_start = 0;
-            $prev_log_row = null;
-            foreach($logrows as $logrow) {
-                if($logrow->module !== 'forum' || $logrow->course != $this->courseid) {
-                    if($found == true && $prev_log_row != null) {
-                        $total_forum_time += $session_start - $prev_log_row->time;
-                    }
-                    $found = false;
-                    continue;
-                }
-                
-                if($found == false) {
-                    $session_start = $logrow->time;
-                    $found = true;
-                }
-                $prev_log_row = $logrow;
-                
-            }
-                        
-            $this->total_forum_time[$student->id] = $total_forum_time;
-        }
-        
-        //Sort ascending
-        asort($this->total_forum_time);
     }
 
     function calculate_average_course_clicks() {

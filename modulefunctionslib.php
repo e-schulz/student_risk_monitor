@@ -9,15 +9,15 @@
 //Check the deadlines depending on the module
 function block_risk_monitor_check_due_date($modname, $mod_inst) {
     switch($modname) {
-        case assignment:
+        case 'assignment':
             return $mod_inst->timedue;
-        case quiz:
+        case 'quiz':
             return $mod_inst->timeclose;
-        case assign:
+        case 'assign':
             return $mod_inst->duedate;
-        case lesson:
+        case 'lesson':
             return $mod_inst->deadline;
-        case workshop:
+        case 'workshop':
             return $mod_inst->submissionend;
         default:
             return 0;

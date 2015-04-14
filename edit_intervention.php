@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -73,7 +73,7 @@ if($intervention_form->is_cancelled()) {
         redirect(new moodle_url('view_intervention.php', array('userid' => $USER->id, 'courseid' => $courseid, 'interventionid' => $interventionid)));    
     }
     else {
-        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)));
+        redirect(new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)));
     }
 }
 if($fromform = $intervention_form->get_data()) {
@@ -110,7 +110,7 @@ if($fromform = $intervention_form->get_data()) {
         $DB->update_record('block_risk_monitor_int_tmp', $fromform);
        file_save_draft_area_files($fromform->files_filemanager, $course_context->id, 'block_risk_monitor', 'intervention_files',
                       $interventionid, array('subdirs' => 0, 'maxfiles' => 50));    
-       redirect(new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
+       redirect(new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid))); 
     }
     else {
         //Save the new intervention template
@@ -129,7 +129,7 @@ if($fromform = $intervention_form->get_data()) {
         $intervention_instance->categoryid = $from_categoryid;
         $DB->insert_record('block_risk_monitor_int_inst', $intervention_instance); 
                 
-        redirect(new moodle_url('view_category.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)));
+        redirect(new moodle_url('view_category_risk.php', array('userid' => $USER->id, 'courseid' => $courseid, 'studentid' => $from_studentid, 'categoryid' => $from_categoryid)));
     }
     
 }

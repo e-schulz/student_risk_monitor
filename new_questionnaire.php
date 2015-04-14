@@ -7,10 +7,9 @@
  */
 
 ///REQUIRES AND ERROR MESSAGES
-
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -49,15 +48,15 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/create_custom_rule.php?userid='.$userid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/new_questionnaire.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 if($page == -1 || $page == 1) {
-   $questionnaire_form =  new individual_settings_form_create_questionnaire_general_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&page=".$page."&questionnaireid=".$questionnaireid."&scoring_method=".$scoring_method);
+   $questionnaire_form =  new individual_settings_form_create_questionnaire_general_page('new_questionnaire.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&page=".$page."&questionnaireid=".$questionnaireid."&scoring_method=".$scoring_method);
 }
 else if($page == 2) {
-    $questionnaire_form =  new individual_settings_form_create_questionnaire_question_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&scoringmethod=".$scoring_method."&questionnaireid=".$questionnaireid."&page=".$page, array('scoringmethod' => $scoring_method));
+    $questionnaire_form =  new individual_settings_form_create_questionnaire_question_page('new_questionnaire.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&scoringmethod=".$scoring_method."&questionnaireid=".$questionnaireid."&page=".$page, array('scoringmethod' => $scoring_method));
 }
 else if($page == 3) {
     $all_questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $questionnaireid));
@@ -77,7 +76,7 @@ else if($page == 3) {
     $new_rule->min_score = $min_total;
     $new_rule->max_score = $max_total;    
     $DB->update_record('block_risk_monitor_cust_rule', $new_rule);  
-    $questionnaire_form =  new individual_settings_form_create_questionnaire_final_page('create_custom_rule.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&scoringmethod=".$scoring_method."&questionnaireid=".$questionnaireid."&page=".$page, array('minscore' => $min_total, 'maxscore' => $max_total, 'totalquestions' => $total_questions));
+    $questionnaire_form =  new individual_settings_form_create_questionnaire_final_page('new_questionnaire.php?userid='.$userid.'&courseid='.$courseid."&categoryid=".$categoryid."&scoringmethod=".$scoring_method."&questionnaireid=".$questionnaireid."&page=".$page, array('minscore' => $min_total, 'maxscore' => $max_total, 'totalquestions' => $total_questions));
 }
 $heading = "New questionnaire";
 
@@ -125,7 +124,7 @@ else if ($fromform = $questionnaire_form->get_data()) {
                                         'block_risk_monitor', 'intervention_instructions');   
         $new_rule_id = $DB->insert_record('block_risk_monitor_cust_rule', $fromform);    
              
-        redirect(new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $new_rule_id, 'scoringmethod' => $scoring_method))); 
+        redirect(new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $new_rule_id, 'scoringmethod' => $scoring_method))); 
     }
     else if($page == 2) {
             //Create the question
@@ -142,7 +141,21 @@ else if ($fromform = $questionnaire_form->get_data()) {
                     if($fromform->$text_identifier != "") {
                         $new_option1 = new object();
                         $new_option1->label = $fromform->$text_identifier;
-                        $new_option1->value = $fromform->$value_identifier;
+                        if($scoring_method == 0) {
+                           if($fromform->$value_identifier == 0) {
+                                $value = 0;
+                            }
+                            else if($fromform->$value_identifier == 1) {
+                                $value = MODERATE_RISK;
+                            }
+                            else if ($fromform->$value_identifier == 2) {
+                                $value = 100;
+                            }
+                            $new_option1->value = $value;
+                        }
+                        else {
+                            $new_option1->value = $fromform->$value_identifier;
+                        }
                         $new_option1->questionid = $new_question_id;
                         $DB->insert_record('block_risk_monitor_option', $new_option1);
                     }
@@ -150,13 +163,36 @@ else if ($fromform = $questionnaire_form->get_data()) {
             }
             
             if(isset($fromform->submit_another)) {
-                redirect(new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $questionnaireid, 'scoringmethod' => $scoring_method)));            
+                redirect(new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 2, 'categoryid' => $categoryid, 'questionnaireid' => $questionnaireid, 'scoringmethod' => $scoring_method)));            
             }
             else if(isset($fromform->submit_save) && $scoring_method == 1) {
-                redirect(new moodle_url('create_custom_rule.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 3, 'categoryid' => $categoryid, 'questionnaireid' => $questionnaireid, 'scoringmethod' => $scoring_method)));                            
+                redirect(new moodle_url('new_questionnaire.php', array('userid' => $USER->id, 'courseid' => $courseid, 'page' => 3, 'categoryid' => $categoryid, 'questionnaireid' => $questionnaireid, 'scoringmethod' => $scoring_method)));                            
             }
             else if(isset($fromform->submit_save)) {
                 $custom_rule = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $questionnaireid));
+                $all_questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $questionnaireid));
+                $total_questions = count($all_questions);
+                $min_total = $max_total = 0;
+                foreach($all_questions as $question) {
+                    $options = $DB->get_records('block_risk_monitor_option', array('questionid' => $question->id));
+                    $values = array();
+                    foreach($options as $option) {
+                        $values[] = $option->value;
+                    }
+                    $min_total += min($values);
+                    $max_total += max($values);
+                }    
+                $new_rule = new object();
+                $new_rule->id = $questionnaireid;
+                $new_rule->min_score = $min_total;
+                $new_rule->max_score = $max_total;        
+                $new_rule->low_risk_floor = 0;
+                $new_rule->low_risk_ceiling = (MODERATE_RISK*$total_questions)-1;
+                $new_rule->med_risk_floor = MODERATE_RISK*$total_questions;
+                $new_rule->med_risk_ceiling = (HIGH_RISK*$total_questions)-1;
+                $new_rule->high_risk_floor = HIGH_RISK*$total_questions;
+                $new_rule->high_risk_ceiling = 100*$total_questions;
+                $DB->update_record('block_risk_monitor_cust_rule', $new_rule); 
                 $total_rules = count(block_risk_monitor_get_rules(intval($categoryid)))+1;
                 $weighting_default = 100/intval($total_rules);
                 block_risk_monitor_adjust_weightings_rule_added($categoryid, (100-floatval($weighting_default)));

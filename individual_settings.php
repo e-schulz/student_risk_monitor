@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -80,7 +80,7 @@ $body = '';
     $body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');
 
     //Link to edit interventions
-    $body .= html_writer::link (new moodle_url('view_interventions.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_interventions','block_risk_monitor')).'<br><br>';
+    $body .= html_writer::link (new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_interventions','block_risk_monitor')).'<br><br>';
             
     //Description for add or delete
     $body .= html_writer::tag('div', get_string('edit_interventions_description','block_risk_monitor').'<br><br>');

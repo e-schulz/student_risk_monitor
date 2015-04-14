@@ -10,7 +10,7 @@
 
 require_once("../../config.php");
 require_once("locallib.php");
-require_once("individual_settings_form.php");
+require_once("student_risk_monitor_forms.php");
 
 global $DB;
 
@@ -56,7 +56,7 @@ $body = '';
 
 //Create the form
 $questions = block_risk_monitor_get_questions($questionnaireid, $userid);
-$student_questions_form = new individual_settings_form_student_questions('student_questions.php?userid='.$USER->id.'&courseid='.$courseid.'&questionnaireid='.$questionnaireid, array('questions' => $questions)); 
+$student_questions_form = new individual_settings_form_student_questions('student_questionnaire.php?userid='.$USER->id.'&courseid='.$courseid.'&questionnaireid='.$questionnaireid, array('questions' => $questions)); 
 
 //On submit
 if($student_questions_form->is_cancelled()) {
