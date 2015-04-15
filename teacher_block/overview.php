@@ -46,13 +46,7 @@ $PAGE->set_url('/blocks/risk_monitor/teacher_block/overview.php&courseid='.$cour
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//$body = get_string('overview_body', 'block_risk_monitor');
 $body = '';
-
-//$DB->delete_records('block_risk_monitor_cat_risk');
-//$DB->delete_records('block_risk_monitor_rule_risk');
-//Here for now.
-$body .= risks_controller::calculate_risks();
 
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
