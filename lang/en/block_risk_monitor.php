@@ -129,15 +129,15 @@ $string['description_grade_greater_than'] = "";
 $string['description_missed_deadlines'] = "";
 
 //Icon paths
-$string['no_risk_icon'] = "pix/no_risk_icon.png";
-$string['low_risk_icon'] = "pix/low_risk_icon.png";
-$string['moderate_risk_icon'] = "pix/moderate_risk_icon.png";
-$string['high_risk_icon'] = "pix/high_risk_icon.png";
-$string['moderate_risk_intervention_generated'] = "pix/moderate_risk_intervention_generated.png";
-$string['high_risk_intervention_generated'] = "pix/high_risk_intervention_generated.png";
-$string['edit_icon'] = "../../pix/t/edit.png";
-$string['delete_icon'] = "../../pix/t/delete.png";
-$string['add_icon'] = "../../pix/t/add.png";
-$string['edit_icon2'] = "../../pix/i/edit.png";
+$string['no_risk_icon'] = "../pix/no_risk_icon.png";
+$string['low_risk_icon'] = "../pix/low_risk_icon.png";
+$string['moderate_risk_icon'] = "../pix/moderate_risk_icon.png";
+$string['high_risk_icon'] = "../pix/high_risk_icon.png";
+$string['moderate_risk_intervention_generated'] = "../pix/moderate_risk_intervention_generated.png";
+$string['high_risk_intervention_generated'] = "../pix/high_risk_intervention_generated.png";
+$string['edit_icon'] = "../../../pix/t/edit.png";
+$string['delete_icon'] = "../../../pix/t/delete.png";
+$string['add_icon'] = "../../../pix/t/add.png";
+$string['edit_icon2'] = "../../../pix/i/edit.png";
 
 ?>

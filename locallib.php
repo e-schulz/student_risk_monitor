@@ -14,6 +14,9 @@ require_once("risk_calculator.php");
 
 global $DB, $USER, $COURSE;
 
+define("HIGH_RISK", 75);
+define("MODERATE_RISK", 40);
+
 function block_risk_monitor_update_all_risks() {
     
         global $DB;
@@ -36,7 +39,7 @@ function block_risk_monitor_update_category_risks($categoryid) {
        $category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
        $course_id = $category->courseid;
        
-       $risk_calculator = new risk_calculator($course->courseid);    
+       $risk_calculator = new risk_calculator($course_id);    
        $risk_calculator->update_category_risks($categoryid);
         
         add_to_log(0, 'block_risk_monitor', 'update_category_risks');
@@ -104,44 +107,21 @@ function block_risk_monitor_get_questionnaires($userid, $courseid) {
             //Get the questionnaires for this category.
             if($rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id, 'ruletype' => 2))) {
                 
-                //Questionnaires combined weighting
-                $questionnaires_weighting = 0;
                 foreach($rules as $rule) {
-                    $questionnaires_weighting += $rule->weighting;
-                }
-                
-                //Only show the questionnaires if other rules have been broken
-                //get the other rules
-                $other_rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id, 'ruletype' => 1));
-                //calculate the risk rating.
-                $total_risk = 0;
-                $other_rules_weighting = 100 - $questionnaires_weighting;
-                foreach($other_rules as $other_rule) {
-                    if($rule_risk = $DB->get_record('block_risk_monitor_rule_risk', array('ruleid' => $other_rule->id, 'userid' => $userid))) {
-                        $total_risk += ($other_rule->weighting/$other_rules_weighting)*floatval($rule_risk->value);
-                    }
-                }
-                
-                //If risk is above moderate, show the questionnaires.
-                if(count($other_rules) == 0 || $total_risk > QUESTIONNAIRE_RISK) {
-                    //avoid doubles - in case same questionnaire is added to multiple categories
-                    foreach($rules as $rule) {
 
-                        $add_questionnaire = false;
-                        if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $rule->custruleid))) {
-                            foreach($questions as $question) {
-
-                                if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid)))) {
-                                    $add_questionnaire = true;
-                                }
+                    $add_questionnaire = false;
+                    if($questions = $DB->get_records('block_risk_monitor_question', array('custruleid' => $rule->custruleid))) {
+                        foreach($questions as $question) {
+                            if(!($DB->record_exists('block_risk_monitor_answer', array('questionid' => $question->id,  'userid' => $userid)))) {
+                                $add_questionnaire = true;
                             }
                         }
-
-                        if(!array_key_exists($rule->custruleid, $questionnaires_to_return) && $add_questionnaire == true) {
-                            $questionnaires_to_return[$rule->custruleid] = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
-                        }
                     }
-                }
+
+                    if(!array_key_exists($rule->custruleid, $questionnaires_to_return) && $add_questionnaire == true) {
+                        $questionnaires_to_return[$rule->custruleid] = $DB->get_record('block_risk_monitor_cust_rule', array('id' => $rule->custruleid));
+                    }
+               }
             }
         }
     }
