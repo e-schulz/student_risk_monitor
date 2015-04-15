@@ -15,6 +15,34 @@ require_once("risk_calculator.php");
 
 global $DB, $USER, $COURSE;
 
+function block_risk_monitor_update_all_risks() {
+    
+        global $DB;
+
+        if($courses = $DB->get_records('block_risk_monitor_course')) {
+
+            foreach($courses as $course) {
+                
+                $risk_calculator = new risk_calculator($course->courseid);    
+                $risk_calculator->update_all_risks();
+            }
+        }
+                
+        add_to_log(0, 'block_risk_monitor', 'update_risks');
+}
+
+function block_risk_monitor_update_category_risks($categoryid) {
+    
+        global $DB;
+       $category = $DB->get_record('block_risk_monitor_category', array('id' => $categoryid));
+       $course_id = $category->courseid;
+       
+       $risk_calculator = new risk_calculator($course->courseid);    
+       $risk_calculator->update_category_risks($categoryid);
+        
+        add_to_log(0, 'block_risk_monitor', 'update_category_risks');
+}
+
 //this method will check any questions that need to be answered.
 function block_risk_monitor_generate_student_view($userid, $courseid) {
     

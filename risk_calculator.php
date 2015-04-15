@@ -52,7 +52,6 @@ class risk_calculator {
         $this->courseid = $course;
         $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
         $this->course = $DB->get_record('course', array('id' => $course));
-        $this->categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course));
         $this->initialise();
         $this->calculate_averages();
     }
@@ -89,39 +88,39 @@ class risk_calculator {
         $this->calculate_average_time_to_finish_activities();
     }
     
-    function calculate_risks($categoryid = 0) {
+    public function update_all_risks() {
         
-        global $DB;
-        $category_rules = array();            
-                
-       foreach($this->categories as $category) {
-
-            if($categoryid != 0 && $category->id != $categoryid) {
-                break;
-            }
-                        
-            if(!isset($category_rules[$category->id])) {
-                 $category_rules[$category->id] = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $category->id));
-            }
-                        
-            foreach($category_rules[$category->id] as $rule) {
-
-                if($rule->ruletype == 1) {
-                      $this->calculate_risk_ratings($rule);
-                }
-
-                //Custom rule
-                 else if ($rule->ruletype == 2) {
-                      $this->calculate_questionnaire_risks($rule);
-                 }
-
-            }
-
-            $this->calculate_category_risks($category, $category_rules);
-        }
+       global $DB;
+       $categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $course));
+        
+       foreach($categories as $category) {
+           update_category_risks($category->id);
+        }       
     }
     
-    function calculate_category_risks($category, $category_rules) {
+    public function update_category_risks($categoryid) {
+        
+       global $DB;
+       $category_rules = $DB->get_records('block_risk_monitor_rule_inst', array('categoryid' => $categoryid));  
+       
+       //First, update the rule ratings
+       foreach($category_rules as $rule) {
+
+            if($rule->ruletype == 1) {
+                  $this->calculate_rule_risks($rule);
+            }
+
+            else if ($rule->ruletype == 2) {
+                  $this->calculate_questionnaire_risks($rule);
+             }
+
+        }
+
+        //Then, update the category ratings
+        $this->calculate_category_risks($categoryid, $category_rules);     
+    }
+    
+    private function calculate_category_risks($category, $category_rules) {
         
         global $DB;
         foreach($this->enrolled_students as $enrolled_student) {
@@ -130,7 +129,7 @@ class risk_calculator {
             $create_cat_risk = false;
             
             //Add up the individual rule risks
-            foreach($category_rules[$category->id] as $rule) {
+            foreach($category_rules as $rule) {
                 $weighting = $rule->weighting;
                 if($rule_risk = $DB->get_record('block_risk_monitor_rule_risk', array('ruleid' => $rule->id, 'userid' => $enrolled_student->id))){
                      $category_risk_rating += ($weighting/100)*floatval($rule_risk->value);
@@ -140,7 +139,7 @@ class risk_calculator {
 
             //Update or create the category risk
             if($create_cat_risk){
-                 if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $category->id, 'userid' => $enrolled_student->id))) {
+                 if($risk_instance = $DB->get_record('block_risk_monitor_cat_risk', array('categoryid' => $categoryid, 'userid' => $enrolled_student->id))) {
                       $edited_category_risk = new object();
                       $edited_category_risk->id = $risk_instance->id;
                       $edited_category_risk->value = $category_risk_rating;
@@ -150,7 +149,7 @@ class risk_calculator {
                   else {
                        $new_category_risk = new object();
                        $new_category_risk->userid = $enrolled_student->id;
-                       $new_category_risk->categoryid = $category->id;
+                       $new_category_risk->categoryid = $categoryid;
                        $new_category_risk->value = intval($category_risk_rating);
                        $new_category_risk->timestamp = time();
 
@@ -160,7 +159,7 @@ class risk_calculator {
         }
     }
     
-    function calculate_questionnaire_risks($rule) {
+    private function calculate_questionnaire_risks($rule) {
         global $DB;
         foreach($this->enrolled_students as $enrolled_student) {
 
@@ -252,8 +251,7 @@ class risk_calculator {
       }
     }
     
-    //This function returns a risk rating between 0 and 100, given the action userid and value.
-    function calculate_risk_ratings($rule) {
+    private function calculate_rule_risks($rule) {
         global $DB;
         foreach($this->enrolled_students as $enrolled_student) {
         
@@ -339,7 +337,7 @@ class risk_calculator {
     ///THE FOLLOWING METHODS CALCULATE THE RISK RATING FOR EACH RULE, RETURNING A VALUE BETWEN 0 (LOW RISK) AND 100 (HIGH RISK)
 
     //this function returns 100 if user has not logged in for days greater than value, else 0
-    function not_logged_in_risk($user, $value) {
+    private function not_logged_in_risk($user, $value) {
 
         $risk_rating = 0;
 
@@ -366,7 +364,7 @@ class risk_calculator {
     }
 
 
-    function grade_less_than_risk($user, $value) {
+    private function grade_less_than_risk($user, $value) {
 
         global $DB;
         $risk_rating = 0;
@@ -387,7 +385,7 @@ class risk_calculator {
         return $risk_rating;
     }
 
-    function grade_greater_than_risk($user, $value) {
+    private function grade_greater_than_risk($user, $value) {
 
         global $DB;
         $risk_rating = 0;
@@ -408,7 +406,7 @@ class risk_calculator {
         return $risk_rating;    
     }
 
-    public function missed_deadlines_risk($user, $value) {
+    private function missed_deadlines_risk($user, $value) {
 
         global $DB;
         $missed_deadlines = 0;
@@ -434,7 +432,7 @@ class risk_calculator {
     }
 
     //
-    function activities_failed_risk($user, $value) {
+    private function activities_failed_risk($user, $value) {
         
         global $DB;
         $activities_failed = 0;
@@ -467,7 +465,7 @@ class risk_calculator {
     }
 
     //
-    function forum_posts_added_risk($user, $value) {
+    private function forum_posts_added_risk($user, $value) {
         
         $total_students = count($this->number_forum_posts);
         
@@ -481,7 +479,7 @@ class risk_calculator {
     }
 
     //
-    function forum_posts_read_risk($user, $value) {
+    private function forum_posts_read_risk($user, $value) {
         $total_students = count($this->number_forum_posts_read);
         
         $average = array_sum($this->number_forum_posts_read)/count($this->number_forum_posts_read);
@@ -494,7 +492,7 @@ class risk_calculator {
     }
 
     //
-    function course_clicks_risk($user, $value) {
+    private function course_clicks_risk($user, $value) {
         $total_students = count($this->course_clicks);
         
         $average = array_sum($this->course_clicks)/count($this->course_clicks);
@@ -507,7 +505,7 @@ class risk_calculator {
     }
 
     //Session = clicking into course, to clicking out.
-    function average_session_clicks_risk($user, $value) {
+    private function average_session_clicks_risk($user, $value) {
         $total_students = count($this->clicks_per_session);
         if(array_key_exists($user->id, $this->clicks_per_session)) {
             $average = array_sum($this->clicks_per_session)/count($this->clicks_per_session);
@@ -521,7 +519,7 @@ class risk_calculator {
     }
 
     //From when student clicks into course, to clicks out of or logs out.
-    function average_session_duration_risk($user, $value) {
+    private function average_session_duration_risk($user, $value) {
         $total_students = count($this->average_session_times);
         
         if(array_key_exists($user->id, $this->average_session_times)) {
@@ -535,7 +533,7 @@ class risk_calculator {
         return 0;        
     }
     
-    function exam_approaching_risk($user, $value) {
+    private function exam_approaching_risk($user, $value) {
         $time_from_now = time() + ($value*24*60*60);
         
         //Get the upcoming events for this course
@@ -557,7 +555,7 @@ class risk_calculator {
        return 0;
     }
     
-    function multiple_submissions_risk($user, $value) {
+    private function multiple_submissions_risk($user, $value) {
         global $DB;
         foreach(array_keys($this->course_modules) as $modname) {
                 
@@ -573,7 +571,7 @@ class risk_calculator {
         return 0;        
     }
     
-    function time_to_finish_activity_risk($user, $value) {
+    private function time_to_finish_activity_risk($user, $value) {
         
         $total_activities_above_average = 0;
         foreach($this->activity_completion_times as $cm_activity_completion_times) {
@@ -600,7 +598,7 @@ class risk_calculator {
         
     }
     
-    function time_to_submit_activity_risk($user, $value) {
+    private function time_to_submit_activity_risk($user, $value) {
         
         global $DB;
         foreach(array_keys($this->course_modules) as $modname) {
@@ -617,7 +615,7 @@ class risk_calculator {
         return 0;
     }
     
-    function time_to_view_activity_risk($user, $value) {
+    private function time_to_view_activity_risk($user, $value) {
         
         global $DB;
         foreach(array_keys($this->course_modules) as $modname) {
@@ -643,14 +641,14 @@ class risk_calculator {
     //// THE FOLLOWING METHODS CALCULATE THE CUTOFF FOR RELATIVE RISKS
 
 
-    function calculate_average_forum_posts_added() {
+    private function calculate_average_forum_posts_added() {
         foreach($this->enrolled_students as $student) {
             $this->number_forum_posts[$student->id] = count(forum_get_posts_by_user($student, array($this->course))->posts);
         }
         asort($this->number_forum_posts);
     }
 
-    function calculate_average_forum_posts_read() {
+    private function calculate_average_forum_posts_read() {
         
         //Get the forums in this course
         
@@ -665,7 +663,7 @@ class risk_calculator {
         asort($this->number_forum_posts_read);
     }
 
-    function calculate_average_course_clicks() {
+    private function calculate_average_course_clicks() {
         
         //Total course clicks.
         foreach($this->enrolled_students as $student) {
@@ -676,7 +674,7 @@ class risk_calculator {
         
     }
 
-    function calculate_average_clicks_and_time_per_session() {
+    private function calculate_average_clicks_and_time_per_session() {
                 
         foreach($this->enrolled_students as $student) {
             $totalcount = 0;
@@ -723,7 +721,7 @@ class risk_calculator {
         asort($this->clicks_per_session);
     }
     
-    function calculate_average_time_to_finish_activities() {
+    private function calculate_average_time_to_finish_activities() {
  
         global $DB;
         foreach($this->enrolled_students as $student) {

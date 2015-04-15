@@ -47,7 +47,7 @@ class block_risk_monitor extends block_base {
             
             //We use the Moodle cron() function to regularly update the risk scores
             require_once("locallib.php");
-            risks_controller::calculate_risks();
+            block_risk_monitor_update_all_risks();
             return true;
         }
         
@@ -89,7 +89,6 @@ class block_risk_monitor extends block_base {
             }
         }
         
-        //Put together the HTML to be shown in the block.
 	function get_content() {
             
                 global $USER, $COURSE, $OUTPUT;
