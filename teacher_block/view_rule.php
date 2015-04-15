@@ -195,7 +195,7 @@ if($fromform = $general_form->get_data()) {
     }   
     
     //Recalculate risks for this category
-    risks_controller::calculate_risks($getcategory->id);
+    block_risk_monitor_update_category_risks($getcategory->id);
     
     redirect(new moodle_url('view_rule.php', array('userid' => $USER->id, 'ruleid' => $ruleid, 'courseid' => $courseid, 'editing' => 0)));
 

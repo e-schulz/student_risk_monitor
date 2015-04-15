@@ -104,7 +104,7 @@ if ($fromform = $delete_form->get_data()) {
         }
         
         //update risks
-        risks_controller::calculate_risks($rule_to_delete->categoryid);
+        block_risk_monitor_update_category_risks($rule_to_delete->categoryid);
         
     }
     

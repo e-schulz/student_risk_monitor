@@ -176,7 +176,7 @@ if ($fromform = $new_rule_form->get_data()) {
     $DB->update_record('block_risk_monitor_category', $edited_category);*/
     
     //Recalculate the risks for this category.
-    risks_controller::calculate_risks($categoryid);
+    block_risk_monitor_update_category_risks($categoryid);
         
     //Redirect to categories+rules
     redirect(new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)));

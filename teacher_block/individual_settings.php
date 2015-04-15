@@ -56,34 +56,21 @@ $PAGE->set_url('/blocks/risk_monitor/individual_settings.php?userid='.$userid."&
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//$DB->delete_records('block_risk_monitor_cat_risk');
-//block_risk_monitor_update_default_rules();
-//$DB->delete_records('block_risk_monitor_cat_risk');
-//block_risk_monitor_update_default_rules();
-
 //Create the body
 $body = '';
 
-//$DB->delete_records('block_risk_monitor_answer');
-//risks_controller::clear_risks();
-//$body .= risks_controller::calculate_risks();
-    //Link to edit courses NOTE: THIS WILL NOW BE BROKEN.
-    //$body .= html_writer::link (new moodle_url('edit_courses.php', array('userid' => $USER->id)), get_string('edit_courses','block_risk_monitor')).'<br><br>';
+//Link to edit categories and rules
+$body .= html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_categories_rules','block_risk_monitor')).'<br><br>';
             
-    //Description for add or delete courses
-    //$body .= html_writer::tag('div', get_string('edit_courses_text','block_risk_monitor').'<br><br>');
+//Description for add or delete
+$body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');
 
-    //Link to edit categories and rules
-    $body .= html_writer::link (new moodle_url('edit_categories_rules.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_categories_rules','block_risk_monitor')).'<br><br>';
+//Link to edit interventions
+$body .= html_writer::link (new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_interventions','block_risk_monitor')).'<br><br>';
             
-    //Description for add or delete
-    $body .= html_writer::tag('div', get_string('edit_categories_rules_description','block_risk_monitor').'<br><br>');
+//Description for add or delete
+$body .= html_writer::tag('div', get_string('edit_interventions_description','block_risk_monitor').'<br><br>');
 
-    //Link to edit interventions
-    $body .= html_writer::link (new moodle_url('edit_intervention_templates.php', array('userid' => $USER->id, 'courseid' => $courseid)), get_string('edit_interventions','block_risk_monitor')).'<br><br>';
-            
-    //Description for add or delete
-    $body .= html_writer::tag('div', get_string('edit_interventions_description','block_risk_monitor').'<br><br>');
 ///RENDERING THE HTML
 
 //Render the HTML
