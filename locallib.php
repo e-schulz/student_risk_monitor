@@ -10,7 +10,6 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot."/config.php");
 require_once("moodle_rules.php");
-require_once("riskslib.php");
 require_once("risk_calculator.php");
 
 global $DB, $USER, $COURSE;
