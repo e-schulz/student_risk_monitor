@@ -1,5 +1,33 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * A block used to assist teachers in identifying students who are exhibiting certain online behaviours 
+ * and provide targeted interventions
+ *
+ * The block has two seperate views - one for students, and one for teachers
+ * 
+ * See README.md for more information
+ * 
+ * @package    risk_monitor
+ * @copyright  Emily Schulz
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
+
 class block_risk_monitor extends block_base {
         
 	public function init() {
@@ -19,53 +47,46 @@ class block_risk_monitor extends block_base {
             
             //We use the Moodle cron() function to regularly update the risk scores
             require_once("locallib.php");
-            $return = risks_controller::calculate_risks();
-            mtrace($return);
+            risks_controller::calculate_risks();
             return true;
         }
         
-        //Where this block is allowed to appear? (Only on the course home page!)
         function applicable_formats() {
+            
+            //Enable this block to appear only on the homepage of the course.
             return array('course-view' => true);
         }
 	
-        //Don't want teachers to config what is shown in the block.
         function instance_allow_config() {
             return false;
         }
         
-        // enable this later if you want admin to be able to disable rules.
         function has_config() {
             return false;
         }
         
-        //When the block is created, create the block instance 
         public function instance_create() {
             
             global $DB, $COURSE;
-             //Add this course to the course table.
-            if(!($DB->record_exists('block_risk_monitor_course', array('courseid' => $COURSE->id)))) {
-                $new_course = new object();
-                $new_course->courseid = $COURSE->id;
-                $new_course->fullname = $COURSE->fullname;
-                $new_course->shortname = $COURSE->shortname;
-                $DB->insert_record('block_risk_monitor_course', $new_course);
-            }
             
-          
-              
+            //Add a new course record 
+            //this is required so when the global cron function is called, it can determine which courses to calculate risks for.
+            $new_course = new object();
+            $new_course->courseid = $COURSE->id;
+            $new_course->fullname = $COURSE->fullname;
+            $new_course->shortname = $COURSE->shortname;
+            $DB->insert_record('block_risk_monitor_course', $new_course);
         }        
         
-        //When the block is deleted, remove the associated course record.
         public function instance_delete() {
+            
             global $DB, $COURSE;
-            //Delete course
-            if($DB->record_exists('block_risk_monitor_course', array('courseid' => $COURSE->id))) {
-                $DB->delete_records('block_risk_monitor_course', array('courseid' => $COURSE->id));
+            
+            //Delete only one record associated with this course - if multiple teachers have added this block there will be multiple course records.
+            if($course_records = $DB->get_records('block_risk_monitor_course', array('courseid' => $COURSE->id))) {
+                $first_record = reset($course_records);
+                $DB->delete_records('block_risk_monitor_course', array('id' => $first_record->id));
             }
-            require_once('locallib.php');
-            block_risk_monitor_clear_all_tables();
-
         }
         
         //Put together the HTML to be shown in the block.
