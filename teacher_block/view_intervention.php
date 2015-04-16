@@ -48,7 +48,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': ' . $header);
 $PAGE->set_heading($blockname . ': ' . $header);
-$PAGE->set_url('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid.'&interventionid='.$interventionid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid.'&interventionid='.$interventionid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -71,8 +71,8 @@ else {
 $body = '';
 
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$intervention_form = new individual_settings_form_view_intervention('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $interventionid));
-$instructions_form = new individual_settings_form_view_intervention_instructions('/blocks/risk_monitor/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('interventionid' => $interventionid, 'studentid' => $from_studentid));
+$intervention_form = new individual_settings_form_view_intervention('/blocks/risk_monitor/teacher_block/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('userid' => $userid, 'courseid' => $courseid, 'interventionid' => $interventionid));
+$instructions_form = new individual_settings_form_view_intervention_instructions('/blocks/risk_monitor/teacher_block/view_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid, array('interventionid' => $interventionid, 'studentid' => $from_studentid));
 
 //Render the HTML
 echo $OUTPUT->header();

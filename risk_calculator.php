@@ -48,16 +48,17 @@ class risk_calculator {
     
     
     public function __construct($course) {
-        global $DB;
-        $this->courseid = $course;
-        $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
-        $this->course = $DB->get_record('course', array('id' => $course));
-        $this->initialise();
+        $this->initialise($course);
         $this->calculate_averages();
     }
     
-    private function initialise() {
+    private function initialise($course) {
         global $DB;
+        
+        //Initialise properties
+        $this->courseid = $course;
+        $this->enrolled_students = block_risk_monitor_get_enrolled_students($course);
+        $this->course = $DB->get_record('course', array('id' => $course));
         $this->course_clicks = array();
         $this->clicks_per_session = array();
         $this->average_session_times = array();
@@ -65,9 +66,10 @@ class risk_calculator {
         $this->number_forum_posts = array();
         $this->number_forum_posts_read = array();
         $this->course_modules = array();
+        
+        //Initialise module information (all the assessments/test/etc relevant to this course)
         $fast_mod_info = get_fast_modinfo($this->courseid);
         $module_names = array_keys($fast_mod_info->instances);
-        //$this->course_modules = get_fast_modinfo($this->courseid)->instances;
         foreach($module_names as $modname) {
             $module_type = array();
             $module = $DB->get_record('modules', array('name' => $modname));
@@ -117,10 +119,10 @@ class risk_calculator {
         }
 
         //Then, update the category ratings
-        $this->calculate_category_risks($categoryid, $category_rules);     
+        $this->calculate_category_risks($categoryid, $category_rules); 
     }
     
-    private function calculate_category_risks($category, $category_rules) {
+    private function calculate_category_risks($categoryid, $category_rules) {
         
         global $DB;
         foreach($this->enrolled_students as $enrolled_student) {
@@ -259,7 +261,7 @@ class risk_calculator {
 
             $default_rule_id = $rule->defaultruleid;
             $action = DefaultRules::$default_rule_actions[$default_rule_id];
-
+            
             if(DefaultRules::$default_rule_value_required[$default_rule_id]) {
                   $value = $rule->value;
             }

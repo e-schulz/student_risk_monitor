@@ -48,7 +48,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': ' . $header);
 $PAGE->set_heading($blockname . ': ' . $header);
-$PAGE->set_url('/blocks/risk_monitor/edit_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid.'&interventionid='.$interventionid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/edit_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid.'&interventionid='.$interventionid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -65,8 +65,8 @@ $filesoptions = array('subdirs'=>false);
 $intervention_template = file_prepare_standard_editor($intervention_template, 'instructions', $instructionsoptions, $course_context, 'block_risk_monitor', 'intervention_instructions', $interventionid);
 $intervention_template = file_prepare_standard_filemanager($intervention_template, 'files', $filesoptions, $course_context, 'block_risk_monitor', 'intervention_files', $interventionid);
 
-//$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$intervention_form = new individual_settings_form_edit_intervention('/blocks/risk_monitor/edit_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid.'&from_overview='.$from_overview.'&from_studentid='.$from_studentid.'&from_categoryid='.$from_categoryid, array('userid' => $userid, 'courseid' => $courseid, 'template' => $intervention_template, 'instructionsoptions' => $instructionsoptions, 'filesoptions' => $filesoptions, 'generate_intervention' => $from_overview));
+//$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
+$intervention_form = new individual_settings_form_edit_intervention('/blocks/risk_monitor/teacher_block/edit_intervention.php?userid=' . $USER->id . '&courseid=' . $courseid."&interventionid=".$interventionid.'&from_overview='.$from_overview.'&from_studentid='.$from_studentid.'&from_categoryid='.$from_categoryid, array('userid' => $userid, 'courseid' => $courseid, 'template' => $intervention_template, 'instructionsoptions' => $instructionsoptions, 'filesoptions' => $filesoptions, 'generate_intervention' => $from_overview));
 
 if($intervention_form->is_cancelled()) {
     if($from_overview == -1) {

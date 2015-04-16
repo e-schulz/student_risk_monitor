@@ -585,7 +585,7 @@ class individual_settings_form_view_interventions extends moodleform {
                     $mform->addElement('static', 'interventions', '', $output);
                     
                     $new_intervention = "<div align='right'>".html_writer::empty_tag('img', array('src' => get_string('add_icon', 'block_risk_monitor')))."&nbsp;&nbsp;".
-                        html_writer::link (new moodle_url('new_intervention.php', array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add an intervention template..").
+                        html_writer::link (new moodle_url('teacher_block/new_intervention.php', array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $category->id)), "Add an intervention template..").
                         "</div>";
                     
                     $mform->addElement('static', 'new_intervention', '', $new_intervention);

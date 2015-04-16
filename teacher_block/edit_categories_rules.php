@@ -47,7 +47,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/edit_categories_rules.php?userid='.$userid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/edit_categories_rules.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -103,7 +103,7 @@ if($categories = $DB->get_records('block_risk_monitor_category', array('courseid
             }                        
         }
         else {
-            echo "<table><tr><td width=100px></td><td width=500px>No rules</td><td></td><td><b></b></td></tr>";
+            echo "<table><tr><td width=100px></td><td width=500px>No rules added.</td><td></td><td><b></b></td></tr>";
         }
         
         echo "</table>";

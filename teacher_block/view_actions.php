@@ -46,7 +46,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -54,7 +54,7 @@ $back_to_overview = html_writer::link (new moodle_url('overview.php', array('use
 
 $body = '';
 
-$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
+$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
 
 
 //Render the HTML

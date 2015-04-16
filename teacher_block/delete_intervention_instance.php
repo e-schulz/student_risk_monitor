@@ -51,7 +51,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/delete_item.php?userid='.$userid.'&courseid='.$courseid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/delete_item.php?userid='.$userid.'&courseid='.$courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 

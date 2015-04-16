@@ -7,7 +7,6 @@
  */
 
 ///REQUIRES AND ERROR MESSAGES
-
 require_once("../../../config.php");
 require_once("../locallib.php");
 require_once("../student_risk_monitor_forms.php");
@@ -80,14 +79,14 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
 $back_to_overview = html_writer::link (new moodle_url('overview.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to overview");
 
-$problem_areas = new individual_settings_form_student_problem_areas('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('studentid' => $studentid, 'categoryid' => $categoryid));
-$interventions = new individual_settings_form_student_interventions('/blocks/risk_monitor/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid, 'categoryid' => $categoryid));
+$problem_areas = new individual_settings_form_student_problem_areas('/blocks/risk_monitor/teacher_block/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('studentid' => $studentid, 'categoryid' => $categoryid));
+$interventions = new individual_settings_form_student_interventions('/blocks/risk_monitor/teacher_block/view_category_risk.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid.'&categoryid='.$categoryid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid, 'categoryid' => $categoryid));
 
 /*if($fromform = $category_profile->get_data()) {
     //Get which checkboxes are checked

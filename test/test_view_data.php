@@ -31,7 +31,7 @@ $context = context_user::instance($USER->id);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/test_view_data.php');
+$PAGE->set_url('/blocks/risk_monitor/test/test_view_data.php');
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 

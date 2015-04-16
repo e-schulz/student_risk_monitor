@@ -49,12 +49,12 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': '. $header);
 $PAGE->set_heading($blockname . ': '.$header);
-$PAGE->set_url('/blocks/risk_monitor/new_interventions.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/new_interventions.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
-//$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$new_intervention_form = new individual_settings_form_new_intervention('/blocks/risk_monitor/new_intervention.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid.'&from_overview='.$from_overview."&from_studentid=".$from_studentid, array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $categoryid, 'from_overview' => $from_overview));
+//$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/teacher_block/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
+$new_intervention_form = new individual_settings_form_new_intervention('/blocks/risk_monitor/teacher_block/new_intervention.php?userid='.$USER->id.'&courseid='.$courseid.'&categoryid='.$categoryid.'&from_overview='.$from_overview."&from_studentid=".$from_studentid, array('userid' => $userid, 'courseid' => $courseid, 'categoryid' => $categoryid, 'from_overview' => $from_overview));
 
 if($new_intervention_form->is_cancelled()) {
     if($from_overview != -1) {

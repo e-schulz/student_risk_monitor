@@ -44,7 +44,7 @@ $PAGE->navbar->add($header, $action);
 $PAGE->set_context($context);
 $PAGE->set_title($blockname . ': ' . $header);
 $PAGE->set_heading($blockname . ': ' . $header);
-$PAGE->set_url('/blocks/risk_monitor/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid);
+$PAGE->set_url('/blocks/risk_monitor/teacher_block/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid);
 $PAGE->set_pagetype($blockname);
 $PAGE->set_pagelayout('standard');
 
@@ -59,13 +59,13 @@ if($interventionid != -1) {
         $DB->delete_records('block_risk_monitor_int_inst', array('interventiontemplateid' => $interventionid));
     }
     
-    redirect(new moodle_url('/blocks/risk_monitor/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid));
+    redirect(new moodle_url('/blocks/risk_monitor/teacher_block/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid));
 }
 
 $back_to_settings = html_writer::link(new moodle_url('individual_settings.php', array('userid' => $USER->id, 'courseid' => $courseid)), "Back to settings");
 
 //$student_profile = new individual_settings_form_view_student('/blocks/risk_monitor/view_student.php?userid='.$USER->id.'&courseid='.$courseid.'&studentid='.$studentid, array('userid' => $userid, 'courseid' => $courseid, 'studentid' => $studentid));
-$interventions_form = new individual_settings_form_view_interventions('/blocks/risk_monitor/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid, array('userid' => $userid, 'courseid' => $courseid));
+$interventions_form = new individual_settings_form_view_interventions('/blocks/risk_monitor/teacher_block/edit_intervention_templates.php?userid=' . $USER->id . '&courseid=' . $courseid, array('userid' => $userid, 'courseid' => $courseid));
 
 //Render the HTML
 echo $OUTPUT->header();

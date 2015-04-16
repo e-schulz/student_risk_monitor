@@ -50,7 +50,7 @@ $body = '';
 
 //get all the categories and associated risk instances.
 if ($categories = $DB->get_records('block_risk_monitor_category', array('courseid' => $courseid))) {
- 
+        
         //Print out the header
         $studentstable = new html_table();
         $headers = array();
